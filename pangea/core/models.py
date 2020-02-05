@@ -28,6 +28,16 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     def save(self, *args, **kwargs):
         return super(SampleGroup, self).save(*args, **kwargs)
 
+    def create_sample(self, *args, **kwargs):
+        if not self.is_library:
+            assert False, 'Only libraries can create samples'
+        sample = Sample.object.create(library=self, *args, **kwargs)
+        return sample
+
+    def create_analysis_result(self, *args, **kwargs):
+        ar = SampleGroupAnalysisResult.object.create(sample_group=self, *args, **kwargs)
+        return ar
+
 
 class Sample(AutoCreatedUpdatedMixin):
     """This class represents the sample model."""
@@ -45,6 +55,10 @@ class Sample(AutoCreatedUpdatedMixin):
 
     def __str__(self):
         return f"{self.name}"
+
+    def create_analysis_result(self, *args, **kwargs):
+        ar = SampleAnalysisResult.object.create(sample=self, *args, **kwargs)
+        return ar
 
 
 class AnalysisResult(AutoCreatedUpdatedMixin):
@@ -94,6 +108,10 @@ class SampleAnalysisResult(AnalysisResult):
     def save(self, *args, **kwargs):
         return super(SampleAnalysisResult, self).save(*args, **kwargs)
 
+    def create_field(self, *args, **kwargs):
+        ar = SampleAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        return ar
+
 
 class SampleGroupAnalysisResult(AnalysisResult):
     """Class representing a single field of a sample group analysis result."""
@@ -104,6 +122,10 @@ class SampleGroupAnalysisResult(AnalysisResult):
 
     def save(self, *args, **kwargs):
         return super(SampleGroupAnalysisResult, self).save(*args, **kwargs)
+
+    def create_field(self, *args, **kwargs):
+        ar = SampleGroupAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        return ar
 
 
 class AnalysisResultField(AutoCreatedUpdatedMixin):
