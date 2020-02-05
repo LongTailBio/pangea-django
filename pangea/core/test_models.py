@@ -1,6 +1,7 @@
 """Test suite for Sample model."""
 
 from django.test import TestCase
+from django.db.utils import IntegrityError
 
 from .models import (
     Organization,
@@ -18,13 +19,13 @@ class TestSampleModel(TestCase):
 
     def test_add_sample(self):
         """Ensure sample model is created correctly."""
-        org = Organization.object.create(name='an_org AFFFS')
-        library = SampleGroup.object.create(
+        org = Organization.objects.create(name='an_org AFFFS')
+        library = SampleGroup.objects.create(
             organization=org,
             name='library AFFFS',
             is_library=True,
         )
-        sample = Sample.object.create(
+        sample = Sample.objects.create(
             name='SMPL_01 AFFFS',
             library=library,
             metadata={'foo': 'bar'}
@@ -37,15 +38,15 @@ class TestSampleModel(TestCase):
 
     def test_add_duplicate_name(self):
         """Ensure duplicate sample names are not allowed."""
-        org = Organization.object.create(name='an_org OIUO')
+        org = Organization.objects.create(name='an_org OIUO')
         lib = org.create_sample_group(name='LBRY_01 OIUO', is_library=True)
         lib.create_sample(name='SMPL_01 OIUO')
         dupe = lambda: lib.create_sample(name='SMPL_01 OIUO')
-        self.assertRaises(Exception, dupe)
+        self.assertRaises(IntegrityError, dupe)
 
     def test_different_libraries(self):
         """Ensure duplicate sample names in different libraries are allowed."""
-        org = Organization.object.create(name='an_org UIY')
+        org = Organization.objects.create(name='an_org UIY')
         lib1 = org.create_sample_group(name='LBRY_01 UIY', is_library=True)
         lib2 = org.create_sample_group(name='LBRY_02 UIY', is_library=True)
         original = lib1.create_sample(name='SMPL_01 UIY')

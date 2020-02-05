@@ -2,6 +2,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 import uuid
+import random
 
 from .exceptions import SampleOwnerError
 from .mixins import AutoCreatedUpdatedMixin
@@ -16,7 +17,7 @@ class Organization(AutoCreatedUpdatedMixin):
         return super(Organization, self).save(*args, **kwargs)
 
     def create_sample_group(self, *args, **kwargs):
-        sample_group = SampleGroup.object.create(organization=self, *args, **kwargs)
+        sample_group = SampleGroup.objects.create(organization=self, *args, **kwargs)
         return sample_group
 
 
@@ -36,20 +37,20 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     def create_sample(self, *args, **kwargs):
         if not self.is_library:
             raise SampleOwnerError('Only libraries can create samples')
-        sample = Sample.object.create(library=self, *args, **kwargs)
+        sample = Sample.objects.create(library=self, *args, **kwargs)
         return sample
 
     def create_analysis_result(self, *args, **kwargs):
-        ar = SampleGroupAnalysisResult.object.create(sample_group=self, *args, **kwargs)
+        ar = SampleGroupAnalysisResult.objects.create(sample_group=self, *args, **kwargs)
         return ar
 
 
 class Sample(AutoCreatedUpdatedMixin):
     """This class represents the sample model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(blank=False, unique=True)
+    name = models.TextField(blank=False, unique=False)
     library = models.ForeignKey(SampleGroup, on_delete=models.CASCADE)
-    metadata = JSONField()
+    metadata = JSONField(default=dict)
 
     class Meta:
         unique_together = (('name', 'library'),)
@@ -62,8 +63,14 @@ class Sample(AutoCreatedUpdatedMixin):
         return f"{self.name}"
 
     def create_analysis_result(self, *args, **kwargs):
-        ar = SampleAnalysisResult.object.create(sample=self, *args, **kwargs)
+        ar = SampleAnalysisResult.objects.create(sample=self, *args, **kwargs)
         return ar
+
+
+def random_replicate_name(len=12):
+    """Return a random alphanumeric string of length `len`."""
+    out = random.choices('abcdefghijklmnopqrtuvwxyzABCDEFGHIJKLMNOPQRTUVWXYZ0123456789', k=len)
+    return ''.join(out)
 
 
 class AnalysisResult(AutoCreatedUpdatedMixin):
@@ -91,7 +98,7 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module_name = models.TextField(blank=False, db_index=True)
     # TODO: document `replicate` field in DocString
-    replicate = models.TextField(blank=False, db_index=True)
+    replicate = models.TextField(blank=False, db_index=False, default=random_replicate_name)
     status = models.TextField(
         choices=AnalysisResultStatus.choices,
         default=AnalysisResultStatus.PENDING,
@@ -115,7 +122,7 @@ class SampleAnalysisResult(AnalysisResult):
         return super(SampleAnalysisResult, self).save(*args, **kwargs)
 
     def create_field(self, *args, **kwargs):
-        field = SampleAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        field = SampleAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
 
 
@@ -130,7 +137,7 @@ class SampleGroupAnalysisResult(AnalysisResult):
         return super(SampleGroupAnalysisResult, self).save(*args, **kwargs)
 
     def create_field(self, *args, **kwargs):
-        field = SampleGroupAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        field = SampleGroupAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
 
 
