@@ -17,7 +17,7 @@ class Organization(AutoCreatedUpdatedMixin):
         return super(Organization, self).save(*args, **kwargs)
 
     def create_sample_group(self, *args, **kwargs):
-        sample_group = SampleGroup.objects.create(organization=self, *args, **kwargs)
+        sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
 
 
@@ -27,17 +27,20 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, unique=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     description = models.TextField(blank=False, default='')
-    is_library = models.BooleanField(blank=False, default=False)
     is_public = models.BooleanField(blank=False, default=True)
     theme = models.TextField(blank=True)
 
     def save(self, *args, **kwargs):
         return super(SampleGroup, self).save(*args, **kwargs)
 
+    @property
+    def is_library(self):
+        return hasattr(self, 'library')
+
     def create_sample(self, *args, **kwargs):
         if not self.is_library:
             raise SampleOwnerError('Only libraries can create samples')
-        sample = Sample.objects.create(library=self, *args, **kwargs)
+        sample = self.library.create_sample(*args, **kwargs)
         return sample
 
     def add_sample(self, sample):
@@ -49,13 +52,34 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         ar = SampleGroupAnalysisResult.objects.create(sample_group=self, *args, **kwargs)
         return ar
 
+    @classmethod
+    def factory(cls, *args, **kwargs):
+        is_library = kwargs.pop('is_library', False)
+        grp = cls.objects.create(*args, **kwargs)
+        if is_library:
+            SampleLibrary.objects.create(group=grp)
+        return grp
+
+
+class SampleLibrary(AutoCreatedUpdatedMixin):
+    group = models.OneToOneField(
+        SampleGroup,
+        on_delete=models.CASCADE,
+        primary_key=True,
+        related_name='library'
+    )
+
+    def create_sample(self, *args, **kwargs):
+        sample = Sample.objects.create(library=self, *args, **kwargs)
+        return sample
+
 
 class Sample(AutoCreatedUpdatedMixin):
     """This class represents the sample model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=False)
     library = models.ForeignKey(
-        SampleGroup, on_delete=models.CASCADE, related_name='owned_samples'
+        SampleLibrary, on_delete=models.CASCADE, related_name='owned_samples'
     )
     sample_groups = models.ManyToManyField(SampleGroup)
     metadata = JSONField(default=dict)
