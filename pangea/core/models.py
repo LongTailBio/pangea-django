@@ -14,6 +14,10 @@ class Organization(AutoCreatedUpdatedMixin):
     def save(self, *args, **kwargs):
         return super(Organization, self).save(*args, **kwargs)
 
+    def create_sample_group(self, *args, **kwargs):
+        sample = SampleGroup.object.create(organization=self, *args, **kwargs)
+        return sample
+
 
 class SampleGroup(AutoCreatedUpdatedMixin):
     """This class represents the sample group model."""
