@@ -40,6 +40,11 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         sample = Sample.objects.create(library=self, *args, **kwargs)
         return sample
 
+    def add_sample(self, sample):
+        sample.sample_groups.add(self)
+        sample.save()
+        return self
+
     def create_analysis_result(self, *args, **kwargs):
         ar = SampleGroupAnalysisResult.objects.create(sample_group=self, *args, **kwargs)
         return ar
@@ -49,7 +54,10 @@ class Sample(AutoCreatedUpdatedMixin):
     """This class represents the sample model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=False)
-    library = models.ForeignKey(SampleGroup, on_delete=models.CASCADE)
+    library = models.ForeignKey(
+        SampleGroup, on_delete=models.CASCADE, related_name='owned_samples'
+    )
+    sample_groups = models.ManyToManyField(SampleGroup)
     metadata = JSONField(default=dict)
 
     class Meta:
@@ -113,7 +121,9 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
 
 class SampleAnalysisResult(AnalysisResult):
     """Class representing a single field of a sample analysis result."""
-    sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
+    sample = models.ForeignKey(
+        Sample, on_delete=models.CASCADE, related_name='analysis_result_set'
+    )
 
     class Meta:
         unique_together = (('module_name', 'replicate', 'sample'),)
@@ -128,7 +138,9 @@ class SampleAnalysisResult(AnalysisResult):
 
 class SampleGroupAnalysisResult(AnalysisResult):
     """Class representing a single field of a sample group analysis result."""
-    sample_group = models.ForeignKey(SampleGroup, on_delete=models.CASCADE)
+    sample_group = models.ForeignKey(
+        SampleGroup, on_delete=models.CASCADE, related_name='analysis_result_set'
+    )
 
     class Meta:
         unique_together = (('module_name', 'replicate', 'sample_group'),)
@@ -156,7 +168,9 @@ class AnalysisResultField(AutoCreatedUpdatedMixin):
 
 class SampleAnalysisResultField(AnalysisResultField):
     """Class representing an analysis result field for a sample."""
-    analysis_result = models.ForeignKey(SampleAnalysisResult, on_delete=models.CASCADE)
+    analysis_result = models.ForeignKey(
+        SampleAnalysisResult, on_delete=models.CASCADE, related_name='fields'
+    )
 
     def save(self, *args, **kwargs):
         return super(SampleAnalysisResultField, self).save(*args, **kwargs)
@@ -164,7 +178,9 @@ class SampleAnalysisResultField(AnalysisResultField):
 
 class SampleGroupAnalysisResultField(AnalysisResultField):
     """Class representing an analysis result field for a sample group."""
-    analysis_result = models.ForeignKey(SampleGroupAnalysisResult, on_delete=models.CASCADE)
+    analysis_result = models.ForeignKey(
+        SampleGroupAnalysisResult, on_delete=models.CASCADE, related_name='fields'
+    )
 
     def save(self, *args, **kwargs):
         return super(SampleGroupAnalysisResultField, self).save(*args, **kwargs)
