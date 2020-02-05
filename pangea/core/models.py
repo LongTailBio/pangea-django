@@ -71,6 +71,7 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
 
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module_name = models.TextField(blank=False, db_index=True)
+    replicate = models.TextField(blank=False, db_index=True)
     status = models.TextField(
         choices=AnalysisResultStatus.choices,
         default=AnalysisResultStatus.PENDING,
@@ -88,7 +89,7 @@ class SampleAnalysisResult(AnalysisResult):
     sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (('module_name', 'sample'),)
+        unique_together = (('module_name', 'replicate', 'sample'),)
 
     def save(self, *args, **kwargs):
         return super(SampleAnalysisResult, self).save(*args, **kwargs)
@@ -99,7 +100,7 @@ class SampleGroupAnalysisResult(AnalysisResult):
     sample_group = models.ForeignKey(SampleGroup, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (('module_name', 'sample_group'),)
+        unique_together = (('module_name', 'replicate', 'sample_group'),)
 
     def save(self, *args, **kwargs):
         return super(SampleGroupAnalysisResult, self).save(*args, **kwargs)
