@@ -16,8 +16,8 @@ class Organization(AutoCreatedUpdatedMixin):
         return super(Organization, self).save(*args, **kwargs)
 
     def create_sample_group(self, *args, **kwargs):
-        sample = SampleGroup.object.create(organization=self, *args, **kwargs)
-        return sample
+        sample_group = SampleGroup.object.create(organization=self, *args, **kwargs)
+        return sample_group
 
 
 class SampleGroup(AutoCreatedUpdatedMixin):
@@ -114,8 +114,8 @@ class SampleAnalysisResult(AnalysisResult):
         return super(SampleAnalysisResult, self).save(*args, **kwargs)
 
     def create_field(self, *args, **kwargs):
-        ar = SampleAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
-        return ar
+        field = SampleAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        return field
 
 
 class SampleGroupAnalysisResult(AnalysisResult):
@@ -129,8 +129,8 @@ class SampleGroupAnalysisResult(AnalysisResult):
         return super(SampleGroupAnalysisResult, self).save(*args, **kwargs)
 
     def create_field(self, *args, **kwargs):
-        ar = SampleGroupAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
-        return ar
+        field = SampleGroupAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        return field
 
 
 class AnalysisResultField(AutoCreatedUpdatedMixin):
