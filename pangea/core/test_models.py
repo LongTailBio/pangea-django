@@ -21,14 +21,14 @@ class TestSampleModel(TestCase):
     def test_add_sample(self):
         """Ensure sample model is created correctly."""
         org = Organization.objects.create(name='an_org AFFFS')
-        library = SampleGroup.objects.create(
+        grp = SampleGroup.factory(
             organization=org,
             name='library AFFFS',
             is_library=True,
         )
         sample = Sample.objects.create(
             name='SMPL_01 AFFFS',
-            library=library,
+            library=grp.library,
             metadata={'foo': 'bar'}
         )
 
@@ -53,7 +53,7 @@ class TestSampleModel(TestCase):
         original = lib1.create_sample(name='SMPL_01 UIY')
         duplicate = lib2.create_sample(name='SMPL_01 UIY')
         self.assertEqual(original.name, duplicate.name)
-        self.assertNotEqual(original.library.uuid, duplicate.library.uuid)
+        self.assertNotEqual(original.library, duplicate.library)
 
 
 class TestSampleGroupModel(TestCase):

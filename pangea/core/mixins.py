@@ -23,7 +23,7 @@ class AutoCreatedUpdatedMixin(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
-        if not self.uuid or not self.created_at:
+        if not self.created_at or (hasattr(self, 'uuid') and not self.uuid):
             self.created_at = now()
             self.updated_at = self.created_at
         else:
