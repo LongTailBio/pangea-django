@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 import uuid
 
+from .exceptions import SampleOwnerError
 from .mixins import AutoCreatedUpdatedMixin
 
 
@@ -13,6 +14,10 @@ class Organization(AutoCreatedUpdatedMixin):
 
     def save(self, *args, **kwargs):
         return super(Organization, self).save(*args, **kwargs)
+
+    def create_sample_group(self, *args, **kwargs):
+        sample_group = SampleGroup.object.create(organization=self, *args, **kwargs)
+        return sample_group
 
 
 class SampleGroup(AutoCreatedUpdatedMixin):
@@ -27,6 +32,16 @@ class SampleGroup(AutoCreatedUpdatedMixin):
 
     def save(self, *args, **kwargs):
         return super(SampleGroup, self).save(*args, **kwargs)
+
+    def create_sample(self, *args, **kwargs):
+        if not self.is_library:
+            raise SampleOwnerError('Only libraries can create samples')
+        sample = Sample.object.create(library=self, *args, **kwargs)
+        return sample
+
+    def create_analysis_result(self, *args, **kwargs):
+        ar = SampleGroupAnalysisResult.object.create(sample_group=self, *args, **kwargs)
+        return ar
 
 
 class Sample(AutoCreatedUpdatedMixin):
@@ -45,6 +60,10 @@ class Sample(AutoCreatedUpdatedMixin):
 
     def __str__(self):
         return f"{self.name}"
+
+    def create_analysis_result(self, *args, **kwargs):
+        ar = SampleAnalysisResult.object.create(sample=self, *args, **kwargs)
+        return ar
 
 
 class AnalysisResult(AutoCreatedUpdatedMixin):
@@ -71,6 +90,8 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
 
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module_name = models.TextField(blank=False, db_index=True)
+    # TODO: document `replicate` field in DocString
+    replicate = models.TextField(blank=False, db_index=True)
     status = models.TextField(
         choices=AnalysisResultStatus.choices,
         default=AnalysisResultStatus.PENDING,
@@ -88,10 +109,14 @@ class SampleAnalysisResult(AnalysisResult):
     sample = models.ForeignKey(Sample, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (('module_name', 'sample'),)
+        unique_together = (('module_name', 'replicate', 'sample'),)
 
     def save(self, *args, **kwargs):
         return super(SampleAnalysisResult, self).save(*args, **kwargs)
+
+    def create_field(self, *args, **kwargs):
+        field = SampleAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        return field
 
 
 class SampleGroupAnalysisResult(AnalysisResult):
@@ -99,10 +124,14 @@ class SampleGroupAnalysisResult(AnalysisResult):
     sample_group = models.ForeignKey(SampleGroup, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = (('module_name', 'sample_group'),)
+        unique_together = (('module_name', 'replicate', 'sample_group'),)
 
     def save(self, *args, **kwargs):
         return super(SampleGroupAnalysisResult, self).save(*args, **kwargs)
+
+    def create_field(self, *args, **kwargs):
+        field = SampleGroupAnalysisResultField.object.create(analysis_result=self, *args, **kwargs)
+        return field
 
 
 class AnalysisResultField(AutoCreatedUpdatedMixin):
