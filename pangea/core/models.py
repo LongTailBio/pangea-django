@@ -90,6 +90,7 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
 
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     module_name = models.TextField(blank=False, db_index=True)
+    # TODO: document `replicate` field in DocString
     replicate = models.TextField(blank=False, db_index=True)
     status = models.TextField(
         choices=AnalysisResultStatus.choices,
