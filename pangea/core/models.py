@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 import uuid
 
+from .exceptions import SampleOwnerError
 from .mixins import AutoCreatedUpdatedMixin
 
 
@@ -34,7 +35,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
 
     def create_sample(self, *args, **kwargs):
         if not self.is_library:
-            assert False, 'Only libraries can create samples'
+            raise SampleOwnerError('Only libraries can create samples')
         sample = Sample.object.create(library=self, *args, **kwargs)
         return sample
 
