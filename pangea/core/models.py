@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -28,6 +29,7 @@ class Organization(AutoCreatedUpdatedMixin):
     """This class represents the organization model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=True)
+    users = models.ManyToManyField(get_user_model())
 
     def save(self, *args, **kwargs):
         return super(Organization, self).save(*args, **kwargs)
