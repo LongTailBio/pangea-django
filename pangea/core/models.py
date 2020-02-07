@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -5,7 +6,22 @@ import uuid
 import random
 
 from .exceptions import SampleOwnerError
+from .managers import PangeaUserManager
 from .mixins import AutoCreatedUpdatedMixin
+
+
+class PangeaUser(AbstractUser):
+    """Custom Pangea user type."""
+    username = None
+    email = models.EmailField(_('email address'), unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = PangeaUserManager()
+
+    def __str__(self):
+        return self.email
 
 
 class Organization(AutoCreatedUpdatedMixin):
