@@ -11,7 +11,6 @@ from .views import (
 )
 
 
-# TODO: add routes for remaining models
 urlpatterns = {
     path('organizations', OrganizationCreateView.as_view(), name="create"),
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="details"),

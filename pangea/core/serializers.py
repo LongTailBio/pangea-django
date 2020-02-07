@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from .models import (
+    PangeaUser,
     Organization,
     SampleGroup,
     Sample,
@@ -9,6 +10,14 @@ from .models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
 )
+
+
+class PangeaUserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PangeaUser
+        fields = ('email', 'is_staff', 'is_active')
+        read_only_fields = ('email',)
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
