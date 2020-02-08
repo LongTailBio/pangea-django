@@ -9,6 +9,9 @@ from .models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
 )
+from .permissions import (
+    OrganizationPermission,
+)
 from .serializers import (
     OrganizationSerializer,
     SampleGroupSerializer,
@@ -21,15 +24,18 @@ from .serializers import (
 class OrganizationCreateView(generics.ListCreateAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
+    permission_classes = (OrganizationPermission,)
 
     def perform_create(self, serializer):
-        serializer.save()
+        organization = serializer.save()
+        self.request.user.organization_set.add(organization)
 
 
 class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
     """This class handles the http GET, PUT and DELETE requests."""
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
+    permission_classes = (OrganizationPermission,)
 
 
 class SampleGroupCreateView(generics.ListCreateAPIView):

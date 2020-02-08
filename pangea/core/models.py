@@ -38,6 +38,12 @@ class Organization(AutoCreatedUpdatedMixin):
         sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
 
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'<Organization name="{self.name}">'
+
 
 class SampleGroup(AutoCreatedUpdatedMixin):
     """This class represents the sample group model."""
