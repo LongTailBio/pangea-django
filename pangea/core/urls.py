@@ -6,8 +6,8 @@ from .views import (
     OrganizationCreateView, OrganizationDetailsView,
     SampleGroupCreateView, SampleGroupDetailsView,
     SampleCreateView, SampleDetailsView,
-    SampleAnalysisResultDetailsView,
-    SampleGroupAnalysisResultDetailsView,
+    SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
+    SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
 )
 
 
@@ -18,8 +18,10 @@ urlpatterns = {
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="details"),
     path('samples', SampleCreateView.as_view(), name="create"),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="details"),
-    path('sample_ars', SampleAnalysisResultDetailsView.as_view(), name="details"),
-    path('sample_group_ars', SampleGroupAnalysisResultDetailsView.as_view(), name="create"),
+    path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="create"),
+    path('sample_ars/<uuid:pk>', SampleAnalysisResultDetailsView.as_view(), name="details"),
+    path('sample_group_ars', SampleGroupAnalysisResultCreateView.as_view(), name="create"),
+    path('sample_group_ars/<uuid:pk>', SampleGroupAnalysisResultDetailsView.as_view(), name="details"),
 }
 
 

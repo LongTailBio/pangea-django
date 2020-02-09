@@ -16,6 +16,8 @@ from .permissions import (
     OrganizationPermission,
     SampleGroupPermission,
     SamplePermission,
+    SampleAnalysisResultPermission,
+    SampleGroupAnalysisResultPermission,
 )
 from .serializers import (
     OrganizationSerializer,
@@ -87,11 +89,39 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (SamplePermission,)
 
 
+class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
+    queryset = SampleAnalysisResult.objects.all()
+    serializer_class = SampleAnalysisResultSerializer
+    permission_classes = (SampleAnalysisResultPermission,)
+
+    def perform_create(self, serializer):
+        organization = serializer.validated_data.get('sample').library.group.organization
+        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
+        if not membership_queryset.exists():
+            raise PermissionDenied(_('Organization membership is required to create a sample analysis result.'))
+        serializer.save()
+
+
 class SampleAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer
+    permission_classes = (SampleAnalysisResultPermission,)
+
+
+class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
+    queryset = SampleGroupAnalysisResult.objects.all()
+    serializer_class = SampleGroupAnalysisResultSerializer
+    permission_classes = (SampleGroupAnalysisResultPermission,)
+
+    def perform_create(self, serializer):
+        organization = serializer.validated_data.get('sample_group').organization
+        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
+        if not membership_queryset.exists():
+            raise PermissionDenied(_('Organization membership is required to create a sample group analysis result.'))
+        serializer.save()
 
 
 class SampleGroupAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = SampleGroupAnalysisResult.objects.all()
     serializer_class = SampleGroupAnalysisResultSerializer
+    permission_classes = (SampleGroupAnalysisResultPermission,)
