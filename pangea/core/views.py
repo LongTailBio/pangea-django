@@ -1,4 +1,7 @@
+from django.utils.translation import gettext_lazy as _
+
 from rest_framework import generics
+from rest_framework.exceptions import PermissionDenied
 
 from .models import (
     Organization,
@@ -27,6 +30,9 @@ class OrganizationCreateView(generics.ListCreateAPIView):
     permission_classes = (OrganizationPermission,)
 
     def perform_create(self, serializer):
+        """Require valid session to create organization."""
+        if not bool(self.request.user and self.request.user.is_authenticated):
+            raise PermissionDenied(_('Must be logged in to create organization'))
         organization = serializer.save()
         self.request.user.organization_set.add(organization)
 

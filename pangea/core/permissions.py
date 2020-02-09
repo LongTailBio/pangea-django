@@ -13,9 +13,5 @@ class OrganizationPermission(permissions.BasePermission):
         if not bool(request.user and request.user.is_authenticated):
             return False
 
-        # Allow authenticated user to create an organization
-        if request.method == 'POST':
-            return True
-
-        # Allow members of organization to edit/delete
+        # Require organization membership to edit/delete
         return view.get_queryset().filter(users=request.user).exists()
