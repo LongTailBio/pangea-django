@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.db.utils import IntegrityError
 from unittest import skip
 
-from .models import (
+from ..models import (
     Organization,
     SampleGroup,
     Sample,
