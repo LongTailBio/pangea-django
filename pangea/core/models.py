@@ -84,6 +84,12 @@ class SampleGroup(AutoCreatedUpdatedMixin):
             SampleLibrary.objects.create(group=grp)
         return grp
 
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'<SampleGroup name="{self.name}" organization="{self.organization.name}">'
+
 
 class SampleLibrary(AutoCreatedUpdatedMixin):
     group = models.OneToOneField(
