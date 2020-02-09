@@ -103,6 +103,12 @@ class SampleLibrary(AutoCreatedUpdatedMixin):
         sample = Sample.objects.create(library=self, *args, **kwargs)
         return sample
 
+    def __str__(self):
+        return f'{self.group.name} (library)'
+
+    def __repr__(self):
+        return f'<SampleLibrary name="{self.group.name}">'
+
 
 class Sample(AutoCreatedUpdatedMixin):
     """This class represents the sample model."""
@@ -117,12 +123,11 @@ class Sample(AutoCreatedUpdatedMixin):
     class Meta:
         unique_together = (('name', 'library'),)
 
-    def save(self, *args, **kwargs):
-        # TODO: ensure that self.library.is_library = True
-        return super(Sample, self).save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.name}"
+
+    def __repr__(self):
+        return f'<Sample name="{self.name}" library="{self.library.group.name}">'
 
     def create_analysis_result(self, *args, **kwargs):
         ar = SampleAnalysisResult.objects.create(sample=self, *args, **kwargs)
