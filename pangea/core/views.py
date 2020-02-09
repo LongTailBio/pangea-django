@@ -15,6 +15,7 @@ from .models import (
 from .permissions import (
     OrganizationPermission,
     SampleGroupPermission,
+    SamplePermission,
 )
 from .serializers import (
     OrganizationSerializer,
@@ -69,8 +70,13 @@ class SampleGroupDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class SampleCreateView(generics.ListCreateAPIView):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
+    permission_classes = (SamplePermission,)
 
     def perform_create(self, serializer):
+        organization = serializer.validated_data.get('library').group.organization
+        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
+        if not membership_queryset.exists():
+            raise PermissionDenied(_('Organization membership is required to create a sample.'))
         serializer.save()
 
 
@@ -78,6 +84,7 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
     """This class handles the http GET, PUT and DELETE requests."""
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
+    permission_classes = (SamplePermission,)
 
 
 class SampleAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView):
