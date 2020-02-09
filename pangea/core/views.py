@@ -2,6 +2,7 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import generics
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import (
     Organization,
@@ -31,12 +32,10 @@ from .serializers import (
 class OrganizationCreateView(generics.ListCreateAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
-    permission_classes = (OrganizationPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
         """Require valid session to create organization."""
-        if not bool(self.request.user and self.request.user.is_authenticated):
-            raise PermissionDenied(_('Must be logged in to create organization'))
         organization = serializer.save()
         self.request.user.organization_set.add(organization)
 
@@ -51,7 +50,7 @@ class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class SampleGroupCreateView(generics.ListCreateAPIView):
     queryset = SampleGroup.objects.all()
     serializer_class = SampleGroupSerializer
-    permission_classes = (SampleGroupPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
         """Require organization membership to create sample group."""
@@ -72,7 +71,7 @@ class SampleGroupDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class SampleCreateView(generics.ListCreateAPIView):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
-    permission_classes = (SamplePermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('library').group.organization
@@ -92,7 +91,7 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
     queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer
-    permission_classes = (SampleAnalysisResultPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample').library.group.organization
@@ -111,7 +110,7 @@ class SampleAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
     queryset = SampleGroupAnalysisResult.objects.all()
     serializer_class = SampleGroupAnalysisResultSerializer
-    permission_classes = (SampleGroupAnalysisResultPermission,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample_group').organization
