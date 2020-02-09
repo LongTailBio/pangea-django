@@ -7,6 +7,7 @@ from .models import (
     PangeaUser,
     Organization,
     SampleGroup,
+    SampleLibrary,
     Sample,
     SampleGroupAnalysisResult,
     SampleGroupAnalysisResultField,
@@ -14,7 +15,7 @@ from .models import (
     SampleAnalysisResultField
 )
 
-@admin.register(Organization, SampleGroup, Sample, SampleGroupAnalysisResult,
+@admin.register(Organization, SampleGroup, SampleLibrary, Sample, SampleGroupAnalysisResult,
                 SampleGroupAnalysisResultField, SampleAnalysisResult, SampleAnalysisResultField)
 class PangeaCoreAdmin(admin.ModelAdmin):
     pass
