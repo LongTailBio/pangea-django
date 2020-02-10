@@ -37,10 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
     'pangea.core',
+    'pangea.contrib.taxasearch',
 ]
 
 MIDDLEWARE = [
