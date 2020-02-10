@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -5,13 +7,29 @@ import uuid
 import random
 
 from .exceptions import SampleOwnerError
+from .managers import PangeaUserManager
 from .mixins import AutoCreatedUpdatedMixin
+
+
+class PangeaUser(AbstractUser):
+    """Custom Pangea user type."""
+    username = None
+    email = models.EmailField(_('email address'), unique=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
+    objects = PangeaUserManager()
+
+    def __str__(self):
+        return self.email
 
 
 class Organization(AutoCreatedUpdatedMixin):
     """This class represents the organization model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=True)
+    users = models.ManyToManyField(get_user_model())
 
     def save(self, *args, **kwargs):
         return super(Organization, self).save(*args, **kwargs)
@@ -19,6 +37,12 @@ class Organization(AutoCreatedUpdatedMixin):
     def create_sample_group(self, *args, **kwargs):
         sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'<Organization name="{self.name}">'
 
 
 class SampleGroup(AutoCreatedUpdatedMixin):
@@ -60,6 +84,12 @@ class SampleGroup(AutoCreatedUpdatedMixin):
             SampleLibrary.objects.create(group=grp)
         return grp
 
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'<SampleGroup name="{self.name}" organization="{self.organization.name}">'
+
 
 class SampleLibrary(AutoCreatedUpdatedMixin):
     group = models.OneToOneField(
@@ -72,6 +102,12 @@ class SampleLibrary(AutoCreatedUpdatedMixin):
     def create_sample(self, *args, **kwargs):
         sample = Sample.objects.create(library=self, *args, **kwargs)
         return sample
+
+    def __str__(self):
+        return f'{self.group.name} (library)'
+
+    def __repr__(self):
+        return f'<SampleLibrary name="{self.group.name}">'
 
 
 class Sample(AutoCreatedUpdatedMixin):
@@ -87,12 +123,11 @@ class Sample(AutoCreatedUpdatedMixin):
     class Meta:
         unique_together = (('name', 'library'),)
 
-    def save(self, *args, **kwargs):
-        # TODO: ensure that self.library.is_library = True
-        return super(Sample, self).save(*args, **kwargs)
-
     def __str__(self):
         return f"{self.name}"
+
+    def __repr__(self):
+        return f'<Sample name="{self.name}" library="{self.library.group.name}">'
 
     def create_analysis_result(self, *args, **kwargs):
         ar = SampleAnalysisResult.objects.create(sample=self, *args, **kwargs)
