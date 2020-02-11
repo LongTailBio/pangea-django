@@ -3,6 +3,10 @@ jobs:
   test_app:
     docker:
       - image: circleci/python:3.6.9-buster
+        environment:
+          POSTGRES_DB: pangea_django
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ""
       - image: circleci/postgres:11.6
         environment:
           POSTGRES_DB: pangea_django
