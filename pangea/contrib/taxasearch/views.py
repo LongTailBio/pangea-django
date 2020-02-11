@@ -5,6 +5,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
+from pangea.core.utils import str2bool
+
 
 def search_result(raw_result):
     """Map query result to something serializable."""
@@ -17,13 +19,14 @@ def search_result(raw_result):
 @api_view(['GET'])
 def fuzzy_taxa_search(request):
     """Return samples with taxa results that fuzzy match the query."""
+    metadata = str2bool(request.query_params.get('metadata', 'false'))
     query = request.query_params.get('query', None)
     if query is None:
         raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
 
     with connection.cursor() as cursor:
         query = f'%{query}%'
-        cursor.execute('''
+        cursor.execute(f'''
             -- Use text-based search to restrict the search space
             with clearcut as (
                 select analysis_result_id, stored_data
@@ -50,8 +53,8 @@ def fuzzy_taxa_search(request):
                         filtered_taxa.value::float as relative_abundance,
                         core_sample.uuid as sample_uuid,
                         core_sample.name as sample_name,
-                        core_sample.library_id as sample_library_uuid,
-                        core_sample.metadata as sample_metadata
+                        core_sample.library_id as sample_library_uuid
+                        {', core_sample.metadata as sample_metadata' if metadata else '' }
                     order by
                         core_sample.library_id
                 ) as x)) as samples
