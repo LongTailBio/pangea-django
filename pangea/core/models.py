@@ -215,11 +215,12 @@ class SampleGroupAnalysisResult(AnalysisResult):
 class AnalysisResultField(AutoCreatedUpdatedMixin):
     """Class representing a single field of a single result in the database."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(blank=False, unique=True)
+    name = models.TextField(blank=False)
     stored_data = JSONField(blank=False)
 
     class Meta:
         abstract = True
+        unique_together = (('analysis_result', 'name'),)
 
     def save(self, *args, **kwargs):
         return super(AnalysisResultField, self).save(*args, **kwargs)
