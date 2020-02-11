@@ -8,14 +8,6 @@ from rest_framework.exceptions import ValidationError
 from pangea.core.utils import str2bool
 
 
-def search_result(raw_result):
-    """Map query result to something serializable."""
-    return {
-        'taxa': raw_result[0],
-        'samples': raw_result[1],
-    }
-
-
 @api_view(['GET'])
 def fuzzy_taxa_search(request):
     """Return samples with taxa results that fuzzy match the query."""
@@ -70,5 +62,5 @@ def fuzzy_taxa_search(request):
                 filtered_taxa.key
             ''', [query, query])
 
-        results = [search_result(row) for row in cursor.fetchall()]
+        results = {row[0]: row[1] for row in cursor.fetchall()}
         return Response({'results': results})
