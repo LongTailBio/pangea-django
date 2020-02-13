@@ -1,4 +1,4 @@
- import structlog
+import structlog
 
 from django.db import connection
 from django.utils.translation import gettext_lazy as _
