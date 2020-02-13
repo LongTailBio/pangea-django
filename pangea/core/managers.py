@@ -1,5 +1,9 @@
+import structlog
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.utils.translation import ugettext_lazy as _
+
+logger = structlog.get_logger(__name__)
 
 
 class PangeaUserManager(BaseUserManager):
@@ -17,6 +21,10 @@ class PangeaUserManager(BaseUserManager):
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
+        logger.info(
+            'created_user',
+            email=email,
+        )
         return user
 
     def create_superuser(self, email, password, **extra_fields):
@@ -31,4 +39,9 @@ class PangeaUserManager(BaseUserManager):
             raise ValueError(_('Superuser must have is_staff=True.'))
         if extra_fields.get('is_superuser') is not True:
             raise ValueError(_('Superuser must have is_superuser=True.'))
-        return self.create_user(email, password, **extra_fields)
+        out = self.create_user(email, password, **extra_fields)
+        logger.info(
+            'created_superuser',
+            email=email,
+        )
+        return out
