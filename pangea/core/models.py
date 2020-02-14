@@ -61,7 +61,12 @@ class SampleGroup(AutoCreatedUpdatedMixin):
 
     def save(self, *args, **kwargs):
         out = super(SampleGroup, self).save(*args, **kwargs)
-        logger.info('saved_sample_group', obj_uuid=self.uuid)
+        logger.info(
+            'saved_sample_group',
+            obj_uuid=self.uuid,
+            saved_uuid=out.uuid,
+            name=self.name
+        )
         return out
 
     @property
@@ -182,9 +187,7 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
         abstract = True
 
     def save(self, *args, **kwargs):
-        out = super(AnalysisResult, self).save(*args, **kwargs)
-        logger.info('saved_analysis_result', obj_uuid=self.uuid)
-        return out
+        return super(AnalysisResult, self).save(*args, **kwargs)
 
 
 class SampleAnalysisResult(AnalysisResult):
@@ -198,7 +201,14 @@ class SampleAnalysisResult(AnalysisResult):
 
     def save(self, *args, **kwargs):
         out = super(SampleAnalysisResult, self).save(*args, **kwargs)
-        logger.info('saved_sample_analysis_result', obj_uuid=self.uuid)
+        logger.info(
+            'saved_sample_analysis_result',
+            obj_uuid=self.uuid,
+            saved_uuid=out.uuid,
+            module_name=self.module_name,
+            sample={'uuid': self.sample.uuid, 'name': self.sample.name},
+            status=self.status,
+        )
         return out
 
     def create_field(self, *args, **kwargs):
@@ -217,7 +227,14 @@ class SampleGroupAnalysisResult(AnalysisResult):
 
     def save(self, *args, **kwargs):
         out = super(SampleGroupAnalysisResult, self).save(*args, **kwargs)
-        logger.info('saved_sample_group_analysis_result', obj_uuid=self.uuid)
+        logger.info(
+            'saved_sample_group_analysis_result',
+            obj_uuid=self.uuid,
+            saved_uuid=out.uuid,
+            module_name=self.module_name,
+            sample_group={'uuid': self.sample_group.uuid, 'name': self.sample_group.name},
+            status=self.status,
+        )
         return out
 
     def create_field(self, *args, **kwargs):
@@ -247,7 +264,16 @@ class SampleAnalysisResultField(AnalysisResultField):
 
     def save(self, *args, **kwargs):
         out = super(SampleAnalysisResultField, self).save(*args, **kwargs)
-        logger.info('saved_sample_analysis_result_field', obj_uuid=self.uuid)
+        logger.info(
+            'saved_sample_analysis_result_field',
+            obj_uuid=self.uuid,
+            saved_uuid=out.uuid,
+            field_name=self.name,
+            sample_analysis_result={
+                'uuid': self.analysis_result.uuid,
+                'module_name': self.analysis_result.module_name
+            }
+        )
         return out
 
 
@@ -259,5 +285,14 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
 
     def save(self, *args, **kwargs):
         out = super(SampleGroupAnalysisResultField, self).save(*args, **kwargs)
-        logger.info('saved_sample_group_analysis_result', obj_uuid=self.uuid)
+        logger.info(
+            'saved_sample_group_analysis_result',
+            obj_uuid=self.uuid,
+            saved_uuid=out.uuid,
+            field_name=self.name,
+            sample_group_analysis_result={
+                'uuid': self.analysis_result.uuid,
+                'module_name': self.analysis_result.module_name
+            }
+        )
         return out

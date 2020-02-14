@@ -63,8 +63,7 @@ class SampleGroupCreateView(generics.ListCreateAPIView):
         if not membership_queryset.exists():
             logger.warning(
                 'attempted_create_sample_group_without_permission',
-                user=self.request.user,
-                organization_pk=organization.pk,
+                organization={'uuid': organization.pk, 'name': organization.name},
             )
             raise PermissionDenied(_('Organization membership is required to create a sample group.'))
         serializer.save()
@@ -113,8 +112,7 @@ class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
         if not membership_queryset.exists():
             logger.warning(
                 'attempted_create_sample_analysis_result_without_permission',
-                user=self.request.user,
-                organization_pk=organization.pk,
+                organization={'uuid': organization.pk, 'name': organization.name},
             )
             raise PermissionDenied(_('Organization membership is required to create a sample analysis result.'))
         serializer.save()

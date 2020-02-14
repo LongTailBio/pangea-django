@@ -18,7 +18,7 @@ def fuzzy_taxa_search(request):
     metadata = str2bool(request.query_params.get('metadata', 'false'))
     query = request.query_params.get('query', None)
     if query is None:
-        logger.error('taxasearch__no_query_param')
+        logger.warn('taxasearch__no_query_param')
         raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
 
     with connection.cursor() as cursor:
