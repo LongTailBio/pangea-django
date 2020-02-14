@@ -34,9 +34,8 @@ class AutoCreatedUpdatedMixin(models.Model):
             auto_updated_at_is_disabled = kwargs.pop('disable_auto_updated_at', False)
             if not auto_updated_at_is_disabled:
                 self.updated_at = now()
-        out = super(AutoCreatedUpdatedMixin, self)
-        out.save(*args, **kwargs)
-        return out
+        super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
+        return self
 
 
 class SoftDeleteMixin(models.Model):
