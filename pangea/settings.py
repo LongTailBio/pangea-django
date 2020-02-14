@@ -149,6 +149,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+LOG_DIR = 'logs'
+if not os.path.isdir(LOG_DIR):
+    os.mkdir(LOG_DIR)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -173,12 +177,12 @@ LOGGING = {
         },
         "json_file": {
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": "logs/json.log",
+            "filename": f"{LOG_DIR}/json.log",
             "formatter": "json_formatter",
         },
         "flat_line_file": {
             "class": "logging.handlers.WatchedFileHandler",
-            "filename": "logs/flat_line.log",
+            "filename": f"{LOG_DIR}/flat_line.log",
             "formatter": "key_value",
         },
     },
