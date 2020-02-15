@@ -180,19 +180,10 @@ LOGGING = {
             "filename": f"{LOG_DIR}/json.log",
             "formatter": "json_formatter",
         },
-        "flat_line_file": {
-            "class": "logging.handlers.WatchedFileHandler",
-            "filename": f"{LOG_DIR}/flat_line.log",
-            "formatter": "key_value",
-        },
     },
     "loggers": {
         "pangea": {
             "handlers": ["console", "json_file"],
-            "level": "INFO",
-        },
-        "django_structlog_demo_project": {
-            "handlers": ["console", "flat_line_file", "json_file"],
             "level": "INFO",
         },
     }
