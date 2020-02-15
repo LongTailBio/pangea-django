@@ -188,7 +188,7 @@ LOGGING = {
     },
     "loggers": {
         "pangea": {
-            "handlers": ["console", "flat_line_file", "json_file"],
+            "handlers": ["console", "json_file"],
             "level": "INFO",
         },
         "django_structlog_demo_project": {
