@@ -1,7 +1,11 @@
 """From https://gist.github.com/ertgl/0c26b23ac5482e206a04cb1b13ec3795"""
 
+import structlog
+
 from django.db import models
 from django.utils.timezone import now
+
+logger = structlog.get_logger(__name__)
 
 
 class AutoCreatedUpdatedMixin(models.Model):
@@ -31,6 +35,7 @@ class AutoCreatedUpdatedMixin(models.Model):
             if not auto_updated_at_is_disabled:
                 self.updated_at = now()
         super(AutoCreatedUpdatedMixin, self).save(*args, **kwargs)
+        return self
 
 
 class SoftDeleteMixin(models.Model):

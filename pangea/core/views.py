@@ -1,3 +1,5 @@
+import structlog
+
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import generics
@@ -28,6 +30,8 @@ from .serializers import (
     SampleGroupAnalysisResultSerializer,
 )
 
+logger = structlog.get_logger(__name__)
+
 
 class OrganizationCreateView(generics.ListCreateAPIView):
     queryset = Organization.objects.all()
@@ -57,6 +61,10 @@ class SampleGroupCreateView(generics.ListCreateAPIView):
         organization = serializer.validated_data.get('organization')
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
+            logger.warning(
+                'attempted_create_sample_group_without_permission',
+                organization={'uuid': organization.pk, 'name': organization.name},
+            )
             raise PermissionDenied(_('Organization membership is required to create a sample group.'))
         serializer.save()
 
@@ -77,6 +85,11 @@ class SampleCreateView(generics.ListCreateAPIView):
         organization = serializer.validated_data.get('library').group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
+            logger.warning(
+                'attempted_create_sample_without_permission',
+                user=self.request.user,
+                organization_pk=organization.pk,
+            )
             raise PermissionDenied(_('Organization membership is required to create a sample.'))
         serializer.save()
 
@@ -97,6 +110,10 @@ class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
         organization = serializer.validated_data.get('sample').library.group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
+            logger.warning(
+                'attempted_create_sample_analysis_result_without_permission',
+                organization={'uuid': organization.pk, 'name': organization.name},
+            )
             raise PermissionDenied(_('Organization membership is required to create a sample analysis result.'))
         serializer.save()
 
@@ -116,6 +133,11 @@ class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
         organization = serializer.validated_data.get('sample_group').organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
+            logger.warning(
+                'attempted_create_sample_group_analysis_result_without_permission',
+                user=self.request.user,
+                organization_pk=organization.pk,
+            )
             raise PermissionDenied(_('Organization membership is required to create a sample group analysis result.'))
         serializer.save()
 

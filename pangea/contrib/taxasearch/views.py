@@ -1,3 +1,5 @@
+import structlog
+
 from django.db import connection
 from django.utils.translation import gettext_lazy as _
 
@@ -7,6 +9,8 @@ from rest_framework.exceptions import ValidationError
 
 from pangea.core.utils import str2bool
 
+logger = structlog.get_logger(__name__)
+
 
 @api_view(['GET'])
 def fuzzy_taxa_search(request):
@@ -14,6 +18,7 @@ def fuzzy_taxa_search(request):
     metadata = str2bool(request.query_params.get('metadata', 'false'))
     query = request.query_params.get('query', None)
     if query is None:
+        logger.warn('taxasearch__no_query_param')
         raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
 
     with connection.cursor() as cursor:
@@ -63,4 +68,5 @@ def fuzzy_taxa_search(request):
             ''', [query, query])
 
         results = {row[0]: row[1] for row in cursor.fetchall()}
+        logger.info(f'taxasearch__responding_to_query', query=query)
         return Response({'results': results})
