@@ -88,6 +88,9 @@ DATABASES = {
         'NAME': os.environ.get('DATABASE_NAME', 'pangea'),
         'USER': os.environ.get('DATABASE_USER', 'pangea'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', ''),
+        'OPTIONS': {
+            'sslmode': os.environ.get('DATABASE_SSL_MODE', 'prefer'),
+        },
     }
 }
 
