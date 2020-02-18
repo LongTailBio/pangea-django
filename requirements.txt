@@ -1,5 +1,6 @@
 asgiref==3.2.3
 Django==3.0.3
+django-dotenv==1.4.2
 django-templated-mail==1.1.1
 django-structlog==1.4.1
 djangorestframework==3.11.0
