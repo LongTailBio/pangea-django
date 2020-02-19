@@ -41,7 +41,7 @@ class Organization(AutoCreatedUpdatedMixin):
             obj_uuid=self.uuid,
             saved_uuid=out.uuid,
             name=self.name,
-            users=self.users,
+            users=[str(user) for user in self.users],
         )
         return out
 
