@@ -25,6 +25,7 @@ class PangeaUserAdmin(UserAdmin):
     add_form = PangeaUserCreationForm
     form = PangeaUserChangeForm
     model = PangeaUser
+    filter_horizontal = ('Organization', 'SampleGroup')
     list_display = ('email', 'is_staff', 'is_active',)
     list_filter = ('email', 'is_staff', 'is_active',)
     fieldsets = (
