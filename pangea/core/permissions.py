@@ -1,4 +1,9 @@
+
+import structlog
 from rest_framework import permissions
+
+
+logger = structlog.get_logger(__name__)
 
 
 class OrganizationPermission(permissions.BasePermission):
@@ -11,10 +16,28 @@ class OrganizationPermission(permissions.BasePermission):
 
         # Require auth for write operations
         if not bool(request.user and request.user.is_authenticated):
+            logger.error(
+                'user_missing_or_not_authenticated',
+                request={
+                    'method': request.method,
+                    'user': request.user,
+                    'user_is_authenticated': request.user.is_authenticated,
+                }
+            )
             return False
 
         # Require organization membership to edit/delete
-        return view.get_queryset().filter(users=request.user).exists()
+        has_org_membership = view.get_queryset().filter(users=request.user).exists()
+        if not has_org_membership:
+            logger.error(
+                'required_organization_membership_not_found',
+                request={
+                    'method': request.method,
+                    'user': request.user,
+                    'user_is_authenticated': request.user.is_authenticated,
+                }
+            )
+        return has_org_membership
 
 
 class SampleGroupPermission(permissions.BasePermission):
