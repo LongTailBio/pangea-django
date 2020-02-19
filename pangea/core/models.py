@@ -41,7 +41,7 @@ class Organization(AutoCreatedUpdatedMixin):
             obj_uuid=self.uuid,
             saved_uuid=out.uuid,
             name=self.name,
-            users=[{'name': user.name, 'uuid': user.uuid} for user in self.users.all()],
+            users=[{'email': user.email, 'uuid': user.uuid} for user in self.users.all()],
         )
         return out
 
@@ -71,7 +71,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
             'saved_sample_group',
             obj_uuid=self.uuid,
             saved_uuid=out.uuid,
-            name=self.name
+            name=self.name,
         )
         return out
 
