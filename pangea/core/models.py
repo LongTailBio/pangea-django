@@ -41,6 +41,7 @@ class Organization(AutoCreatedUpdatedMixin):
             obj_uuid=self.uuid,
             saved_uuid=out.uuid,
             name=self.name,
+            users=self.users,
         )
         return out
 
