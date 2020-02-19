@@ -158,11 +158,12 @@ class SampleAnalysisResultFieldCreateView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
-        organization = serializer.validated_data.get('sample').library.group.organization
+        organization = serializer.validated_data.get('analysis_result') \
+            .sample.library.group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
             logger.warning(
-                'attempted_create_sample_analysis_result_without_permission',
+                'attempted_create_sample_analysis_result_field_without_permission',
                 organization={'uuid': organization.pk, 'name': organization.name},
             )
             raise PermissionDenied(_('Organization membership is required to create a sample analysis result field.'))
@@ -181,7 +182,7 @@ class SampleGroupAnalysisResultFieldCreateView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
-        organization = serializer.validated_data.get('sample_group').organization
+        organization = serializer.validated_data.get('analysis_result').sample_group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
             logger.warning(
