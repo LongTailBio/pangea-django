@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.postgres',
     'djoser',
+    'haystack',
     'rest_framework',
     'rest_framework.authtoken',
     'pangea.core',
@@ -191,6 +192,17 @@ LOGGING = {
             "level": "INFO",
         },
     }
+}
+
+SEARCH_INDEX_DIR = 'search'
+if not os.path.isdir(SEARCH_INDEX_DIR):
+    os.mkdir(SEARCH_INDEX_DIR)
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': f'{SEARCH_INDEX_DIR}/whoosh_index',
+    },
 }
 
 structlog.configure(
