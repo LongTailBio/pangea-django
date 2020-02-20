@@ -18,14 +18,13 @@ from .models import (
 @admin.register(Organization, SampleGroup, SampleLibrary, Sample, SampleGroupAnalysisResult,
                 SampleGroupAnalysisResultField, SampleAnalysisResult, SampleAnalysisResultField)
 class PangeaCoreAdmin(admin.ModelAdmin):
-    pass
+    filter_horizontal = ('Organization', 'SampleGroup')
 
 
 class PangeaUserAdmin(UserAdmin):
     add_form = PangeaUserCreationForm
     form = PangeaUserChangeForm
     model = PangeaUser
-    filter_horizontal = ('Organization', 'SampleGroup')
     list_display = ('email', 'is_staff', 'is_active',)
     list_filter = ('email', 'is_staff', 'is_active',)
     fieldsets = (
