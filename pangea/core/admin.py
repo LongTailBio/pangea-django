@@ -18,7 +18,7 @@ from .models import (
 @admin.register(Organization, SampleGroup, SampleLibrary, Sample, SampleGroupAnalysisResult,
                 SampleGroupAnalysisResultField, SampleAnalysisResult, SampleAnalysisResultField)
 class PangeaCoreAdmin(admin.ModelAdmin):
-    filter_horizontal = ('Organization', 'SampleGroup')
+    pass
 
 
 class PangeaUserAdmin(UserAdmin):
