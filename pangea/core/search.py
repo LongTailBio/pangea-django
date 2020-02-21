@@ -28,6 +28,7 @@ def search_view(request):
         return [serializer(res.object).data for res in sqs if res.model_name == model_name]
 
     result = {
+        'query': query,
         'samples': filter_serialize('sample', SampleSerializer),
         'sample_groups': filter_serialize('samplegroup', SampleGroupSerializer),
         'organizations': filter_serialize('organization', OrganizationSerializer),
