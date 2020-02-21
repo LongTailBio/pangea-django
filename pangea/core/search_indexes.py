@@ -35,7 +35,7 @@ class SampleIndex(indexes.SearchIndex, indexes.Indexable):
     def get_model(self):
         return Sample
 
-    def prepare(self, object):
-        self.prepared_data = super(SampleGroupIndex, self).prepare(object)
-        self.prepared_data['library'] = object.library.group.name
-        return self.prepared_data
+    # def prepare(self, object):
+    #     self.prepared_data = super(SampleIndex, self).prepare(object)
+    #     self.prepared_data['library'] = object.library.group.name
+    #     return self.prepared_data
