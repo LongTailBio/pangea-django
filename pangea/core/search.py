@@ -25,11 +25,11 @@ def search_view(request):
         raise
 
     def filter_serialize(model_name, serializer):
-        return [serializer(res.object) for res in sqs if res.model_name == model_name]
+        return [serializer(res.object).data for res in sqs if res.model_name == model_name]
 
     result = {
         'samples': filter_serialize('sample', SampleSerializer),
-        'sample_groups': filter_serialize('sample_group', SampleGroupSerializer),
+        'sample_groups': filter_serialize('samplegroup', SampleGroupSerializer),
         'organizations': filter_serialize('organization', OrganizationSerializer),
     }
     logger.info(
