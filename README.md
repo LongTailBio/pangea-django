@@ -11,3 +11,13 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
 ```
+
+## Developing
+
+### Changes to Dependencies
+
+Changes to Python dependencies should be committed using the following:
+
+```sh
+pip freeze > requirements.txt
+```
