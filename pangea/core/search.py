@@ -18,6 +18,7 @@ logger = structlog.get_logger(__name__)
 @require_GET
 def search_view(request):
     query = request.GET.get('q', '')
+    query = request.GET.get('query', query)
     try:
         sqs = SearchQuerySet().all()  # TODO: use the query
     except:
