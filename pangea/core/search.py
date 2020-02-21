@@ -11,11 +11,6 @@ from .serializers import (
     SampleGroupSerializer,
     OrganizationSerializer,
 )
-from .models import (
-    Sample,
-    SampleGroup,
-    Organization,
-)
 
 logger = structlog.get_logger(__name__)
 
@@ -24,14 +19,18 @@ logger = structlog.get_logger(__name__)
 def search_view(request):
     query = request.GET.get('q', '')
     try:
-        sqs = SearchQuerySet().filter(content=AutoQuery(query))
+        sqs = SearchQuerySet().all()  # TODO: use the query
     except:
         logger.error('search_failed', query=query)
         raise
+
+    def filter_serialize(model_name, serializer):
+        return [serializer(res.object) for res in sqs if res.model_name == model_name]
+
     result = {
-        'samples': [SampleSerializer(obj) for obj in sqs if isinstance(obj, Sample)],
-        'sample_groups': [SampleGroupSerializer(obj) for obj in sqs if isinstance(obj, SampleGroup)],
-        'organizations': [OrganizationSerializer(obj) for obj in sqs if isinstance(obj, Organization)],
+        'samples': filter_serialize('sample', SampleSerializer),
+        'sample_groups': filter_serialize('sample_group', SampleGroupSerializer),
+        'organizations': filter_serialize('organization', OrganizationSerializer),
     }
     logger.info(
         'conducted_search',
