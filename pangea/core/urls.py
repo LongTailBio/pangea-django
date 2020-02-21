@@ -10,6 +10,7 @@ from .views import (
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
 )
+from .search import search_view
 
 
 urlpatterns = {
@@ -28,7 +29,7 @@ urlpatterns = {
     path('sample_ar_fields/<uuid:pk>', SampleAnalysisResultFieldDetailsView.as_view(), name="sample-ar-fields-details"),
     path('sample_group_ar_fields', SampleGroupAnalysisResultFieldCreateView.as_view(), name="sample-group-ar-fields-create"),
     path('sample_group_ar_fields/<uuid:pk>', SampleGroupAnalysisResultFieldDetailsView.as_view(), name="sample-group-ar-fields-details"),
-    path('search/', include('haystack.urls'), name="search"),
+    path('search/', search_view, name="search"),
 }
 
 
