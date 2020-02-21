@@ -20,7 +20,10 @@ def search_view(request):
     query = request.GET.get('q', '')
     query = request.GET.get('query', query)
     try:
-        sqs = SearchQuerySet().all()  # TODO: use the query
+        if query:
+            sqs = SearchQuerySet().filter(name=query)
+        else:
+            sqs = SearchQuerySet().all()
     except:
         logger.error('search_failed', query=query)
         raise
