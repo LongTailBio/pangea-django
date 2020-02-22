@@ -40,6 +40,10 @@ class SampleGroupSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 
+class SampleGroupAddSampleSerializer(serializers.Serializer):
+    sample_uuid = serializers.UUIDField()
+
+
 class SampleSerializer(serializers.ModelSerializer):
 
     class Meta:

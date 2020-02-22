@@ -27,6 +27,7 @@ from .permissions import (
 from .serializers import (
     OrganizationSerializer,
     SampleGroupSerializer,
+    SampleGroupAddSampleSerializer,
     SampleSerializer,
     SampleAnalysisResultSerializer,
     SampleGroupAnalysisResultSerializer,
@@ -80,8 +81,13 @@ class SampleGroupDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 class SampleGroupSamplesView(generics.ListAPIView):
     """This class handles managing membership of samples within sample groups."""
-    serializer_class = SampleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return SampleSerializer
+        if self.request.method == 'POST':
+            return SampleGroupAddSampleSerializer
 
     def get_queryset(self):
         """Limit sample queryset to samples in the specified sample group."""
