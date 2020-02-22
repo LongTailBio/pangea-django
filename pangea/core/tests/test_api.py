@@ -127,6 +127,49 @@ class SampleTests(APITestCase):
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
 
 
+class SampleGroupMembershipTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+        cls.sample_library = cls.organization.create_sample_group(name='Test Library', is_library=True)
+        cls.sample_group = cls.organization.create_sample_group(name='Test Group', is_library=False)
+        cls.sample_library = cls.sample_library.library
+        cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
+
+    def test_unauthenticated_add_sample_to_group(self):
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {'sample_uuid': self.sample.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 0)
+
+    def test_unauthorized_add_sample_to_group(self):
+        self.client.force_authenticate(user=self.anon_user)
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {'sample_uuid': self.sample.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 0)
+
+    def test_authorized_add_sample_to_group(self):
+        self.client.force_authenticate(user=self.org_user)
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {'sample_uuid': self.sample.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 1)
+
+
 class AnalysisResultTests(APITestCase):
 
     @classmethod
