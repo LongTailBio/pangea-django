@@ -10,7 +10,7 @@ from .views import (
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
 )
-from .search import search_view
+from .search import SearchList
 
 
 urlpatterns = {
@@ -18,7 +18,6 @@ urlpatterns = {
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="organization-details"),
     path('sample_groups', SampleGroupCreateView.as_view(), name="sample-group-create"),
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="sample-group-details"),
-    # path('sample_groups/<uuid:pk>/add_samples', SampleGroupDetailsView.as_view(), name="sample-group-details"),
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
     path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="sample-ars-create"),
@@ -29,7 +28,7 @@ urlpatterns = {
     path('sample_ar_fields/<uuid:pk>', SampleAnalysisResultFieldDetailsView.as_view(), name="sample-ar-fields-details"),
     path('sample_group_ar_fields', SampleGroupAnalysisResultFieldCreateView.as_view(), name="sample-group-ar-fields-create"),
     path('sample_group_ar_fields/<uuid:pk>', SampleGroupAnalysisResultFieldDetailsView.as_view(), name="sample-group-ar-fields-details"),
-    path('search/', search_view, name="search"),
+    path('search', SearchList.as_view(), name="search"),
 }
 
 

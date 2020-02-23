@@ -2,9 +2,8 @@
 import structlog
 
 from haystack.query import SearchQuerySet
-from haystack.inputs import AutoQuery
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
 from .serializers import (
     SampleSerializer,
@@ -15,33 +14,33 @@ from .serializers import (
 logger = structlog.get_logger(__name__)
 
 
-@require_GET
-def search_view(request):
-    query = request.GET.get('q', '')
-    query = request.GET.get('query', query)
-    try:
-        if query:
-            sqs = SearchQuerySet().filter(name=query)
-        else:
-            sqs = SearchQuerySet().all()
-    except:
-        logger.error('search_failed', query=query)
-        raise
+class SearchList(APIView):
 
-    def filter_serialize(model_name, serializer):
-        return [serializer(res.object).data for res in sqs if res.model_name == model_name]
+    def get(self, request, format=None):
+        query = request.GET.get('query', '')
+        try:
+            if query:
+                sqs = SearchQuerySet().filter(name=query)
+            else:
+                sqs = SearchQuerySet().all()
+        except:
+            logger.exception('search_failed', query=query)
+            raise
 
-    result = {
-        'query': query,
-        'samples': filter_serialize('sample', SampleSerializer),
-        'sample_groups': filter_serialize('samplegroup', SampleGroupSerializer),
-        'organizations': filter_serialize('organization', OrganizationSerializer),
-    }
-    logger.info(
-        'conducted_search',
-        query=query,
-        n_sample_results=len(result['samples']),
-        n_sample_group_results=len(result['sample_groups']),
-        n_organization_results=len(result['organizations']),
-    )
-    return JsonResponse(result)
+        def filter_serialize(model_name, serializer):
+            return [serializer(res.object).data for res in sqs if res.model_name == model_name]
+
+        result = {
+            'query': query,
+            'samples': filter_serialize('sample', SampleSerializer),
+            'sample_groups': filter_serialize('samplegroup', SampleGroupSerializer),
+            'organizations': filter_serialize('organization', OrganizationSerializer),
+        }
+        logger.info(
+            'conducted_search',
+            query=query,
+            n_sample_results=len(result['samples']),
+            n_sample_group_results=len(result['sample_groups']),
+            n_organization_results=len(result['organizations']),
+        )
+        return Response(result)

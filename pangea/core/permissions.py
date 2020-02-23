@@ -16,7 +16,7 @@ class OrganizationPermission(permissions.BasePermission):
 
         # Require auth for write operations
         if not bool(request.user and request.user.is_authenticated):
-            logger.error(
+            logger.info(
                 'user_missing_or_not_authenticated',
                 request={
                     'method': request.method,
@@ -29,7 +29,7 @@ class OrganizationPermission(permissions.BasePermission):
         # Require organization membership to edit/delete
         has_org_membership = view.get_queryset().filter(users=request.user).exists()
         if not has_org_membership:
-            logger.error(
+            logger.info(
                 'required_organization_membership_not_found',
                 request={
                     'method': request.method,

@@ -185,7 +185,7 @@ class SampleGroupAnalysisResultFieldCreateView(generics.ListCreateAPIView):
         organization = serializer.validated_data.get('analysis_result').sample_group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
-            logger.warning(
+            logger.info(
                 'attempted_create_sample_group_analysis_result_without_permission',
                 user=self.request.user,
                 organization_pk=organization.pk,
