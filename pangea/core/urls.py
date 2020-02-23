@@ -4,6 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import (
     OrganizationCreateView, OrganizationDetailsView,
+    OrganizationUsersView,
     SampleGroupCreateView, SampleGroupDetailsView,
     SampleCreateView, SampleDetailsView,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
@@ -14,6 +15,7 @@ from .views import (
 urlpatterns = {
     path('organizations', OrganizationCreateView.as_view(), name="organization-create"),
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="organization-details"),
+    path('organizations/<uuid:organization_pk>/users', OrganizationUsersView.as_view(), name="organization-users"),
     path('sample_groups', SampleGroupCreateView.as_view(), name="sample-group-create"),
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="sample-group-details"),
     path('samples', SampleCreateView.as_view(), name="sample-create"),

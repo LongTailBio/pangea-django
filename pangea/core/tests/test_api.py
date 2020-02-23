@@ -42,6 +42,46 @@ class OrganizationTests(APITestCase):
         self.assertIn(self.user, Organization.objects.get().users.all())
 
 
+class OrganizationMembershipTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.target_user = PangeaUser.objects.create(email='target_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+
+    def add_target_user(self):
+        url = reverse('organization-users', kwargs={'organization_pk': self.organization.pk})
+        data = {'user_uuid': self.target_user.pk}
+        response = self.client.post(url, data, format='json')
+        return response
+
+    def test_unauthenticated_add_user_to_organization(self):
+        response = self.add_target_user()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
+        self.assertEqual(organizations_queryset.count(), 0)
+
+    def test_unauthorized_add_sample_to_group(self):
+        self.client.force_authenticate(user=self.anon_user)
+        response = self.add_target_user()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
+        self.assertEqual(organizations_queryset.count(), 0)
+
+    def test_authorized_add_sample_to_group(self):
+        self.client.force_authenticate(user=self.org_user)
+        response = self.add_target_user()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
+        self.assertEqual(organizations_queryset.count(), 1)
+
+
 class SampleGroupTests(APITestCase):
 
     @classmethod

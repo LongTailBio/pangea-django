@@ -3,10 +3,13 @@ import structlog
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import (
+    PangeaUser,
     Organization,
     SampleGroup,
     Sample,
@@ -23,7 +26,9 @@ from .permissions import (
     SampleGroupAnalysisResultPermission,
 )
 from .serializers import (
+    PangeaUserSerializer,
     OrganizationSerializer,
+    OrganizationAddUserSerializer,
     SampleGroupSerializer,
     SampleSerializer,
     SampleAnalysisResultSerializer,
@@ -42,6 +47,44 @@ class OrganizationCreateView(generics.ListCreateAPIView):
         """Require valid session to create organization."""
         organization = serializer.save()
         self.request.user.organization_set.add(organization)
+
+
+class OrganizationUsersView(generics.ListAPIView):
+    """This class handles managing membership of users within organizations."""
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PangeaUserSerializer
+        if self.request.method == 'POST':
+            return OrganizationAddUserSerializer
+
+    def get_queryset(self):
+        """Limit sample queryset to samples in the specified sample group."""
+        organization_uuid = self.kwargs['organization_pk']
+        return PangeaUser.objects.filter(organizations__pk=organization_uuid)
+
+    def post(self, request, *args, **kwargs):
+        organization_uuid = kwargs.get('organization_pk')
+        user_uuid = request.data.get('user_uuid', None)
+        organization = Organization.objects.get(pk=organization_uuid)
+        user = PangeaUser.objects.get(pk=user_uuid)
+
+        org_membership_queryset = self.request.user.organization_set.filter(pk=organization_uuid)
+        if not org_membership_queryset.exists():
+            logger.info(
+                'attempted_add_user_to_organization_without_permission',
+                auth_user=request.user,
+                organization_pk=organization.pk,
+                user_pk=user.pk,
+            )
+            raise PermissionDenied(_('Insufficient permissions to add user to organization.'))
+
+        organization.users.add(user)
+        return Response({ "status": "success" })
+
+
+OrganizationAddUserSerializer
 
 
 class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
