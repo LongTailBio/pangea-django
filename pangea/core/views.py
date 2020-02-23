@@ -43,6 +43,7 @@ class OrganizationCreateView(generics.ListCreateAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'name']
 
     def perform_create(self, serializer):
         """Require valid session to create organization."""
@@ -99,6 +100,7 @@ class SampleGroupCreateView(generics.ListCreateAPIView):
     queryset = SampleGroup.objects.all()
     serializer_class = SampleGroupSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'organization_id', 'name', 'is_public']
 
     def perform_create(self, serializer):
         """Require organization membership to create sample group."""
@@ -163,6 +165,7 @@ class SampleCreateView(generics.ListCreateAPIView):
     queryset = Sample.objects.all()
     serializer_class = SampleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'library_id', 'name']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('library').group.organization
@@ -188,6 +191,7 @@ class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
     queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'sample_id', 'module_name', 'replicate']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample').library.group.organization
@@ -211,6 +215,7 @@ class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
     queryset = SampleGroupAnalysisResult.objects.all()
     serializer_class = SampleGroupAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'sample_group_id', 'module_name', 'replicate']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample_group').organization
