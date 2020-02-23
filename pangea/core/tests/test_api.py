@@ -65,7 +65,7 @@ class OrganizationMembershipTests(APITestCase):
         organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
         self.assertEqual(organizations_queryset.count(), 0)
 
-    def test_unauthorized_add_sample_to_group(self):
+    def test_unauthorized_add_user_to_organization(self):
         self.client.force_authenticate(user=self.anon_user)
         response = self.add_target_user()
 
@@ -73,13 +73,23 @@ class OrganizationMembershipTests(APITestCase):
         organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
         self.assertEqual(organizations_queryset.count(), 0)
 
-    def test_authorized_add_sample_to_group(self):
+    def test_authorized_add_user_to_organization(self):
         self.client.force_authenticate(user=self.org_user)
         response = self.add_target_user()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
         self.assertEqual(organizations_queryset.count(), 1)
+
+    def test_get_organization_users(self):
+        self.organization.users.add(self.target_user)
+
+        url = reverse('organization-users', kwargs={'organization_pk': self.organization.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
 
 
 class SampleGroupTests(APITestCase):
@@ -208,6 +218,16 @@ class SampleGroupMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
         self.assertEqual(samples_queryset.count(), 1)
+
+    def test_get_sample_group_samples(self):
+        self.sample_group.sample_set.add(self.sample)
+
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertIn('Test Sample', [sample['name'] for sample in response.data['results']])
 
 
 class AnalysisResultTests(APITestCase):

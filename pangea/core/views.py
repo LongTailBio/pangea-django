@@ -64,7 +64,7 @@ class OrganizationUsersView(generics.ListAPIView):
     def get_queryset(self):
         """Limit sample queryset to samples in the specified sample group."""
         organization_uuid = self.kwargs['organization_pk']
-        return PangeaUser.objects.filter(organizations__pk=organization_uuid).order_by('created_at')
+        return PangeaUser.objects.filter(organization__pk=organization_uuid).order_by('date_joined')
 
     def post(self, request, *args, **kwargs):
         organization_uuid = kwargs.get('organization_pk')
