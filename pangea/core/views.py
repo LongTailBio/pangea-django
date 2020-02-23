@@ -40,7 +40,7 @@ logger = structlog.get_logger(__name__)
 
 
 class OrganizationCreateView(generics.ListCreateAPIView):
-    queryset = Organization.objects.all()
+    queryset = Organization.objects.all().order_by('created_at')
     serializer_class = OrganizationSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'name']
@@ -64,7 +64,7 @@ class OrganizationUsersView(generics.ListAPIView):
     def get_queryset(self):
         """Limit sample queryset to samples in the specified sample group."""
         organization_uuid = self.kwargs['organization_pk']
-        return PangeaUser.objects.filter(organizations__pk=organization_uuid)
+        return PangeaUser.objects.filter(organizations__pk=organization_uuid).order_by('created_at')
 
     def post(self, request, *args, **kwargs):
         organization_uuid = kwargs.get('organization_pk')
@@ -97,7 +97,7 @@ class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleGroupCreateView(generics.ListCreateAPIView):
-    queryset = SampleGroup.objects.all()
+    queryset = SampleGroup.objects.all().order_by('created_at')
     serializer_class = SampleGroupSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'organization_id', 'name', 'is_public']
@@ -135,7 +135,7 @@ class SampleGroupSamplesView(generics.ListAPIView):
     def get_queryset(self):
         """Limit sample queryset to samples in the specified sample group."""
         sample_group_uuid = self.kwargs['group_pk']
-        return Sample.objects.filter(sample_groups__pk=sample_group_uuid)
+        return Sample.objects.filter(sample_groups__pk=sample_group_uuid).order_by('created_at')
 
     def post(self, request, *args, **kwargs):
         sample_group_uuid = kwargs.get('group_pk')
@@ -162,7 +162,7 @@ class SampleGroupSamplesView(generics.ListAPIView):
 
 
 class SampleCreateView(generics.ListCreateAPIView):
-    queryset = Sample.objects.all()
+    queryset = Sample.objects.all().order_by('created_at')
     serializer_class = SampleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'library_id', 'name']
@@ -188,7 +188,7 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
-    queryset = SampleAnalysisResult.objects.all()
+    queryset = SampleAnalysisResult.objects.all().order_by('created_at')
     serializer_class = SampleAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'sample_id', 'module_name', 'replicate']
@@ -212,7 +212,7 @@ class SampleAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
-    queryset = SampleGroupAnalysisResult.objects.all()
+    queryset = SampleGroupAnalysisResult.objects.all().order_by('created_at')
     serializer_class = SampleGroupAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'sample_group_id', 'module_name', 'replicate']
