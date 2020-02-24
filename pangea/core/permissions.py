@@ -119,7 +119,7 @@ class SampleAnalysisResultFieldPermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        organization = obj.sample.library.group.organization
+        organization = obj.analysis_result.sample.library.group.organization
         return request.user.organization_set.filter(pk=organization.pk).exists()
 
 
@@ -136,6 +136,6 @@ class SampleGroupAnalysisResultFieldPermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        organization = obj.sample_group.organization
+        organization = obj.analysis_result.sample_group.organization
         return request.user.organization_set.filter(pk=organization.pk).exists()
 
