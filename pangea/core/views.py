@@ -182,6 +182,9 @@ class SampleCreateView(generics.ListCreateAPIView):
             )
             raise PermissionDenied(_('Organization membership is required to create a sample.'))
         serializer.save()
+        sample_group = SampleGroup.objects.get(pk=serializer.validated_data.get('library').group.pk)
+        sample = Sample.objects.get(pk=serializer.validated_data.pk)
+        sample_group.add(sample)
 
 
 class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
