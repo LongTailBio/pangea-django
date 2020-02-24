@@ -175,6 +175,7 @@ class SampleTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Sample.objects.count(), 1)
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
+        self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
 
 
 class SampleGroupMembershipTests(APITestCase):
