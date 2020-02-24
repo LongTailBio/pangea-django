@@ -3,7 +3,9 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import (
     OrganizationCreateView, OrganizationDetailsView,
+    OrganizationUsersView,
     SampleGroupCreateView, SampleGroupDetailsView,
+    SampleGroupSamplesView,
     SampleCreateView, SampleDetailsView,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
@@ -16,8 +18,10 @@ from .search import SearchList
 urlpatterns = {
     path('organizations', OrganizationCreateView.as_view(), name="organization-create"),
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="organization-details"),
+    path('organizations/<uuid:organization_pk>/users', OrganizationUsersView.as_view(), name="organization-users"),
     path('sample_groups', SampleGroupCreateView.as_view(), name="sample-group-create"),
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="sample-group-details"),
+    path('sample_groups/<uuid:group_pk>/samples', SampleGroupSamplesView.as_view(), name="sample-group-samples"),
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
     path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="sample-ars-create"),

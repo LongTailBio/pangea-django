@@ -3,10 +3,13 @@ import structlog
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from .models import (
+    PangeaUser,
     Organization,
     SampleGroup,
     Sample,
@@ -25,8 +28,11 @@ from .permissions import (
     SampleGroupAnalysisResultFieldPermission,
 )
 from .serializers import (
+    PangeaUserSerializer,
     OrganizationSerializer,
+    OrganizationAddUserSerializer,
     SampleGroupSerializer,
+    SampleGroupAddSampleSerializer,
     SampleSerializer,
     SampleAnalysisResultSerializer,
     SampleGroupAnalysisResultSerializer,
@@ -38,14 +44,53 @@ logger = structlog.get_logger(__name__)
 
 
 class OrganizationCreateView(generics.ListCreateAPIView):
-    queryset = Organization.objects.all()
+    queryset = Organization.objects.all().order_by('created_at')
     serializer_class = OrganizationSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'name']
 
     def perform_create(self, serializer):
         """Require valid session to create organization."""
         organization = serializer.save()
         self.request.user.organization_set.add(organization)
+
+
+class OrganizationUsersView(generics.ListAPIView):
+    """This class handles managing membership of users within organizations."""
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return PangeaUserSerializer
+        if self.request.method == 'POST':
+            return OrganizationAddUserSerializer
+
+    def get_queryset(self):
+        """Limit sample queryset to samples in the specified sample group."""
+        organization_uuid = self.kwargs['organization_pk']
+        return PangeaUser.objects.filter(organization__pk=organization_uuid).order_by('date_joined')
+
+    def post(self, request, *args, **kwargs):
+        organization_uuid = kwargs.get('organization_pk')
+        user_uuid = request.data.get('user_uuid', None)
+        organization = Organization.objects.get(pk=organization_uuid)
+        user = PangeaUser.objects.get(pk=user_uuid)
+
+        org_membership_queryset = self.request.user.organization_set.filter(pk=organization_uuid)
+        if not org_membership_queryset.exists():
+            logger.info(
+                'attempted_add_user_to_organization_without_permission',
+                auth_user=request.user,
+                organization_pk=organization.pk,
+                user_pk=user.pk,
+            )
+            raise PermissionDenied(_('Insufficient permissions to add user to organization.'))
+
+        organization.users.add(user)
+        return Response({ "status": "success" })
+
+
+OrganizationAddUserSerializer
 
 
 class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
@@ -56,9 +101,10 @@ class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleGroupCreateView(generics.ListCreateAPIView):
-    queryset = SampleGroup.objects.all()
+    queryset = SampleGroup.objects.all().order_by('created_at')
     serializer_class = SampleGroupSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'organization_id', 'name', 'is_public']
 
     def perform_create(self, serializer):
         """Require organization membership to create sample group."""
@@ -80,10 +126,50 @@ class SampleGroupDetailsView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (SampleGroupPermission,)
 
 
+class SampleGroupSamplesView(generics.ListAPIView):
+    """This class handles managing membership of samples within sample groups."""
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return SampleSerializer
+        if self.request.method == 'POST':
+            return SampleGroupAddSampleSerializer
+
+    def get_queryset(self):
+        """Limit sample queryset to samples in the specified sample group."""
+        sample_group_uuid = self.kwargs['group_pk']
+        return Sample.objects.filter(sample_groups__pk=sample_group_uuid).order_by('created_at')
+
+    def post(self, request, *args, **kwargs):
+        sample_group_uuid = kwargs.get('group_pk')
+        sample_uuid = request.data.get('sample_uuid', None)
+        sample_group = SampleGroup.objects.get(pk=sample_group_uuid)
+        sample = Sample.objects.get(pk=sample_uuid)
+
+        group_org = sample_group.organization
+        group_membership_queryset = self.request.user.organization_set.filter(pk=group_org.pk)
+        sample_org = sample.library.group.organization
+        sample_membership_queryset = self.request.user.organization_set.filter(pk=sample_org.pk)
+
+        if not group_membership_queryset.exists() or not sample_membership_queryset.exists():
+            logger.info(
+                'attempted_add_sample_to_group_without_permission',
+                user=request.user,
+                sample_pk=sample.pk,
+                sample_group_pk=sample_group.pk,
+            )
+            raise PermissionDenied(_('Insufficient permissions to add sample to sample group.'))
+
+        sample.sample_groups.add(sample_group)
+        return Response({ "status": "success" })
+
+
 class SampleCreateView(generics.ListCreateAPIView):
-    queryset = Sample.objects.all()
+    queryset = Sample.objects.all().order_by('created_at')
     serializer_class = SampleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'library_id', 'name']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('library').group.organization
@@ -106,9 +192,10 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
-    queryset = SampleAnalysisResult.objects.all()
+    queryset = SampleAnalysisResult.objects.all().order_by('created_at')
     serializer_class = SampleAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'sample_id', 'module_name', 'replicate']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample').library.group.organization
@@ -129,9 +216,10 @@ class SampleAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
-    queryset = SampleGroupAnalysisResult.objects.all()
+    queryset = SampleGroupAnalysisResult.objects.all().order_by('created_at')
     serializer_class = SampleGroupAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'sample_group_id', 'module_name', 'replicate']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample_group').organization

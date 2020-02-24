@@ -42,6 +42,56 @@ class OrganizationTests(APITestCase):
         self.assertIn(self.user, Organization.objects.get().users.all())
 
 
+class OrganizationMembershipTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.target_user = PangeaUser.objects.create(email='target_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+
+    def add_target_user(self):
+        url = reverse('organization-users', kwargs={'organization_pk': self.organization.pk})
+        data = {'user_uuid': self.target_user.pk}
+        response = self.client.post(url, data, format='json')
+        return response
+
+    def test_unauthenticated_add_user_to_organization(self):
+        response = self.add_target_user()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
+        self.assertEqual(organizations_queryset.count(), 0)
+
+    def test_unauthorized_add_user_to_organization(self):
+        self.client.force_authenticate(user=self.anon_user)
+        response = self.add_target_user()
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
+        self.assertEqual(organizations_queryset.count(), 0)
+
+    def test_authorized_add_user_to_organization(self):
+        self.client.force_authenticate(user=self.org_user)
+        response = self.add_target_user()
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        organizations_queryset = Organization.objects.filter(users__pk=self.target_user.pk)
+        self.assertEqual(organizations_queryset.count(), 1)
+
+    def test_get_organization_users(self):
+        self.organization.users.add(self.target_user)
+
+        url = reverse('organization-users', kwargs={'organization_pk': self.organization.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 2)
+        self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
+
+
 class SampleGroupTests(APITestCase):
 
     @classmethod
@@ -125,6 +175,59 @@ class SampleTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Sample.objects.count(), 1)
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
+
+
+class SampleGroupMembershipTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+        cls.sample_library = cls.organization.create_sample_group(name='Test Library', is_library=True)
+        cls.sample_group = cls.organization.create_sample_group(name='Test Group', is_library=False)
+        cls.sample_library = cls.sample_library.library
+        cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
+
+    def test_unauthenticated_add_sample_to_group(self):
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {'sample_uuid': self.sample.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 0)
+
+    def test_unauthorized_add_sample_to_group(self):
+        self.client.force_authenticate(user=self.anon_user)
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {'sample_uuid': self.sample.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 0)
+
+    def test_authorized_add_sample_to_group(self):
+        self.client.force_authenticate(user=self.org_user)
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {'sample_uuid': self.sample.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 1)
+
+    def test_get_sample_group_samples(self):
+        self.sample_group.sample_set.add(self.sample)
+
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertIn('Test Sample', [sample['name'] for sample in response.data['results']])
 
 
 class AnalysisResultTests(APITestCase):

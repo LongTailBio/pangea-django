@@ -28,6 +28,10 @@ class OrganizationSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at')
 
 
+class OrganizationAddUserSerializer(serializers.Serializer):
+    user_uuid = serializers.UUIDField()
+
+
 class SampleGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -38,6 +42,10 @@ class SampleGroupSerializer(serializers.ModelSerializer):
             'is_public', 'theme'
         )
         read_only_fields = ('created_at', 'updated_at')
+
+
+class SampleGroupAddSampleSerializer(serializers.Serializer):
+    sample_uuid = serializers.UUIDField()
 
 
 class SampleSerializer(serializers.ModelSerializer):
