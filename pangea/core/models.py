@@ -36,7 +36,12 @@ class Organization(AutoCreatedUpdatedMixin):
 
     def save(self, *args, **kwargs):
         out = super(Organization, self).save(*args, **kwargs)
-        logger.info('saved_organization', obj_uuid=self.uuid)
+        logger.info(
+            'saved_organization',
+            obj_uuid=self.uuid,
+            saved_uuid=out.uuid,
+            name=self.name,
+        )
         return out
 
     def create_sample_group(self, *args, **kwargs):
@@ -65,7 +70,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
             'saved_sample_group',
             obj_uuid=self.uuid,
             saved_uuid=out.uuid,
-            name=self.name
+            name=self.name,
         )
         return out
 

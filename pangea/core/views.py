@@ -24,6 +24,8 @@ from .permissions import (
     SamplePermission,
     SampleAnalysisResultPermission,
     SampleGroupAnalysisResultPermission,
+    SampleAnalysisResultFieldPermission,
+    SampleGroupAnalysisResultFieldPermission,
 )
 from .serializers import (
     PangeaUserSerializer,
@@ -34,6 +36,8 @@ from .serializers import (
     SampleSerializer,
     SampleAnalysisResultSerializer,
     SampleGroupAnalysisResultSerializer,
+    SampleAnalysisResultFieldSerializer,
+    SampleGroupAnalysisResultFieldSerializer,
 )
 
 logger = structlog.get_logger(__name__)
@@ -234,3 +238,52 @@ class SampleGroupAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView
     queryset = SampleGroupAnalysisResult.objects.all()
     serializer_class = SampleGroupAnalysisResultSerializer
     permission_classes = (SampleGroupAnalysisResultPermission,)
+
+
+class SampleAnalysisResultFieldCreateView(generics.ListCreateAPIView):
+    queryset = SampleAnalysisResultField.objects.all()
+    serializer_class = SampleAnalysisResultFieldSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        organization = serializer.validated_data.get('analysis_result') \
+            .sample.library.group.organization
+        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
+        if not membership_queryset.exists():
+            logger.warning(
+                'attempted_create_sample_analysis_result_field_without_permission',
+                organization={'uuid': organization.pk, 'name': organization.name},
+            )
+            raise PermissionDenied(_('Organization membership is required to create a sample analysis result field.'))
+        serializer.save()
+
+
+class SampleAnalysisResultFieldDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SampleAnalysisResultField.objects.all()
+    serializer_class = SampleAnalysisResultFieldSerializer
+    permission_classes = (SampleAnalysisResultFieldPermission,)
+
+
+class SampleGroupAnalysisResultFieldCreateView(generics.ListCreateAPIView):
+    queryset = SampleGroupAnalysisResultField.objects.all()
+    serializer_class = SampleGroupAnalysisResultFieldSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+    def perform_create(self, serializer):
+        organization = serializer.validated_data.get('analysis_result').sample_group.organization
+        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
+        if not membership_queryset.exists():
+            logger.info(
+                'attempted_create_sample_group_analysis_result_without_permission',
+                user=self.request.user,
+                organization_pk=organization.pk,
+            )
+            raise PermissionDenied(_('Organization membership is required to create a sample group analysis result field.'))
+        serializer.save()
+
+
+class SampleGroupAnalysisResultFieldDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = SampleGroupAnalysisResultField.objects.all()
+    serializer_class = SampleGroupAnalysisResultFieldSerializer
+    permission_classes = (SampleGroupAnalysisResultFieldPermission,)
+
