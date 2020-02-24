@@ -182,7 +182,7 @@ class SampleCreateView(generics.ListCreateAPIView):
             )
             raise PermissionDenied(_('Organization membership is required to create a sample.'))
         sample = serializer.save()
-        sample_group = SampleGroup.objects.get(pk=serializer.validated_data.get('library').group.pk)
+        sample_group = serializer.validated_data.get('library').group
         sample_group.add_sample(sample)
 
 
@@ -290,4 +290,3 @@ class SampleGroupAnalysisResultFieldDetailsView(generics.RetrieveUpdateDestroyAP
     queryset = SampleGroupAnalysisResultField.objects.all()
     serializer_class = SampleGroupAnalysisResultFieldSerializer
     permission_classes = (SampleGroupAnalysisResultFieldPermission,)
-
