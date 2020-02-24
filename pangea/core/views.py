@@ -244,6 +244,7 @@ class SampleAnalysisResultFieldCreateView(generics.ListCreateAPIView):
     queryset = SampleAnalysisResultField.objects.all()
     serializer_class = SampleAnalysisResultFieldSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'name', 'analysis_result_id']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('analysis_result') \
@@ -268,6 +269,7 @@ class SampleGroupAnalysisResultFieldCreateView(generics.ListCreateAPIView):
     queryset = SampleGroupAnalysisResultField.objects.all()
     serializer_class = SampleGroupAnalysisResultFieldSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filterset_fields = ['uuid', 'name', 'analysis_result_id']
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('analysis_result').sample_group.organization
