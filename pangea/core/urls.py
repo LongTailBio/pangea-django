@@ -35,5 +35,4 @@ urlpatterns = {
     path('search', SearchList.as_view(), name="search"),
 }
 
-
 urlpatterns = format_suffix_patterns(urlpatterns)
