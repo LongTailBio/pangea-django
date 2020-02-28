@@ -1,23 +1,34 @@
+'''
+Additional URLs that support nested access and access by name.
 
-from django.urls import path, include
+/{org_pk}/
+/{org_pk}/sample_groups/
+/{org_pk}/sample_groups/{grp_pk}/
+/{org_pk}/sample_groups/{grp_pk}/analysis_results
+/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}
+/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}/fields
+/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}/fields/{field_pk}
+/{org_pk}/sample_groups/{grp_pk}/samples/
+/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/
+/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results
+/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}
+/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}/fields
+/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}/fields/{field_pk}
+'''
+
+from django.urls import path
 from uuid import UUID
-from django.conf.urls import url
-from rest_framework_nested import routers
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import (
-    OrganizationCreateView, OrganizationDetailsView,
-    OrganizationUsersView,
+    OrganizationDetailsView,
     SampleGroupCreateView, SampleGroupDetailsView,
-    SampleGroupSamplesView,
     SampleCreateView, SampleDetailsView,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
 )
-
-
 from .models import (
     Organization,
     SampleGroup,
@@ -28,28 +39,18 @@ from .models import (
     SampleGroupAnalysisResultField,
 )
 
-'''
-/organizations/
-/organizations/{org_pk}/
-/organizations/{org_pk}/sample_groups/
-/organizations/{org_pk}/sample_groups/{grp_pk}/
-/organizations/{org_pk}/sample_groups/{grp_pk}/analysis_results
-/organizations/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}
-/organizations/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}/fields
-/organizations/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}/fields/{field_pk}
-/organizations/{org_pk}/sample_groups/{grp_pk}/samples/
-/organizations/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/
-/organizations/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results
-/organizations/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}
-/organizations/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}/fields
-/organizations/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}/fields/{field_pk}
-'''
 
 def is_uuid(el):
-    return isinstance(el, UUID)
+    """Return true if el is an UUID."""
+    try:
+        UUID(el)
+        return True
+    except ValueError:
+        return False
 
 
 def to_uuid(**kwargs):
+    """Return a UUID and a field name for the lowest parent level in the URL."""
     keys = [('grp_pk', 'organization', SampleGroup, 'sample_group')]
     if 'sample_pk' in kwargs:
         keys += [
@@ -79,11 +80,12 @@ def to_uuid(**kwargs):
     return parent.uuid, parent_field_name
 
 
-def mypath(url, base_view, *out_args, **out_kwargs):
-
+def nested_path(url, base_view, *out_args, **out_kwargs):
+    """Return a path with an intercepted view function."""
     create = out_kwargs.pop('create', False)
 
     def my_request(request, *args, **kwargs):
+        """Return the result of the base view function with a modified result."""
         uuid_kwargs = {}
         for key in ['org_pk', 'grp_pk', 'sample_pk', 'ar_pk', 'field_pk']:
             if key in kwargs:
@@ -99,61 +101,76 @@ def mypath(url, base_view, *out_args, **out_kwargs):
 
 
 urlpatterns = {
-    mypath('<uuid:org_pk>/', OrganizationDetailsView.as_view(), name="nested-organization-detail"),
-    mypath(
-        '<uuid:org_pk>/sample_groups/',
+    nested_path(
+        '<org_pk>/',
+        OrganizationDetailsView.as_view(),
+        name="nested-organization-detail"
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/',
         SampleGroupCreateView.as_view(),
         create=True,
         name="nested-sample-group-create"
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/',
+        SampleGroupDetailsView.as_view(),
+        name="nested-sample-group-detail"
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/analysis_results',
+        SampleGroupAnalysisResultCreateView.as_view(),
+        create=True,
+        name='nested-sample-group-ar-create',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/analysis_results/<ar_pk>',
+        SampleGroupAnalysisResultDetailsView.as_view(),
+        name='nested-sample-group-ar-details',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/analysis_results/<ar_pk>/fields',
+        SampleGroupAnalysisResultFieldCreateView.as_view(),
+        create=True,
+        name='nested-sample-group-ar-field-create',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/analysis_results/<ar_pk>/fields/<field_pk>',
+        SampleGroupAnalysisResultFieldDetailsView.as_view(),
+        name='nested-sample-group-ar-field-details',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/samples/',
+        SampleCreateView.as_view(),
+        create=True,
+        name='nested-sample-create',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/samples/<sample_pk>/',
+        SampleDetailsView.as_view(),
+        name='nested-sample-details',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/samples/<sample_pk>/analysis_results',
+        SampleAnalysisResultCreateView.as_view(),
+        create=True,
+        name='nested-sample-ar-create',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/samples/<sample_pk>/analysis_results/<ar_pk>',
+        SampleAnalysisResultDetailsView.as_view(),
+        name='nested-sample-ar-details',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/samples/<sample_pk>/analysis_results/<ar_pk>/fields',
+        SampleAnalysisResultFieldCreateView.as_view(),
+        create=True,
+        name='nested-sample-ar-field-create',
+    ),
+    nested_path(
+        '<org_pk>/sample_groups/<grp_pk>/samples/<sample_pk>/analysis_results/<ar_pk>/fields/<field_pk>',
+        SampleAnalysisResultFieldDetailsView.as_view(),
+        name='nested-sample-ar-field-details',
     )
-    # path('/{org_pk}/sample_groups/{grp_pk}/', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/analysis_results', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}/fields', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/analysis_results/{ar_pk}/fields/{field_pk}', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/samples/', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}/fields', )
-    # path('/{org_pk}/sample_groups/{grp_pk}/samples/{sample_pk}/analysis_results/{ar_pk}/fields/{field_pk}', )
 }
 urlpatterns = format_suffix_patterns(urlpatterns)
-
-'''
-router = routers.DefaultRouter()
-router.register(r'organizations', OrganizationCreateView)
-router.register('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), basename='foo')
-
-org_router = routers.NestedDefaultRouter(router, r'organizations', lookup='org')
-org_router.register('sample_groups', SampleGroupCreateView)
-org_router.register('sample_groups/<uuid:pk>', SampleGroupDetailsView)
-
-groups_router = routers.NestedDefaultRouter(org_router, r'sample_groups', lookup='grp')
-groups_router.register('analysis_results', SampleGroupAnalysisResultCreateView, base_name='group_analysis_results')
-groups_router.register('analysis_results/<uuid:pk>', SampleGroupAnalysisResultDetailsView, base_name='group_analysis_results')
-groups_router.register('samples', SampleCreateView, base_name='samples')
-groups_router.register('samples/<uuid:pk>', SampleDetailsView, base_name='samples')
-
-groups_ar_router = routers.NestedDefaultRouter(groups_router, r'analysis_results', lookup='ar')
-groups_ar_router.register('field', SampleGroupAnalysisResultFieldCreateView, base_name='group_analysis_result_fields')
-groups_ar_router.register('field/<uuid:pk>', SampleGroupAnalysisResultFieldDetailsView, base_name='group_analysis_result_fields')
-
-samples_router = routers.NestedDefaultRouter(groups_router, r'samples', lookup='sample')
-sample_router.register('analysis_results', SampleAnalysisResultCreateView, base_name='sample_analysis_results')
-sample_router.register('analysis_results/<uuid:pk>', SampleAnalysisResultDetailsView, base_name='sample_analysis_results')
-
-samples_ar_router = routers.NestedDefaultRouter(samples_router, r'analysis_results', lookup='ar')
-samples_ar_router.register('field', SampleAnalysisResultFieldCreateView, base_name='sample_analysis_result_fields')
-samples_ar_router.register('field/<uuid:pk>', SampleAnalysisResultFieldDetailsView, base_name='sample_analysis_result_fields')
-
-urlpatterns = [
-    '',
-    url(r'^', include(router.urls)),
-    # url(r'^', include(org_router.urls)),
-    # url(r'^', include(groups_router.urls)),
-    # url(r'^', include(groups_ar_router.urls)),
-    # url(r'^', include(sample_router.urls)),
-    # url(r'^', include(sample_ar_router.urls)),
-]
-'''
