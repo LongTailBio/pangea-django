@@ -39,4 +39,3 @@ class SampleGroup(RemoteObject):
 
     def analysis_result(self, module_name, replicate=None):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
-
