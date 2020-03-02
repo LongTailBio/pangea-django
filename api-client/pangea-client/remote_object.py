@@ -15,6 +15,11 @@ class RemoteObject:
             self._create()
         self.already_fetched = True
 
+    def load_blob(self, blob):
+        self.uuid = blob['uuid']
+        self.created_at = blob['created_at']
+        self.updated_at = blob['updated_at']
+
     def idem(self):
         try:
             self.get()

@@ -1,14 +1,14 @@
 
 from .remote_object import RemoteObject
-from .sample_group import SampleGroup
 
 
-class Organization(RemoteObject):
+class Sample(RemoteObject):
 
-    def __init__(self, knex, name):
+    def __init__(self, knex, grp, name, is_library=False):
         super().__init__(self)
         self.knex = knex
-        self.name
+        self.grp = grp
+        self.name = name
 
     def load_blob(self, blob):
         self.uuid = blob['uuid']
@@ -16,16 +16,18 @@ class Organization(RemoteObject):
         self.updated_at = blob['updated_at']
 
     def nested_url(self):
-        return f'nested/{self.name}'
+        return self.grp.nested_url() + f'/samples/{self.name}'
 
     def _get(self):
         """Fetch the result from the server."""
+        self.org.idem()
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
     def _create(self):
-        blob = self.knex.post(f'organizations?format=json', json={'name': name})
+        self.org.idem()
+        blob = self.knex.post(f'samples?format=json', json={
+            'sample_group': self.org.uuid,
+            'name': org_name
+        })
         self.load_blob(blob)
-
-    def sample_group(self, group_name, is_library=False):
-        return SampleGroup(self.knex, self, group_name, is_library=is_library)

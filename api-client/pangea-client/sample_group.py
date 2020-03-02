@@ -15,10 +15,13 @@ class SampleGroup(RemoteObject):
         self.created_at = blob['created_at']
         self.updated_at = blob['updated_at']
 
+    def nested_url(self):
+        return self.org.nested_url() + f'/sample_groups/{self.name}'
+
     def _get(self):
         """Fetch the result from the server."""
         self.org.idem()
-        blob = self.knex.get(f'nested/{self.org.name}/sample_groups/{self.name}')
+        blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
     def _create(self):
