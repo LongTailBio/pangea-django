@@ -1,14 +1,16 @@
 
 from .remote_object import RemoteObject
+from .sample import SampleAnalysisResult
 
 
 class Sample(RemoteObject):
 
-    def __init__(self, knex, grp, name, is_library=False):
+    def __init__(self, knex, grp, name, metadata={}):
         super().__init__(self)
         self.knex = knex
         self.grp = grp
         self.name = name
+        self.metadata = metadata
 
     def load_blob(self, blob):
         self.uuid = blob['uuid']
@@ -25,9 +27,14 @@ class Sample(RemoteObject):
         self.load_blob(blob)
 
     def _create(self):
+        assert self.grp.is_library
         self.org.idem()
         blob = self.knex.post(f'samples?format=json', json={
-            'sample_group': self.org.uuid,
-            'name': org_name
+            'library': self.grp.uuid,
+            'name': org_name,
+            'metadata': self.metadata,
         })
         self.load_blob(blob)
+
+    def analysis_result(self, module_name, replicate=None):
+        return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)

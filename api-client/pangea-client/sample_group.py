@@ -1,5 +1,7 @@
 
 from .remote_object import RemoteObject
+from .sample import Sample
+from .analysis_result import SampleGroupAnalysisResult
 
 
 class SampleGroup(RemoteObject):
@@ -31,3 +33,10 @@ class SampleGroup(RemoteObject):
             'name': org_name
         })
         self.load_blob(blob)
+
+    def sample(self, sample_name, metadata={}):
+        return Sample(self.knex, self, sample_name, metadata=metadata)
+
+    def analysis_result(self, module_name, replicate=None):
+        return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
+
