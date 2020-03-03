@@ -2,6 +2,7 @@
 from .remote_object import RemoteObject
 from .sample import SampleAnalysisResult
 
+
 class Sample(RemoteObject):
 
     def __init__(self, knex, grp, name, metadata={}):
