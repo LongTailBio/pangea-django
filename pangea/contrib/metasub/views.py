@@ -16,6 +16,7 @@ logger = structlog.get_logger(__name__)
 
 def fuzzy_taxa_search(query):
     query = f'%{query}%'
+    metasub_uuid = f'{METASUB_LIBRARY_UUID()}'
     with connection.cursor() as cursor:
         cursor.execute(f'''
             -- Use text-based search to restrict the search space
@@ -46,7 +47,8 @@ def fuzzy_taxa_search(query):
                         core_sample.name as sample_name,
                         core_sample.library_id as sample_library_uuid,
                         core_sample.metadata as sample_metadata
-
+                    where
+                        core_sample.library_id = %s
                     order by
                         core_sample.library_id
                 ) as x)) as samples
@@ -60,7 +62,7 @@ def fuzzy_taxa_search(query):
                 filtered_taxa.key
             order by
                 filtered_taxa.key
-            ''', [query, query])
+            ''', [query, query, metasub_uuid])
 
         results = {row[0]: row[1] for row in cursor.fetchall()}
     return results
