@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/contrib/taxasearch/', include('pangea.contrib.taxasearch.urls')),
+    path('api/contrib/metasub/', include('pangea.contrib.metasub.urls')),
 ]

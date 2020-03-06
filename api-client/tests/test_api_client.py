@@ -1,42 +1,54 @@
-"""Test suite for experimental functions."""
+import os
+import sys
 
-import pandas as pd
+# Setup environ
+sys.path.append(os.getcwd())
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "pangea.settings")
 
-from unittest import TestCase
-from os.path import join, dirname
+# Setup django
+import django
+django.setup()
 
-from capalyzer.packet_parser import DataTableFactory
-from capalyzer.packet_parser.experimental import (
-    umap,
-    fractal_dimension,
-    pca_sample_cross_val,
+from rest_framework import status
+from rest_framework.test import APITestCase
+
+from pangea.core.models import (
+    PangeaUser,
+    Organization,
+    SampleGroup,
+    SampleLibrary,
+    Sample,
+    SampleGroupAnalysisResult,
+    SampleAnalysisResult,
 )
 
-PACKET_DIR = join(dirname(__file__), 'built_packet')
+from pangea_api_client
 
 
-class TestPacketParser(TestCase):
-    """Test suite for packet building."""
+class ApiClientTests(APITestCase):
 
-    def test_umap(self):
-        """Test that we can run UMAP."""
-        taxa = DataTableFactory(PACKET_DIR).taxonomy()
-        taxa = pd.DataFrame(pd.concat([taxa, taxa, taxa]))
-        umap(taxa, n_neighbors=3)
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
 
-    def test_fractal(self):
-        """Test that we can run fractal."""
-        taxa = DataTableFactory(PACKET_DIR).taxonomy()
-        taxa = pd.DataFrame(pd.concat([taxa, taxa, taxa]))
-        taxa = umap(taxa, n_neighbors=3)
-        fractal_dimension(taxa, scales=range(1, 3))
+    def test_create_unauthed_organization(self):
+        """Ensure 403 error is throw when trying to create organization if unauthed."""
+        url = reverse('organization-create')
+        data = {'name': 'Test Organization'}
+        response = self.client.post(url, data, format='json')
 
-    def test_pca_cross_val(self):
-        taxa = DataTableFactory(PACKET_DIR).taxonomy()
-        taxa = pd.DataFrame(pd.concat([taxa] * 10))
-        taxa_copy = taxa.copy(deep=True)
-        catch_losses = []  # demo of how to extract detailed loss info
-        taxa_pca = pca_sample_cross_val(taxa, comp_step=10, losses=catch_losses)
-        self.assertEqual(taxa.shape[0], taxa_pca.shape[0])
-        self.assertEqual(taxa.shape[1], taxa_pca.shape[1])
-        self.assertEqual((taxa - taxa_copy).sum().sum(), 0)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Organization.objects.count(), 0)
+
+    def test_create_organization(self):
+        """Ensure authenticated user can create organization."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('organization-create')
+        data = {'name': 'Test Organization'}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Organization.objects.count(), 1)
+        self.assertEqual(Organization.objects.get().name, 'Test Organization')
+        self.assertIn(self.user, Organization.objects.get().users.all())
