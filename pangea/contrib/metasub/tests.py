@@ -10,7 +10,11 @@ from pangea.core.models import (
     SampleAnalysisResultField,
 )
 
-from .constants import METASUB_GRP_NAME, METASUB_ORG_NAME
+from .constants import (
+    METASUB_GRP_NAME,
+    METASUB_ORG_NAME,
+    METASUB_LIBRARY_UUID,
+)
 
 
 class TaxaSearchTests(APITestCase):
