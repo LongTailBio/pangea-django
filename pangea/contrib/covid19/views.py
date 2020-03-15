@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 import structlog
 
 from .serializers import Covid19ReadsUploadSerializer
+from .tasks import process_covid19
 
 
 logger = structlog.get_logger(__name__)
@@ -45,7 +46,9 @@ class Covid19ListCreateView(APIView):
                 path=reads_path,
             )
 
-            # TODO: kick off background task
-            return Response({ 'status': 'success', 'task_id': 1 }, 201)
+            # Kick off background processing task
+            task = process_covid19(sample_uuid, reads_path)
+
+            return Response({ 'status': 'success', 'task_hash': task.task_hash }, 201)
         else:
             return Response(serializer.errors, status=400)

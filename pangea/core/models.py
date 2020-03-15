@@ -220,6 +220,12 @@ class SampleAnalysisResult(AnalysisResult):
         field = SampleAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
 
+    def __str__(self):
+        return f"{self.sample.name} ({self.module_name})"
+
+    def __repr__(self):
+        return f'<SampleAnalysisResult uuid="{self.uuid}" module_name="{self.module_name}">'
+
 
 class SampleGroupAnalysisResult(AnalysisResult):
     """Class representing a single field of a sample group analysis result."""
@@ -280,6 +286,12 @@ class SampleAnalysisResultField(AnalysisResultField):
             }
         )
         return out
+
+    def __str__(self):
+        return f"{self.analysis_result.sample.name} ({self.analysis_result.module_name}: {self.name})"
+
+    def __repr__(self):
+        return f'<SampleAnalysisResultField uuid="{self.uuid}" name="{self.name}">'
 
 
 class SampleGroupAnalysisResultField(AnalysisResultField):

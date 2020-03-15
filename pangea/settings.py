@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'background_task',
     'pangea.core',
     'pangea.contrib.covid19',
     'pangea.contrib.taxasearch',
