@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'django_filters',
     'pangea.core',
+    'pangea.contrib.covid19',
     'pangea.contrib.taxasearch',
 ]
 
@@ -159,6 +160,12 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+# User-uploaded files
+# https://docs.djangoproject.com/en/3.0/ref/settings/#std:setting-MEDIA_ROOT
+
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media/'))
 
 
 # Static files (CSS, JavaScript, Images)
