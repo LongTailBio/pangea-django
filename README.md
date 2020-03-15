@@ -21,3 +21,12 @@ Changes to Python dependencies should be committed using the following:
 ```sh
 pip freeze > requirements.txt
 ```
+
+### Creating a `contrib` Module
+
+Use the Django CLI to create the module:
+
+```sh
+mkdir ./pangea/contrib/mymodule
+python manage.py startapp mymodule ./pangea/contrib/mymodule
+```
