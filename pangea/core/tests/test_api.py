@@ -54,7 +54,7 @@ class OrganizationMembershipTests(APITestCase):
 
     def add_target_user(self):
         url = reverse('organization-users', kwargs={'organization_pk': self.organization.pk})
-        data = {'user_uuid': self.target_user.pk}
+        data = {'user': self.target_user.pk}
         response = self.client.post(url, data, format='json')
         return response
 
