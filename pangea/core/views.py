@@ -90,9 +90,6 @@ class OrganizationUsersView(generics.ListAPIView):
         return Response({ "status": "success" })
 
 
-OrganizationAddUserSerializer
-
-
 class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
     """This class handles the http GET, PUT and DELETE requests."""
     queryset = Organization.objects.all()
