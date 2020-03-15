@@ -72,9 +72,7 @@ class OrganizationUsersView(generics.ListAPIView):
 
     def post(self, request, *args, **kwargs):
         organization_uuid = kwargs.get('organization_pk')
-        user_uuid = request.data.get('user_uuid', None)
         organization = Organization.objects.get(pk=organization_uuid)
-        user = PangeaUser.objects.get(pk=user_uuid)
 
         org_membership_queryset = self.request.user.organization_set.filter(pk=organization_uuid)
         if not org_membership_queryset.exists():
@@ -82,12 +80,17 @@ class OrganizationUsersView(generics.ListAPIView):
                 'attempted_add_user_to_organization_without_permission',
                 auth_user=request.user,
                 organization_pk=organization.pk,
-                user_pk=user.pk,
+                user_pk=request.data.get('user', None),
             )
             raise PermissionDenied(_('Insufficient permissions to add user to organization.'))
 
-        organization.users.add(user)
-        return Response({ "status": "success" })
+        serializer = OrganizationAddUserSerializer(data=request.data)
+        if (serializer.is_valid()):
+            user = serializer.validated_data.get('user')
+            organization.users.add(user)
+            return Response({ "status": "success" })
+        else:
+            return Response(serializer.errors, status=400)
 
 
 OrganizationAddUserSerializer

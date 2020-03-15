@@ -29,7 +29,7 @@ class OrganizationSerializer(serializers.ModelSerializer):
 
 
 class OrganizationAddUserSerializer(serializers.Serializer):
-    user_uuid = serializers.UUIDField()
+    user = serializers.PrimaryKeyRelatedField(queryset=PangeaUser.objects.all())
 
 
 class SampleGroupSerializer(serializers.ModelSerializer):
