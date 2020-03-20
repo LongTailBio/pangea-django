@@ -26,28 +26,20 @@ class Covid19ListCreateView(APIView):
         serializer = Covid19ReadsUploadSerializer(data=request.data)
 
         if (serializer.is_valid()):
-            organization = serializer.validated_data.get('sample').library.group.organization
-            membership_queryset = request.user.organization_set.filter(pk=organization.pk)
-            if not membership_queryset.exists():
-                raise PermissionDenied(_('Organization membership is required to upload covid19 reads.'))
+            reads_user = serializer.validated_data.get('user')
+            raw_reads_path = serializer.validated_data.get('raw_reads_path')
 
-            # Store and process the file
-            raw_reads = serializer.validated_data.get('raw_reads')
-            sample_uuid = str(serializer.validated_data.get('sample').uuid)
-            reads_path = f'{settings.MEDIA_ROOT}covid19-{sample_uuid}-{int(time.time())}-{str(raw_reads)}'
-            with open(reads_path, 'wb+') as destination:
-                for chunk in raw_reads.chunks():
-                    destination.write(chunk)
+            if request.user.id != reads_user.id:
+                raise PermissionDenied(_('Users may only upload their own covid19 reads.'))
 
             logger.info(
-                'covid19_reads_stored',
+                'covid19_raw_reads_received',
                 auth_user=request.user.email,
-                sample_uuid=sample_uuid,
-                path=reads_path,
+                raw_reads_path=raw_reads_path,
             )
 
             # Kick off background processing task
-            task = process_covid19(sample_uuid, reads_path)
+            task = process_covid19(reads_user.id, raw_reads_path)
 
             return Response({ 'status': 'success', 'task_hash': task.task_hash }, 201)
         else:

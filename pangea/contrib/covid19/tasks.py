@@ -8,28 +8,21 @@ logger = structlog.get_logger(__name__)
 
 
 @background(queue='covid19', schedule=60)
-def process_covid19(sample_uuid, reads_path):
+def process_covid19(user_id, reads_path):
     """Process covid19 raw reads and upload result to AWS S3."""
-    with open(reads_path, 'rb+') as raw_reads:
-        # TODO: run analyses and generate result
-        pass
+    logger.info(
+        'covid19_process_raw_reads',
+        user_id=user_id,
+        reads_path=reads_path
+    )
+
+    # TODO: fetch raw reads
+
+    # TODO: perform analysis
 
     # TODO: upload the result to cloud storage
     cloud_storage_path = 's3://covid-19-bucket/results/result.pdf'
 
-    # Upsert analysis result field
-    sample = Sample.objects.get(pk=sample_uuid)
-    result, result_created = SampleAnalysisResult.objects.get_or_create(sample=sample, module_name='covid19')
-    field, field_created = SampleAnalysisResultField.objects.get_or_create(
-        analysis_result=result,
-        name='cloud_result',
-        defaults={ 'stored_data': {} }
-    )
-    field.stored_data = { 'cloud_storage_path': cloud_storage_path }
-    field.save()
+    # TODO: notify user via email
 
-    logger.info(
-        'stored_covid19_results',
-        sample_uuid=sample_uuid,
-        cloud_storage_path=cloud_storage_path,
-    )
+    # TODO: Upsert analysis result field
