@@ -75,6 +75,8 @@ def to_uuid(**kwargs):
         parent = Organization.objects.get(pk=org_key)
     else:
         parent = Organization.objects.get(name=org_key)
+
+    # Traverse down through whichever path segments present in the request
     for uuid_key, parent_key_name, model, field_name in keys:
         if uuid_key not in kwargs:
             break
