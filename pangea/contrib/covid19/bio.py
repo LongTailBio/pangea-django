@@ -11,13 +11,15 @@ KRAKEN2_DB_URL = 'https://s3.wasabisys.com/metasub/covid/kraken2_covid_2020_03_1
 
 def download_kraken2():
     """Download a custom Kraken2 database for detecting COVID."""
-    local_path = f'covid19/dbs/{KRAKEN2_DB_URL.split("/")[-1].split('.tar.gz')[0]}'
+    tarball_base = KRAKEN2_DB_URL.split("/")[-1]
+    base = tarball_base.split('.tar.gz')[0]
+    local_path = f'covid19/dbs/{base}'
     if isdir(local_path):
         return local_path
     cmd = (
         f'cd covid19/dbs/ && '
         f'wget {KRAKEN2_DB_URL} && '
-        f'tar -xzf {KRAKEN2_DB_URL.split("/")[-1]} '
+        f'tar -xzf {tarball_base} '
     )
     sp.check_call(cmd, shell=True)
     return local_path
