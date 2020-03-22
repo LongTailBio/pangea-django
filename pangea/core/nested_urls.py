@@ -51,6 +51,11 @@ def is_uuid(el):
 
 def to_uuid(**kwargs):
     """Return a UUID and a field name for the lowest parent level in the URL."""
+    # Keys are:
+    # - named path parameter
+    # - name of the model's foreign key to its parent
+    # - model
+    # - name of parent id parameter in create payload
     keys = [('grp_pk', 'organization', SampleGroup, 'sample_group')]
     if 'sample_pk' in kwargs:
         keys += [
