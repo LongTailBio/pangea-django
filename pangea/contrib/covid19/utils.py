@@ -90,5 +90,10 @@ def create_presigned_url(object_name, bucket=None, expiration=3600):
         # The response contains the presigned URL
         return response
     except ClientError as e:
-        logger.error(e)
+        logger.exception(
+            'create_presigned_url_exception',
+            object_name=object_name,
+            bucket=bucket,
+            expiration=expiration,
+        )
         return None
