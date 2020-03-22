@@ -57,6 +57,7 @@ def to_uuid(**kwargs):
     # - model
     # - name of parent id parameter in create payload
     keys = [('grp_pk', 'organization', SampleGroup, 'sample_group')]
+    # Identify which routing branch was taken based on presence of named path params
     if 'sample_pk' in kwargs:
         keys += [
             ('sample_pk', 'library', Sample, 'sample'),
