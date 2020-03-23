@@ -25,6 +25,7 @@ def process_covid19(user_id, reads_path):
 
         results_object_name = f'covid19/results/{user_id}.txt'
         result_filepath = kraken2_search_reads(temp_file_path, f'{user_id}_covid19_results')
+        logger.info('ran_kraken2', result_filepath=result_filepath)
         upload_file(result_filepath, object_name=results_object_name)
 
         # One week expiration
