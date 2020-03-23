@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.dispatch import receiver
+from django.db.models.signals import pre_save, post_save
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -18,6 +20,7 @@ class PangeaUser(AbstractUser):
     """Custom Pangea user type."""
     username = None
     email = models.EmailField(_('email address'), unique=True)
+    personal_org_uuid = models.UUIDField(blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -27,12 +30,27 @@ class PangeaUser(AbstractUser):
     def __str__(self):
         return self.email
 
+    @property
+    def _personal_org_name(self):
+        return f'Personal Organization for User {self.username}'
+
+    @property
+    def personal_org(self):
+        try:
+            return Organization.objects.get(pk=self.personal_org_uuid)
+        except DoesNotExist:
+            org = Organization.objects.create(name=self._personal_org_name, users=[self])
+            self.personal_org_uuid = org.uuid
+            self.save()
+            return org
+
 
 class Organization(AutoCreatedUpdatedMixin):
     """This class represents the organization model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=True)
     users = models.ManyToManyField(get_user_model())
+    core_sample_group_uuid = models.UUIDField(blank=True)
 
     def save(self, *args, **kwargs):
         out = super(Organization, self).save(*args, **kwargs)
@@ -47,6 +65,25 @@ class Organization(AutoCreatedUpdatedMixin):
     def create_sample_group(self, *args, **kwargs):
         sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
+
+    @property
+    def _core_sample_group_name(self):
+        return f'Default Sample Group for Organization {self.name}'
+
+    @property
+    def core_sample_group(self):
+        try:
+            return SampleGroup.objects.get(pk=self.core_sample_group_uuid)
+        except DoesNotExist:
+            grp = SampleGroup.factory(
+                name=self._core_sample_group_name,
+                organization=self,
+                is_public=False,
+                is_library=True,
+            )
+            self.core_sample_group_uuid = grp.uuid
+            self.save()
+            return org
 
     def __str__(self):
         return f'{self.name}'
