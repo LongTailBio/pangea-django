@@ -3,7 +3,7 @@ import subprocess as sp
 from os import environ
 from os.path import isdir, abspath
 
-KRAKEN2_EXC = 'kraken2'
+KRAKEN2_EXC = environ.get('COVID19_KRAKEN2_EXC', 'kraken2')
 KRAKEN2_DB = environ.get('COVID19_KRAKEN2_DB', None)
 THREADS = int(environ.get('COVID19_THREADS', 1))
 KRAKEN2_DB_URL = 'https://s3.wasabisys.com/metasub/covid/kraken2_covid_2020_03_13.tar.gz'
