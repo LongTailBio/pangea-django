@@ -16,16 +16,16 @@ class PangeaUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PangeaUser
-        fields = ('email', 'is_staff', 'is_active')
-        read_only_fields = ('email',)
+        fields = ('email', 'is_staff', 'is_active', 'personal_org_uuid')
+        read_only_fields = ('email', 'personal_org_uuid')
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        fields = ('uuid', 'name', 'created_at', 'updated_at')
-        read_only_fields = ('created_at', 'updated_at')
+        fields = ('uuid', 'name', 'created_at', 'updated_at', 'core_sample_group_uuid')
+        read_only_fields = ('created_at', 'updated_at', 'core_sample_group_uuid')
 
 
 class OrganizationAddUserSerializer(serializers.Serializer):
