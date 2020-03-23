@@ -1,7 +1,7 @@
 
 import subprocess as sp
 from os import environ
-from os.path import isdir
+from os.path import isdir, abspath
 
 KRAKEN2_EXC = 'kraken2'
 KRAKEN2_DB = environ.get('COVID19_KRAKEN2_DB', None)
