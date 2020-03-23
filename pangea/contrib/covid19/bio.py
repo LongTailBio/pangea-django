@@ -37,9 +37,9 @@ def kraken2_search_reads(reads, outprefix):
         f'--db {kraken2_db} '
         f'--threads {THREADS} '
         f'--report {report_filepath} '
-        f'--report-zero-counts '
         f'--gzip-compressed '
-        f'{reads}'
+        f'{reads} '
+        '> /dev/null'
     )
     sp.run(cmd, check=True, shell=True)
     return report_filepath
