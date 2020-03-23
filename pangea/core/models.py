@@ -20,7 +20,7 @@ class PangeaUser(AbstractUser):
     """Custom Pangea user type."""
     username = None
     email = models.EmailField(_('email address'), unique=True)
-    personal_org_uuid = models.UUIDField(blank=True)
+    personal_org_uuid = models.UUIDField(blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -50,7 +50,7 @@ class Organization(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=True)
     users = models.ManyToManyField(get_user_model())
-    core_sample_group_uuid = models.UUIDField(blank=True)
+    core_sample_group_uuid = models.UUIDField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         out = super(Organization, self).save(*args, **kwargs)
