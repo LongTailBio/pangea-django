@@ -5,6 +5,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
+
 import uuid
 import random
 import structlog
@@ -38,8 +40,10 @@ class PangeaUser(AbstractUser):
     def personal_org(self):
         try:
             return Organization.objects.get(pk=self.personal_org_uuid)
-        except DoesNotExist:
-            org = Organization.objects.create(name=self._personal_org_name, users=[self])
+        except ObjectDoesNotExist:
+            org = Organization.objects.create(name=self._personal_org_name)
+            org.users.add(self)
+            org.save()
             self.personal_org_uuid = org.uuid
             self.save()
             return org
@@ -74,7 +78,7 @@ class Organization(AutoCreatedUpdatedMixin):
     def core_sample_group(self):
         try:
             return SampleGroup.objects.get(pk=self.core_sample_group_uuid)
-        except DoesNotExist:
+        except ObjectDoesNotExist:
             grp = SampleGroup.factory(
                 name=self._core_sample_group_name,
                 organization=self,
@@ -83,7 +87,7 @@ class Organization(AutoCreatedUpdatedMixin):
             )
             self.core_sample_group_uuid = grp.uuid
             self.save()
-            return org
+            return grp
 
     def __str__(self):
         return f'{self.name}'

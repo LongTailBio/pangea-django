@@ -5,6 +5,7 @@ from django.db.utils import IntegrityError
 from unittest import skip
 
 from ..models import (
+    PangeaUser,
     Organization,
     SampleGroup,
     Sample,
@@ -13,6 +14,18 @@ from ..models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
 )
+
+
+class TestUserModel(TestCase):
+
+    def test_personal_org_from_user(self):
+        user = PangeaUser.objects.create(email='foo@bar.com')
+        org = user.personal_org
+        self.assertTrue(org.uuid)
+        self.assertTrue(org.created_at)
+        self.assertEqual(org.name, user._personal_org_name)
+        self.assertEqual(org.uuid, user.personal_org_uuid)
+        self.assertIn(user, org.users.all())
 
 
 class TestSampleModel(TestCase):
@@ -65,6 +78,16 @@ class TestSampleGroupModel(TestCase):
         group = org.create_sample_group(name='GRP_01 HJGKTYU')
         self.assertTrue(group.uuid)
         self.assertEqual(group.name, 'GRP_01 HJGKTYU')
+        self.assertTrue(group.created_at)
+
+    def test_core_sample_group_from_org(self):
+        """Ensure we can get a core sample group from an organization."""
+        org = Organization.objects.create(name='an_org TYFGHG')
+        group = org.core_sample_group
+        self.assertTrue(group.uuid)
+        self.assertEqual(group.name, org._core_sample_group_name)
+        self.assertEqual(group.uuid, org.core_sample_group_uuid)
+        self.assertEqual(group.organization, org)
         self.assertTrue(group.created_at)
 
     def test_add_duplicate_name(self):
