@@ -3,6 +3,7 @@ from django.core.mail import send_mail
 import structlog
 import tempfile
 
+from django.conf import settings
 from pangea.core.models import PangeaUser, Sample, SampleAnalysisResult, SampleAnalysisResultField
 
 from .utils import cloud_file_path, upload_file, create_presigned_url
@@ -28,10 +29,26 @@ def process_covid19(user_id, reads_path):
         results_object_name = f'covid19/results/{result_filepath}'
         upload_file(result_filepath, object_name=results_object_name)
 
+        user = PangeaUser.objects.get(pk=user_id)
+        grp = user.personal_org.core_sample_group
+        sample = grp.create_sample(
+            name=reads_path.split('/')[-1].split('.fq')[0].split('.fastq')[0]
+        )
+        sample.save()
+        ar = sample.create_analysis_result(
+            module_name='covid19_kraken2'
+        )
+        ar.save()
+        field = ar.create_field(name='report', stored_data={
+            '__type__': 's3',
+            'endpoint_url': settings.S3_ENDPOINT,
+            'uri': f's3://{results_object_name}', 
+        })
+        field.save()
+
         # One week expiration
         expiration = 60 * 60 * 24 * 7
         presigned_url = create_presigned_url(results_object_name, expiration=expiration)
-        user = PangeaUser.objects.get(pk=user_id)
         try:
             # TODO: tweak email copy
             send_mail(
