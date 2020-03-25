@@ -44,8 +44,8 @@ class SampleGroupPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group."""
 
     def has_object_permission(self, request, view, obj):
-        # Allow all reads
-        if request.method in permissions.SAFE_METHODS:
+        # Allow all reads if the group is public
+        if request.method in permissions.SAFE_METHODS and obj.is_public:
             return True
 
         # Require auth for write operations
@@ -60,8 +60,9 @@ class SamplePermission(permissions.BasePermission):
     """Require organization membership in order to write to sample."""
 
     def has_object_permission(self, request, view, obj):
-        # Allow all reads
-        if request.method in permissions.SAFE_METHODS:
+        # Allow all reads on samples in public groups
+        grp = obj.library.group
+        if request.method in permissions.SAFE_METHODS and grp.is_public:
             return True
 
         # Require auth for write operations
@@ -77,7 +78,8 @@ class SampleAnalysisResultPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Allow all reads
-        if request.method in permissions.SAFE_METHODS:
+        grp = obj.sample.library.group
+        if request.method in permissions.SAFE_METHODS and grp.is_public:
             return True
 
         # Require auth for write operations
@@ -85,7 +87,7 @@ class SampleAnalysisResultPermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        organization = obj.sample.library.group.organization
+        organization = grp.organization
         return request.user.organization_set.filter(pk=organization.pk).exists()
 
 
@@ -93,8 +95,9 @@ class SampleGroupAnalysisResultPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group analysis result."""
 
     def has_object_permission(self, request, view, obj):
-        # Allow all reads
-        if request.method in permissions.SAFE_METHODS:
+        grp = obj.sample_group
+        # Allow all reads if group is public
+        if request.method in permissions.SAFE_METHODS and grp.is_public:
             return True
 
         # Require auth for write operations
@@ -102,7 +105,7 @@ class SampleGroupAnalysisResultPermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        organization = obj.sample_group.organization
+        organization = grp.organization
         return request.user.organization_set.filter(pk=organization.pk).exists()
 
 
@@ -110,8 +113,9 @@ class SampleAnalysisResultFieldPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample analysis result."""
 
     def has_object_permission(self, request, view, obj):
-        # Allow all reads
-        if request.method in permissions.SAFE_METHODS:
+        grp = obj.analysis_result.sample.library.group
+        # Allow all reads if group is public
+        if request.method in permissions.SAFE_METHODS and grp.is_public:
             return True
 
         # Require auth for write operations
@@ -119,7 +123,7 @@ class SampleAnalysisResultFieldPermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        organization = obj.analysis_result.sample.library.group.organization
+        organization = grp.organization
         return request.user.organization_set.filter(pk=organization.pk).exists()
 
 
@@ -127,8 +131,9 @@ class SampleGroupAnalysisResultFieldPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group analysis result."""
 
     def has_object_permission(self, request, view, obj):
-        # Allow all reads
-        if request.method in permissions.SAFE_METHODS:
+        grp = obj.analysis_result.sample_group
+        # Allow all reads if group is public
+        if request.method in permissions.SAFE_METHODS and grp.is_public:
             return True
 
         # Require auth for write operations
@@ -136,6 +141,6 @@ class SampleGroupAnalysisResultFieldPermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        organization = obj.analysis_result.sample_group.organization
+        organization = grp.organization
         return request.user.organization_set.filter(pk=organization.pk).exists()
 
