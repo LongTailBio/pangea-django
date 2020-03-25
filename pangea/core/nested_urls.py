@@ -80,10 +80,11 @@ def to_uuid(**kwargs):
     for uuid_key, parent_key_name, model, field_name in keys:
         if uuid_key not in kwargs:
             break
-        parent = model.objects.filter(**{
+        filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name'
+        parent = model.objects.get(**{
             parent_key_name: parent.uuid,
-            'pk' if is_uuid(kwargs[uuid_key]) else 'name': kwargs[uuid_key],
-        })[0]
+            filter_field : kwargs[uuid_key],
+        })
         parent_field_name = field_name
     return parent.uuid, parent_field_name
 
