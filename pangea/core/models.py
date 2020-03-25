@@ -291,6 +291,12 @@ class SampleGroupAnalysisResult(AnalysisResult):
         field = SampleGroupAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
 
+    def __str__(self):
+        return f"{self.sample_group.name} ({self.module_name})"
+
+    def __repr__(self):
+        return f'<SampleGroupAnalysisResult uuid="{self.uuid}" module_name="{self.module_name}">'
+
 
 class AnalysisResultField(AutoCreatedUpdatedMixin):
     """Class representing a single field of a single result in the database."""
@@ -352,3 +358,9 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
             }
         )
         return out
+
+    def __str__(self):
+        return f"{self.analysis_result.sample_group.name} ({self.analysis_result.module_name}: {self.name})"
+
+    def __repr__(self):
+        return f'<SampleGroupAnalysisResultField uuid="{self.uuid}" name="{self.name}">'
