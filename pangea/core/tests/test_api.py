@@ -324,6 +324,59 @@ class AnalysisResultTests(APITestCase):
         cls.sample_library = cls.sample_group.library
         cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
 
+    def test_public_sample_analysis_result_read(self):
+        """Ensure no login is required to read public group."""
+        group = self.organization.create_sample_group(name='GRP_01 PUBLIC_YUDB', is_library=True)
+        sample = group.create_sample(name='SMPL_01 YUDB')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_sample_analysis_result_read(self):
+        """Ensure authorized user can read private sample group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 PRIVATE_TYVNV',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 YUDB')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_sample_analysis_result_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 PRIVATE_UHHKJ',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 UHHKJ')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_sample_analysis_result_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization JHGJHGH')
+        group = other_org.create_sample_group(
+            name='GRP_01 PRIVATE_JHGJHGH',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 JHGJHGH')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_sample_group_analysis_result(self):
         self.client.force_authenticate(user=self.user)
 
