@@ -52,7 +52,7 @@ class SampleGroupAddSampleSerializer(serializers.Serializer):
 
 class SampleSerializer(serializers.ModelSerializer):
 
-    library_obj = SampleGroupSerializer(source='library')
+    library_obj = SampleGroupSerializer(source='library.group')
 
     class Meta:
         model = Sample
