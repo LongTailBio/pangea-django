@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
+    'background_task',
     'pangea.core',
+    'pangea.contrib.covid19',
     'pangea.contrib.taxasearch',
 ]
 
@@ -159,6 +161,34 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+# Email
+# https://docs.djangoproject.com/en/3.0/topics/email/
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST', None)
+EMAIL_PORT = os.environ.get('EMAIL_PORT', 587)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', None)
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', None)
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', True)
+EMAIL_USE_SSL = os.environ.get('EMAIL_USE_SSL', False)
+EMAIL_TIMEOUT = os.environ.get('EMAIL_TIMEOUT', None)
+
+
+# User-uploaded files
+# https://docs.djangoproject.com/en/3.0/ref/settings/#std:setting-MEDIA_ROOT
+
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media/'))
+
+
+# S3-compatible Cloud Storage
+# https://boto3.amazonaws.com/v1/documentation/api/latest/index.html
+
+S3_ENDPOINT = os.environ.get('S3_ENDPOINT', 'https://s3.wasabisys.com')
+S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY', None)
+S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY', None)
+S3_BUCKET = os.environ.get('S3_BUCKET', None)
 
 
 # Static files (CSS, JavaScript, Images)

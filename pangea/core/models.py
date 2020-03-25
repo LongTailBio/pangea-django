@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
+
 import uuid
 import random
 import structlog
@@ -18,6 +20,7 @@ class PangeaUser(AbstractUser):
     """Custom Pangea user type."""
     username = None
     email = models.EmailField(_('email address'), unique=True)
+    personal_org_uuid = models.UUIDField(blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -27,12 +30,29 @@ class PangeaUser(AbstractUser):
     def __str__(self):
         return self.email
 
+    @property
+    def _personal_org_name(self):
+        return f'Personal Organization for User {self.username}'
+
+    @property
+    def personal_org(self):
+        try:
+            return Organization.objects.get(pk=self.personal_org_uuid)
+        except ObjectDoesNotExist:
+            org = Organization.objects.create(name=self._personal_org_name)
+            org.users.add(self)
+            org.save()
+            self.personal_org_uuid = org.uuid
+            self.save()
+            return org
+
 
 class Organization(AutoCreatedUpdatedMixin):
     """This class represents the organization model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, unique=True)
     users = models.ManyToManyField(get_user_model())
+    core_sample_group_uuid = models.UUIDField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         out = super(Organization, self).save(*args, **kwargs)
@@ -47,6 +67,25 @@ class Organization(AutoCreatedUpdatedMixin):
     def create_sample_group(self, *args, **kwargs):
         sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
+
+    @property
+    def _core_sample_group_name(self):
+        return f'Default Sample Group for Organization {self.name}'
+
+    @property
+    def core_sample_group(self):
+        try:
+            return SampleGroup.objects.get(pk=self.core_sample_group_uuid)
+        except ObjectDoesNotExist:
+            grp = SampleGroup.factory(
+                name=self._core_sample_group_name,
+                organization=self,
+                is_public=False,
+                is_library=True,
+            )
+            self.core_sample_group_uuid = grp.uuid
+            self.save()
+            return grp
 
     def __str__(self):
         return f'{self.name}'
@@ -220,6 +259,12 @@ class SampleAnalysisResult(AnalysisResult):
         field = SampleAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
 
+    def __str__(self):
+        return f"{self.sample.name} ({self.module_name})"
+
+    def __repr__(self):
+        return f'<SampleAnalysisResult uuid="{self.uuid}" module_name="{self.module_name}">'
+
 
 class SampleGroupAnalysisResult(AnalysisResult):
     """Class representing a single field of a sample group analysis result."""
@@ -280,6 +325,12 @@ class SampleAnalysisResultField(AnalysisResultField):
             }
         )
         return out
+
+    def __str__(self):
+        return f"{self.analysis_result.sample.name} ({self.analysis_result.module_name}: {self.name})"
+
+    def __repr__(self):
+        return f'<SampleAnalysisResultField uuid="{self.uuid}" name="{self.name}">'
 
 
 class SampleGroupAnalysisResultField(AnalysisResultField):
