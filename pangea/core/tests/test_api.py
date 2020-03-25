@@ -99,6 +99,39 @@ class SampleGroupTests(APITestCase):
         cls.organization = Organization.objects.create(name='Test Organization')
         cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
 
+    def test_public_sample_group_read(self):
+        """Ensure no login is required to read public group."""
+        group = self.organization.create_sample_group(name='GRP_01 PUBLIC_GJYJ')
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_sample_group_read(self):
+        """Ensure authorized user can read private sample group."""
+        group = self.organization.create_sample_group(name='GRP_01 PRIVATE_GJYJ', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_sample_group_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        group = self.organization.create_sample_group(name='GRP_01 PRIVATE_GJYJ', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_sample_group_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization UYYGHJGHJGHJ')
+        group = other_org.create_sample_group(name='GRP_01 PRIVATE_UYYGHJGHJGHJ', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_unauthenticated_sample_group(self):
         """Ensure 403 error is throw when trying to create sample group if unauthenticated."""
         url = reverse('sample-group-create')
