@@ -6,12 +6,12 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
 import uuid
-import random
 import structlog
 
 from .exceptions import SampleOwnerError
 from .managers import PangeaUserManager
 from .mixins import AutoCreatedUpdatedMixin
+from .utils import random_replicate_name
 
 logger = structlog.get_logger(__name__)
 
@@ -188,12 +188,6 @@ class Sample(AutoCreatedUpdatedMixin):
     def create_analysis_result(self, *args, **kwargs):
         ar = SampleAnalysisResult.objects.create(sample=self, *args, **kwargs)
         return ar
-
-
-def random_replicate_name(len=12):
-    """Return a random alphanumeric string of length `len`."""
-    out = random.choices('abcdefghijklmnopqrtuvwxyzABCDEFGHIJKLMNOPQRTUVWXYZ0123456789', k=len)
-    return ''.join(out)
 
 
 class AnalysisResult(AutoCreatedUpdatedMixin):
