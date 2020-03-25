@@ -34,7 +34,7 @@ class OrganizationAddUserSerializer(serializers.Serializer):
 
 class SampleGroupSerializer(serializers.ModelSerializer):
 
-    organization_obj = OrganizationSerializer(source='organization')
+    organization_obj = OrganizationSerializer(source='organization', read_only=True)
 
     class Meta:
         model = SampleGroup
@@ -52,7 +52,7 @@ class SampleGroupAddSampleSerializer(serializers.Serializer):
 
 class SampleSerializer(serializers.ModelSerializer):
 
-    library_obj = SampleGroupSerializer(source='library.group')
+    library_obj = SampleGroupSerializer(source='library.group', read_only=True)
 
     class Meta:
         model = Sample
@@ -65,7 +65,7 @@ class SampleSerializer(serializers.ModelSerializer):
 
 class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
-    sample_obj = SampleSerializer(source='sample')
+    sample_obj = SampleSerializer(source='sample', read_only=True)
 
     class Meta:
         model = SampleAnalysisResult
@@ -79,7 +79,7 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
 class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
 
-    sample_group_obj = SampleGroupSerializer(source='sample_group')
+    sample_group_obj = SampleGroupSerializer(source='sample_group', read_only=True)
 
     class Meta:
         model = SampleGroupAnalysisResult
@@ -93,7 +93,7 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
 
 class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
 
-    analysis_result_obj = SampleAnalysisResultSerializer(source='analysis_result')
+    analysis_result_obj = SampleAnalysisResultSerializer(source='analysis_result', read_only=True)
 
     class Meta:
         model = SampleAnalysisResultField
@@ -107,7 +107,8 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
 
 class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
 
-    analysis_result_obj = SampleGroupAnalysisResultSerializer(source='analysis_result')
+    analysis_result_obj = SampleGroupAnalysisResultSerializer(source='analysis_result',
+                                                              read_only=True)
 
     class Meta:
         model = SampleGroupAnalysisResultField
