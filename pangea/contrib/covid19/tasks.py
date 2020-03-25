@@ -47,7 +47,7 @@ def process_covid19(user_id, reads_path):
         field = ar.create_field(name='report', stored_data={
             '__type__': 's3',
             'endpoint_url': settings.S3_ENDPOINT,
-            'uri': f's3://{results_object_name}', 
+            'uri': f's3://{settings.S3_BUCKET}/{results_object_name}', 
         })
         field.save()
 
