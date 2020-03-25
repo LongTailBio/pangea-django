@@ -32,7 +32,7 @@ class PangeaUser(AbstractUser):
 
     @property
     def _personal_org_name(self):
-        return f'Personal Organization for User {self.username}'
+        return f'Personal Organization for User {self.email}'
 
     @property
     def personal_org(self):
