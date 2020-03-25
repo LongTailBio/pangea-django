@@ -125,6 +125,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
 
     def add_sample(self, sample):
         sample.sample_groups.add(self)
+        self.save()
         sample.save()
         return self
 
@@ -157,6 +158,7 @@ class SampleLibrary(AutoCreatedUpdatedMixin):
 
     def create_sample(self, *args, **kwargs):
         sample = Sample.objects.create(library=self, *args, **kwargs)
+        self.group.add_sample(sample)
         return sample
 
     def __str__(self):
