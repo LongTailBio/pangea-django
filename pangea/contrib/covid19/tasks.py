@@ -29,7 +29,7 @@ def process_covid19(user_id, reads_path):
 
         result_filepath = kraken2_search_reads(
             temp_file_path,
-            f'user-{user_id}.{sample_name}.{replicate}.covid19_results'
+            f'{sample_name}.{replicate}.covid19_results'
         )
         logger.info('ran_kraken2', result_filepath=result_filepath)
         results_object_name = f'covid19/results/{result_filepath}'
