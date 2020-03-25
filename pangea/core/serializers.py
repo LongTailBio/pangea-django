@@ -61,13 +61,16 @@ class SampleSerializer(serializers.ModelSerializer):
 
 class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
+    sample_obj = SampleSerializer(source='sample')
+
     class Meta:
         model = SampleAnalysisResult
         fields = (
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
+            'sample_obj'
         )
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'sample_obj')
 
 
 class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
