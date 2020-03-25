@@ -34,14 +34,16 @@ class OrganizationAddUserSerializer(serializers.Serializer):
 
 class SampleGroupSerializer(serializers.ModelSerializer):
 
+    organization_obj = OrganizationSerializer(source='organization')
+
     class Meta:
         model = SampleGroup
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
             'organization', 'description', 'is_library',
-            'is_public', 'theme'
+            'is_public', 'theme', 'organization_obj'
         )
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'organization_obj')
 
 
 class SampleGroupAddSampleSerializer(serializers.Serializer):
@@ -50,13 +52,15 @@ class SampleGroupAddSampleSerializer(serializers.Serializer):
 
 class SampleSerializer(serializers.ModelSerializer):
 
+    library_obj = SampleGroupSerializer(source='library')
+
     class Meta:
         model = Sample
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
-            'library', 'metadata',
+            'library', 'metadata', 'library_obj',
         )
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'library_obj')
 
 
 class SampleAnalysisResultSerializer(serializers.ModelSerializer):
@@ -75,32 +79,41 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
 class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
 
+    sample_group_obj = SampleGroupSerializer(source='sample_group')
+
     class Meta:
         model = SampleGroupAnalysisResult
         fields = (
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
+            'sample_group_obj',
         )
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
 
 
 class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
+
+    analysis_result_obj = SampleAnalysisResultSerializer(source='analysis_result')
 
     class Meta:
         model = SampleAnalysisResultField
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
             'stored_data', 'analysis_result',
+            'analysis_result_obj',
         )
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'analysis_result_obj')
 
 
 class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
+
+    analysis_result_obj = SampleGroupAnalysisResultSerializer(source='analysis_result')
 
     class Meta:
         model = SampleGroupAnalysisResultField
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
             'stored_data', 'analysis_result',
+            'analysis_result_obj',
         )
-        read_only_fields = ('created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at', 'analysis_result_obj')
