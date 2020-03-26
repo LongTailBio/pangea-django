@@ -135,11 +135,11 @@ class SampleGroupTests(APITestCase):
     def test_no_login_sample_group_list(self):
         """Ensure 403 error is thrown if trying to illicitly read private group."""
         pub_group = self.organization.create_sample_group(
-            name='GRP_01 PUBLIC_GJYJYIBSBN', is_public=True
+            name='GRP_01 PUBLIC_GJYJYIBSBN', is_public=True, is_library=True
         )
         other_org = Organization.objects.create(name='Test Organization GJYJYIBSBN')
         priv_group = other_org.create_sample_group(
-            name='GRP_01 PRIVATE_GJYJYIBSBN', is_public=False
+            name='GRP_01 PRIVATE_GJYJYIBSBN', is_public=False, is_library=True
         )
         url = reverse('sample-group-create')
         response = self.client.get(url, format='json')
@@ -241,14 +241,15 @@ class SampleTests(APITestCase):
     def test_no_login_sample_list(self):
         """Ensure 403 error is thrown if trying to illicitly read private group."""
         pub_group = self.organization.create_sample_group(
-            name='GRP_01 PUBLIC_RTJNDRPOF', is_public=True
+            name='GRP_01 PUBLIC_RTJNDRPOF', is_public=True, is_library=True
         )
-        pub_samp = pub_group.create_sample('SMPL PUBLIC_RTJNDRPOF')
+        pub_samp = pub_group.create_sample(name='SMPL PUBLIC_RTJNDRPOF')
         other_org = Organization.objects.create(name='Test Organization RTJNDRPOF')
         priv_group = other_org.create_sample_group(
-            name='GRP_01 PRIVATE_RTJNDRPOF', is_public=False
+            name='GRP_01 PRIVATE_RTJNDRPOF', is_public=False, is_library=True
         )
-        priv_samp = priv_group.create_sample('SMPL PRIVATE_RTJNDRPOF')
+        priv_samp = priv_group.create_sample(name='SMPL PRIVATE_RTJNDRPOF')
+
         url = reverse('sample-create')
         response = self.client.get(url, format='json')
         names = {el['name'] for el in response.data['results']}
@@ -411,25 +412,25 @@ class AnalysisResultTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_no_login_sample_analys_result_list(self):
+    def test_no_login_sample_analysis_result_list(self):
         """Ensure 403 error is thrown if trying to illicitly read private group."""
         pub_group = self.organization.create_sample_group(
-            name='GRP_01 PUBLIC_RTJNDRPOF', is_public=True
+            name='GRP_01 PUBLIC_RTJNDRPOF', is_public=True, is_library=True
         )
-        pub_samp = pub_group.create_sample('SMPL PUBLIC_RTJNDRPOF')
+        pub_samp = pub_group.create_sample(name='SMPL PUBLIC_RTJNDRPOF')
         pub_ar = pub_samp.create_analysis_result(module_name='module_foobar')
         other_org = Organization.objects.create(name='Test Organization RTJNDRPOF')
         priv_group = other_org.create_sample_group(
-            name='GRP_01 PRIVATE_RTJNDRPOF', is_public=False
+            name='GRP_01 PRIVATE_RTJNDRPOF', is_public=False, is_library=True
         )
-        priv_samp = priv_group.create_sample('SMPL PRIVATE_RTJNDRPOF')
+        priv_samp = priv_group.create_sample(name='SMPL PRIVATE_RTJNDRPOF')
         priv_ar = pub_samp.create_analysis_result(module_name='module_foobar')
         url = reverse('sample-ars-create')
         response = self.client.get(url, format='json')
-        names = {el['name'] for el in response.data['results']}
+        names = {el['sample_obj']['name'] for el in response.data['results']}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(pub_ar.name, names)
-        self.assertNotIn(priv_ar.name, names)
+        self.assertIn(pub_samp.name, names)
+        self.assertNotIn(priv_samp.name, names)
 
     def test_create_sample_group_analysis_result(self):
         self.client.force_authenticate(user=self.user)
