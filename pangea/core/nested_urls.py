@@ -83,7 +83,7 @@ def to_uuid(**kwargs):
         filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name'
         parent = model.objects.get(**{
             parent_key_name: parent.uuid,
-            filter_field : kwargs[uuid_key],
+            filter_field: kwargs[uuid_key],
         })
         parent_field_name = field_name
     return parent.uuid, parent_field_name
@@ -101,9 +101,11 @@ def nested_path(url, base_view, *out_args, **out_kwargs):
                 uuid_kwargs[key] = kwargs.pop(key)
         uuid, field_name = to_uuid(**uuid_kwargs)
         if create:
-            kwargs['pk'] = uuid
+            post = request.POST.copy()
+            post[field_name] = uuid
+            request.POST = post
         else:
-            request.data[field_name] = uuid
+            kwargs['pk'] = uuid
         return base_view(request, *args, **kwargs)
 
     return path(url, my_request, *out_args, **out_kwargs)
