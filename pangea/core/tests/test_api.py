@@ -99,6 +99,39 @@ class SampleGroupTests(APITestCase):
         cls.organization = Organization.objects.create(name='Test Organization')
         cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
 
+    def test_public_sample_group_read(self):
+        """Ensure no login is required to read public group."""
+        group = self.organization.create_sample_group(name='GRP_01 PUBLIC_GJYJ')
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_sample_group_read(self):
+        """Ensure authorized user can read private sample group."""
+        group = self.organization.create_sample_group(name='GRP_01 PRIVATE_GJYJ', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_sample_group_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        group = self.organization.create_sample_group(name='GRP_01 PRIVATE_GJYJ', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_sample_group_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization UYYGHJGHJGHJ')
+        group = other_org.create_sample_group(name='GRP_01 PRIVATE_UYYGHJGHJGHJ', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
     def test_create_unauthenticated_sample_group(self):
         """Ensure 403 error is throw when trying to create sample group if unauthenticated."""
         url = reverse('sample-group-create')
@@ -139,6 +172,55 @@ class SampleTests(APITestCase):
     def setUpTestData(cls):
         cls.organization = Organization.objects.create(name='Test Organization')
         cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
+
+    def test_public_sample_read(self):
+        """Ensure no login is required to read public group."""
+        group = self.organization.create_sample_group(name='GRP_01 PUBLIC_YUDB', is_library=True)
+        sample = group.create_sample(name='SMPL_01 YUDB')
+        url = reverse('sample-details', kwargs={'pk': sample.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_sample_read(self):
+        """Ensure authorized user can read private sample group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 PRIVATE_TYVNV',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 YUDB')
+        url = reverse('sample-details', kwargs={'pk': sample.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_sample_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 PRIVATE_UHHKJ',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 UHHKJ')
+        url = reverse('sample-details', kwargs={'pk': sample.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_sample_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization JHGJHGH')
+        group = other_org.create_sample_group(
+            name='GRP_01 PRIVATE_JHGJHGH',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 JHGJHGH')
+        url = reverse('sample-details', kwargs={'pk': sample.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_unauthenticated_sample(self):
         """Ensure 403 error is throw when trying to create sample if unauthenticated."""
@@ -241,6 +323,59 @@ class AnalysisResultTests(APITestCase):
         cls.sample_group = cls.organization.create_sample_group(name='Test Library', is_library=True)
         cls.sample_library = cls.sample_group.library
         cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
+
+    def test_public_sample_analysis_result_read(self):
+        """Ensure no login is required to read public group."""
+        group = self.organization.create_sample_group(name='GRP_01 PUBLIC_YUDB', is_library=True)
+        sample = group.create_sample(name='SMPL_01 YUDB')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_sample_analysis_result_read(self):
+        """Ensure authorized user can read private sample group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 PRIVATE_TYVNV',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 YUDB')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_sample_analysis_result_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 PRIVATE_UHHKJ',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 UHHKJ')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_sample_analysis_result_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization JHGJHGH')
+        group = other_org.create_sample_group(
+            name='GRP_01 PRIVATE_JHGJHGH',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 JHGJHGH')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_sample_group_analysis_result(self):
         self.client.force_authenticate(user=self.user)
