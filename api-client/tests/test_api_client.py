@@ -1,4 +1,5 @@
 """Test suite for experimental functions."""
+import random
 
 <<<<<<< HEAD
 import random
