@@ -51,7 +51,7 @@ class Knex:
             auth=self.auth,
         )
         response.raise_for_status()
-        return response.json()['results']
+        return response.json()
 
     def post(self, url, json={}):
         response = requests.post(
@@ -59,6 +59,15 @@ class Knex:
             headers=self.headers,
             auth=self.auth,
             json=json
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def delete(self, url):
+        response = requests.delete(
+            f'{self.endpoint_url}/{url}',
+            headers=self.headers,
+            auth=self.auth,
         )
         response.raise_for_status()
         return response.json()

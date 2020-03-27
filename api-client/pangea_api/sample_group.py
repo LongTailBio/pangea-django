@@ -11,11 +11,13 @@ class SampleGroup(RemoteObject):
         self.knex = knex
         self.org = org
         self.name = name
+        self.is_library = is_library
 
     def load_blob(self, blob):
         self.uuid = blob['uuid']
         self.created_at = blob['created_at']
         self.updated_at = blob['updated_at']
+        self.is_library = blob['is_library']
 
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
@@ -30,7 +32,8 @@ class SampleGroup(RemoteObject):
         self.org.idem()
         blob = self.knex.post(f'sample_groups?format=json', json={
             'organization': self.org.uuid,
-            'name': org_name
+            'name': self.name,
+            'is_library': self.is_library,
         })
         self.load_blob(blob)
 
