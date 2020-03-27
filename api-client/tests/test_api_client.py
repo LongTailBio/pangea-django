@@ -1,9 +1,8 @@
 """Test suite for experimental functions."""
 
-import pandas as pd
-
 from unittest import TestCase
 from os.path import join, dirname
+
 from os import environ
 
 from pangea_api import (
