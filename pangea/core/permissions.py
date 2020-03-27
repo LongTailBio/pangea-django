@@ -70,7 +70,8 @@ class SamplePermission(permissions.BasePermission):
             return False
 
         # Require organization membership to edit/delete
-        return request.user.organization_set.filter(pk=obj.library.group.organization.pk).exists()
+        organization = grp.organization
+        return request.user.organization_set.filter(pk=organization.pk).exists()
 
 
 class SampleAnalysisResultPermission(permissions.BasePermission):

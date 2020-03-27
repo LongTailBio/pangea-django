@@ -17,6 +17,7 @@ Additional URLs that support nested access and access by name.
 '''
 
 from django.urls import path
+from django.db.models.functions import Lower
 from uuid import UUID
 from rest_framework.urlpatterns import format_suffix_patterns
 
@@ -74,13 +75,13 @@ def to_uuid(**kwargs):
     if is_uuid(org_key):
         parent = Organization.objects.get(pk=org_key)
     else:
-        parent = Organization.objects.get(name=org_key)
+        parent = Organization.objects.get(name__iexact=org_key)
 
     # Traverse down through whichever path segments present in the request
     for uuid_key, parent_key_name, model, field_name in keys:
         if uuid_key not in kwargs:
             break
-        filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name'
+        filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name__iexact'
         parent = model.objects.get(**{
             parent_key_name: parent.uuid,
             filter_field: kwargs[uuid_key],
