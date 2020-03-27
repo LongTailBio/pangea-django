@@ -22,18 +22,19 @@ class Sample(RemoteObject):
 
     def _get(self):
         """Fetch the result from the server."""
-        self.org.idem()
+        self.grp.get()
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
     def _create(self):
         assert self.grp.is_library
-        self.org.idem()
-        blob = self.knex.post(f'samples?format=json', json={
+        self.grp.idem()
+        data = {
             'library': self.grp.uuid,
-            'name': org_name,
-            'metadata': self.metadata,
-        })
+            'name': self.name,
+        }
+        url = 'samples?format=json'
+        blob = self.knex.post(url, json=data)
         self.load_blob(blob)
 
     def analysis_result(self, module_name, replicate=None):

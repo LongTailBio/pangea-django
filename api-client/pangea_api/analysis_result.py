@@ -11,60 +11,71 @@ class AnalysisResult(RemoteObject):
 
     def _get(self):
         """Fetch the result from the server."""
-        self.org.idem()
+        self.parent.idem()
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
 
 class SampleAnalysisResult(AnalysisResult):
 
-    def __init__(self, knex, module_name, replicate=None):
+    def __init__(self, knex, sample, module_name, replicate=None):
         super().__init__(self)
         self.knex = knex
         self.sample = sample
-        self.name = name
+        self.parent = self.sample
+        self.module_name = module_name
+        self.replicate = replicate
 
     def nested_url(self):
-        return self.sample.nested_url() + f'/analysis_results/{self.name}'
+        return self.sample.nested_url() + f'/analysis_results/{self.module_name}'
 
     def _create(self):
-        self.org.idem()
-        blob = self.knex.post(f'sample_ars?format=json', json={
+        self.sample.idem()
+        data = {
             'sample': self.sample.uuid,
             'module_name': self.module_name,
-        })
+        }
+        if self.replicate:
+            data['replicate'] = replicate
+        blob = self.knex.post(f'sample_ars?format=json', json=data)
         self.load_blob(blob)
 
     def field(self, field_name, data=None):
-        return SampleAnalysisResultField(field_name)
+        return SampleAnalysisResultField(self.knex, self, field_name, data=data)
 
 
 class SampleGroupAnalysisResult(AnalysisResult):
 
-    def __init__(self, knex, module_name, replicate=None):
+    def __init__(self, knex, grp, module_name, replicate=None):
         super().__init__(self)
         self.knex = knex
         self.grp = grp
+        self.parent = self.grp
         self.module_name = module_name
+        self.replicate = replicate
 
     def nested_url(self):
-        return self.grp.nested_url() + f'/analysis_results/{self.name}'
+        return self.grp.nested_url() + f'/analysis_results/{self.module_name}'
 
     def _create(self):
-        self.org.idem()
-        blob = self.knex.post(f'sample_group_ars?format=json', json={
+        self.grp.idem()
+        data = {
             'sample_group': self.grp.uuid,
             'module_name': self.module_name,
-        })
+        }
+        if self.replicate:
+            data['replicate'] = replicate
+        blob = self.knex.post(f'sample_group_ars?format=json', json=data)
         self.load_blob(blob)
 
     def field(self, field_name, data=None):
-        return SampleGroupAnalysisResultField()
+        return SampleGroupAnalysisResultField(self.knex, self, field_name, data=data)
 
 
 class AnalysisResultField(RemoteObject):
 
     def __init__(self, knex, parent, field_name, data=None):
+        super().__init__(self)
         self.knex = knex
         self.parent = parent
         self.field_name = field_name
@@ -75,7 +86,7 @@ class AnalysisResultField(RemoteObject):
 
     def _get(self):
         """Fetch the result from the server."""
-        self.org.idem()
+        self.parent.idem()
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
@@ -86,21 +97,21 @@ class AnalysisResultField(RemoteObject):
 
     def _create(self):
         self.parent.idem()
-        blob = self.knex.post(f'{self.canon_url}?format=json', json={
+        blob = self.knex.post(f'{self.canon_url()}?format=json', json={
             'analysis_result': self.parent.uuid,
-            'name': org_name,
+            'name': self.field_name,
             'stored_data': self.data,
         })
         self.load_blob(blob)
 
 
-class SampleAnalysisResultField(AnalysisResult):
+class SampleAnalysisResultField(AnalysisResultField):
 
     def canon_url(self):
         return 'sample_ar_fields'
 
 
-class SampleGroupAnalysisResultField(AnalysisResult):
+class SampleGroupAnalysisResultField(AnalysisResultField):
 
     def canon_url(self):
         return 'sample_group_ar_fields'
