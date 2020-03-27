@@ -28,6 +28,9 @@ class Knex:
         self.auth = None
         self.headers = {'Accept': 'application/json'}
 
+    def add_auth_token(self, token):
+        self.auth = TokenAuth(token)
+
     def login(self, username, password):
         response = requests.post(
             f'{self.endpoint_url}/auth/token/login',
@@ -38,7 +41,7 @@ class Knex:
             }
         )
         response.raise_for_status()
-        self.auth = TokenAuth(response.json()['auth_token'])
+        self.add_auth_token(response.json()['auth_token'])
         return self
 
     def get(self, url):
