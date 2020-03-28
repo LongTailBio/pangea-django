@@ -59,6 +59,16 @@ class TestTreeOfLifeAPI(APITestCase):
         self.assertIn('Escherichia coli', names)
         self.assertEqual(1, len(names))
 
+    def test_canonicalize_taxa_name_case_insensitive(self):
+        """Ensure we can update a defunct taxa name."""
+        query = 'Bacillus coli'.lower()
+        url = reverse('treeoflife-correct-taxa-names') + f'?query={query}'
+        response = self.client.get(url, format='json')
+        names = {el['name'] for el in response.data[query]['names']}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('Escherichia coli', names)
+        self.assertEqual(1, len(names))
+
     def test_canonicalize_multiple_taxa_name(self):
         """Ensure we can update a defunct taxa name."""
         q1, q2 = 'Bacillus coli', 'Chondromyces aurantiacus'

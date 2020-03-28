@@ -27,7 +27,7 @@ def fuzzy_correct_taxa_names(request):
     results = {'canon': canon, 'rank': rank}
     for query in queries:
         result = {'query': query, 'names': []}
-        nodes = {name.tree_node for name in TaxonName.objects.filter(name__contains=query)}
+        nodes = {name.tree_node for name in TaxonName.objects.filter(name__icontains=query)}
         if canon:
             names = {node.canon_name for node in nodes if not rank or node.rank == rank}
         else:
