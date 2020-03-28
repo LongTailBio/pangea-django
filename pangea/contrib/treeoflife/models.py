@@ -10,24 +10,13 @@ import structlog
 
 from pangea.core.mixins import AutoCreatedUpdatedMixin
 
-ALLOWED_NAME_TYPES = [
-    'acronym',
-    'anamorph',
-    'authority',
-    'blast name',
-    'common name',
-    'equivalent name',
-    'genbank acronym',
-    'genbank anamorph',
-    'genbank common name',
-    'genbank synonym',
-    'in-part',
-    'includes',
-    'scientific name',
-    'synonym',
-    'teleomorph',
-    'type material',
-]
+from .mixins import (
+    MoneraMixin,
+    BiotaMixin,
+    MicrobeMixin,
+)
+from .constants import MD2_COLUMN_NAMES
+
 
 
 class TaxonName(AutoCreatedUpdatedMixin):
@@ -42,7 +31,6 @@ class TaxonName(AutoCreatedUpdatedMixin):
 
     def __str__(self):
         return f'{self.name}::{self.name_type}::{self.taxon_id}'
-
 
 
 class TreeNode(AutoCreatedUpdatedMixin):
@@ -62,6 +50,27 @@ class TreeNode(AutoCreatedUpdatedMixin):
     def all_names(self):
         return TaxonName.objects.filter(taxon_id=self.taxon_id)
 
+    @property
+    def annotation(self):
+        try:
+            for attr in ['bacteria_annotation_set', 'archaea_annotation_set',
+                         'fungi_annotation_set', 'virus_annotation_set']:
+                if hasattr(self, attr):
+                    return getattr(self, attr).all()[0].as_dict()
+        except IndexError:  # No annotation present
+            return {}
+
+    def ancestors(self, reducer=lambda x: x):
+        """Return a list of TreeNodes that are ancestors of this node.
+
+        Start with this node."""
+        out = []
+        ancestor = self
+        while ancestor:
+            out.append(reducer(ancestor))
+            ancestor = ancestor.parent
+        return out
+
     @classmethod
     def byname(cls, name):
         try:
@@ -71,70 +80,60 @@ class TreeNode(AutoCreatedUpdatedMixin):
             return cls.objects.get(taxon_id=tid)
 
 
-# class MicrobeDirectoryEntry(AutoCreatedUpdatedMixin):
-#     taxon = models.ForeignKey(TreeNode, on_delete=models.CASCADE)
+class MicrobeDirectoryEntry(AutoCreatedUpdatedMixin):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    taxon_id = models.TextField(editable=False, db_index=True)
+
+    class Meta:
+        abstract = True
+
+    def as_dict(self):
+        """Return a dict of annotations."""
+        out = {}
+        for attr in MD2_COLUMN_NAMES:
+            if hasattr(self, attr):
+                out[attr] = getattr(self, attr)
+        return out
 
 
-# class Monera(MicrobeDirectoryEntry):
-#     salinity_concentration_range_w_v = models.TextField()
-#     low_ph = models.TextField()
-#     high_ph = models.TextField()
-#     drylands = models.TextField()
-#     low_productivity = models.TextField()
-#     gram_stain = models.TextField()
-#     human_commensal = models.TextField()
-#     antimicrobial_susceptibility = models.TextField()
-#     optimal_temperature = models.TextField()
-#     extreme_environment = models.TextField()
-#     biofilm_forming = models.TextField()
-#     optimal_ph = models.TextField()
-#     animal_pathogen = models.TextField()
-#     spore_forming = models.TextField()
-#     pathogenicity = models.TextField()
-#     plant_pathogen = models.TextField()
-#     halotolerance = models.TextField()
-#     psychrophilic = models.TextField()
-#     radiophilic = models.TextField()
+class Bacteria(MicrobeDirectoryEntry, MoneraMixin,):
+    tree_node = models.ForeignKey(
+        TreeNode,
+        on_delete=models.CASCADE,
+        related_name='bacteria_annotation_set',
+        unique=True
+    )
 
 
-# class Bacteria(Monera):
-#     pass
+class Archaea(MicrobeDirectoryEntry, MoneraMixin,):
+    tree_node = models.ForeignKey(
+        TreeNode,
+        on_delete=models.CASCADE,
+        related_name='archaea_annotation_set',
+        unique=True
+    )
 
 
-# class Archaea(Monera):
-#     pass
+class Fungi(MicrobeDirectoryEntry, BiotaMixin,):
+    tree_node = models.ForeignKey(
+        TreeNode,
+        on_delete=models.CASCADE,
+        related_name='fungi_annotation_set',
+        unique=True
+    )
 
 
-# class Fungi(MicrobeDirectoryEntry):
-#     salinity_concentration_range_w_v = models.TextField()
-#     human_commensal = models.TextField()
-#     antimicrobial_susceptibility = models.TextField()
-#     optimal_temperature = models.TextField()
-#     extreme_environment = models.TextField()
-#     biofilm_forming = models.TextField()
-#     optimal_ph = models.TextField()
-#     animal_pathogen = models.TextField()
-#     spore_forming = models.TextField()
-#     pathogenicity = models.TextField()
-#     plant_pathogen = models.TextField()
-#     halotolerance = models.TextField()
-
-
-# class Virus(MicrobeDirectoryEntry):
-#     virus_name = models.TextField()
-#     virus_lineage = models.TextField()
-#     kegg_genome = models.TextField()
-#     kegg_disease = models.TextField()
-#     disease = models.TextField()
-#     host_name = models.TextField()
-#     host_lineage = models.TextField()
-#     gram_stain = models.TextField()
-#     human_commensal = models.TextField()
-#     antimicrobial_susceptibility = models.TextField()
-#     optimal_temperature = models.TextField()
-#     extreme_environment = models.TextField()
-#     optimal_ph = models.TextField()
-#     animal_pathogen = models.TextField()
-#     spore_forming = models.TextField()
-#     pathogenicity = models.TextField()
-#     plant_pathogen = models.TextField()
+class Virus(MicrobeDirectoryEntry, MicrobeMixin,):
+    tree_node = models.ForeignKey(
+        TreeNode,
+        on_delete=models.CASCADE,
+        related_name='virus_annotation_set',
+        unique=True
+    )
+    virus_name = models.TextField()
+    virus_lineage = models.TextField()
+    kegg_genome = models.TextField()
+    kegg_disease = models.TextField()
+    disease = models.TextField()
+    host_name = models.TextField()
+    host_lineage = models.TextField()

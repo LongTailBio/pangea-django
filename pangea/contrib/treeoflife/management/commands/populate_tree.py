@@ -9,6 +9,7 @@ from pangea.contrib.treeoflife.models import (
     TaxonName,
     TreeNode,
 )
+from pangea.contrib.treeoflife.utils import populate_md2
 
 NCBI_DELIM = '\t|'  # really...
 NAMES_ENV_VAR = 'PANGEA_TREEOFLIFE_NCBI_NAMES'
@@ -106,6 +107,16 @@ class Command(BaseCommand):
             action='store_true',
             help='Do not add names',
         )
+        parser.add_argument(
+            '--no-nodes',
+            action='store_true',
+            help='Do not add nodes',
+        )
+        parser.add_argument(
+            '--no-md2',
+            action='store_true',
+            help='Do not add microbe dir annotations',
+        )
 
     def handle(cls, *args, **kwargs):
         """Populate database tables with taxonomic info."""
@@ -115,5 +126,7 @@ class Command(BaseCommand):
 
         if not kwargs['no_names']:
             add_names(names_filename)
-
-        add_nodes(nodes_filename)
+        if not kwargs['no_nodes']:
+            add_nodes(nodes_filename)
+        if not kwargs['no_md2']:
+            populate_md2()

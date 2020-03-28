@@ -58,6 +58,7 @@ def get_descendants(request):
     )
     queries = request.query_params.get('query', None).split(',')
     depth = int(request.query_params.get('depth', 1))
+    annotate = request.query_params.get('annotate', 'false').lower() != 'false'
 
     def dfs(parent_node, parent, depth):
         if depth == 0:
@@ -68,6 +69,8 @@ def get_descendants(request):
                 'taxon_id': child.taxon_id,
                 'children': []
             }
+            if annotate:
+                child_node['annotation'] = child.annotation
             parent_node['children'].append(child_node)
             dfs(child_node, child, depth - 1)
 
@@ -78,10 +81,27 @@ def get_descendants(request):
         except ObjectDoesNotExist:
             raise ValidationError(_(f'Provided parameter {query} does not match any taxa.'))
         ancestor_node = {'name': ancestor.canon_name.name, 'taxon_id': ancestor.taxon_id, 'children': []}
+        if annotate:
+            ancestor_node['annotation'] = ancestor.annotation
         dfs(ancestor_node, ancestor, depth)
         result[query] = ancestor_node
 
     return Response(result)
 
 
-
+@api_view(['GET'])
+def annotate_taxa(request):
+    """Reply with annotations for the taxa."""
+    logger.info(
+        f'treeoflife__annotate_taxa',
+        query_params=request.query_params,
+    )
+    queries = request.query_params.get('query', None).split(',')
+    result = {}
+    for query in queries:
+        try:
+            taxon = TaxonName.objects.get(name__iexact=query).tree_node
+        except ObjectDoesNotExist:
+            raise ValidationError(_(f'Provided parameter {query} does not match any taxa.'))
+        result[query] = taxon.annotation
+    return Response(result)

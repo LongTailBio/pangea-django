@@ -11,9 +11,11 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from pangea.contrib.treeoflife.utils import populate_md2
 from pangea.contrib.treeoflife.models import (
     TaxonName,
     TreeNode,
+    Bacteria,
 )
 
 from .populate_test_db import populate_test_db
@@ -41,6 +43,53 @@ class TestTreeOfLife(TestCase):
     def test_get_specific_species_by_name(self):
         taxa = TaxonName.objects.get(name__iexact='Escherichia coli')
         self.assertTrue(taxa.uuid)
+
+
+class TestMicrobeDir(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        populate_test_db()
+        populate_md2(limit=1000)
+
+    def test_get_root_annotation(self):
+        annotation = TaxonName.objects.get(name__iexact='root').tree_node.annotation
+        self.assertFalse(annotation)
+
+    def test_get_bacteria_entry(self):
+        bact = Bacteria.objects.get(taxon_id='562')  # Escherichia coli
+        self.assertTrue(bact.uuid)
+
+    def test_get_ecoli_annotation(self):
+        annotation = TaxonName.objects.get(name__iexact='Escherichia coli').tree_node.annotation
+        self.assertTrue(annotation)
+
+
+class TestMicrobeDirAPI(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        populate_test_db()
+        populate_md2(limit=1000)
+
+    def test_annotate_taxa(self):
+        """Ensure we can update a defunct taxa name."""
+        query = 'Escherichia coli'
+        url = reverse('treeoflife-annotate-taxa') + f'?query={query}'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('Escherichia coli', response.data)
+        self.assertEqual(response.data[query]['gram_stain'].lower(), 'negative')
+
+    def test_get_annotated_descendants(self):
+        """Ensure we can get descendants."""
+        query = 'Escherichia'
+        url = reverse('treeoflife-get-descendants') + f'?query={query}&annotate=true'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['depth'], 1)
+        self.assertTrue(len(response.data[query]['children']) >= 2)
+        self.assertIn('annotation', response.data[query]['children'][0])
 
 
 class TestTreeOfLifeAPI(APITestCase):
