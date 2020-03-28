@@ -48,7 +48,10 @@ class TaxonName(AutoCreatedUpdatedMixin):
 class TreeNode(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     taxon_id = models.TextField(editable=False, db_index=True)
-    parent = models.ForeignKey('TreeNode', on_delete=models.CASCADE, null=True)
+    parent = models.ForeignKey(
+        'TreeNode', on_delete=models.CASCADE, null=True,
+        related_name='children'
+    )
     rank = models.TextField(blank=False, db_index=True)
 
     @property

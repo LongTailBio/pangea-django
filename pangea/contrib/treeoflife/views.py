@@ -3,6 +3,7 @@ import structlog
 from django.db import connection
 from django.utils.translation import gettext_lazy as _
 
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -16,7 +17,11 @@ logger = structlog.get_logger(__name__)
 
 @api_view(['GET'])
 def fuzzy_correct_taxa_names(request):
-    """Return samples with taxa results aggregated by city."""
+    """Reply with alternate taxa names."""
+    logger.info(
+        f'treeoflife__name_correction_query',
+        query_params=request.query_params,
+    )
     query = request.query_params.get('query', None)
     rank = request.query_params.get('rank', None)
     canon = request.query_params.get('canon', 'true').lower() != 'false'
@@ -40,8 +45,43 @@ def fuzzy_correct_taxa_names(request):
         for name in names:
             result['names'].append({'name': name.name, 'taxon_id': name.taxon_id})
         results[query] = result
+
+    return Response(results)
+
+
+@api_view(['GET'])
+def get_descendants(request):
+    """Reply with descendant taxa."""
     logger.info(
-        f'treeoflife__responding_to_name_correction_query',
+        f'treeoflife__taxonomic_descendants',
         query_params=request.query_params,
     )
-    return Response(results)
+    queries = request.query_params.get('query', None).split(',')
+    depth = int(request.query_params.get('depth', 1))
+
+    def dfs(parent_node, parent, depth):
+        if depth == 0:
+            return
+        for child in parent.children.all():
+            child_node = {
+                'name': child.canon_name.name,
+                'taxon_id': child.taxon_id,
+                'children': []
+            }
+            parent_node['children'].append(child_node)
+            dfs(child_node, child, depth - 1)
+
+    result = {'depth': depth}
+    for query in queries:
+        try:
+            ancestor = TaxonName.objects.get(name__iexact=query).tree_node
+        except ObjectDoesNotExist:
+            raise ValidationError(_(f'Provided parameter {query} does not match any taxa.'))
+        ancestor_node = {'name': ancestor.canon_name.name, 'taxon_id': ancestor.taxon_id, 'children': []}
+        dfs(ancestor_node, ancestor, depth)
+        result[query] = ancestor_node
+
+    return Response(result)
+
+
+

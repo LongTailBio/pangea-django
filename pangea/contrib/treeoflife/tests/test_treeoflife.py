@@ -118,3 +118,12 @@ class TestTreeOfLifeAPI(APITestCase):
         self.assertIn('Escherichia coli', names)
         self.assertNotIn('Escherichia', names)
         self.assertTrue(len(names) >= 9)
+
+    def test_get_descendants(self):
+        """Ensure we can get descendants."""
+        query = 'Escherichia'
+        url = reverse('treeoflife-get-descendants') + f'?query={query}'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['depth'], 1)
+        self.assertTrue(len(response.data[query]['children']) >= 2)
