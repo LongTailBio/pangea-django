@@ -55,6 +55,10 @@ class TreeNode(AutoCreatedUpdatedMixin):
     def canon_name(self):
         return TaxonName.objects.get(taxon_id=self.taxon_id, name_type='scientific name')
 
+    @property
+    def all_names(self):
+        return TaxonName.objects.filter(taxon_id=self.taxon_id)
+
     @classmethod
     def byname(cls, name):
         try:

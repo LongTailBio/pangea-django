@@ -51,19 +51,60 @@ class TestTreeOfLifeAPI(APITestCase):
 
     def test_canonicalize_taxa_name(self):
         """Ensure we can update a defunct taxa name."""
-        url = reverse('treeoflife-correct-taxa-names') + '?query=Bacillus coli'
+        query = 'Bacillus coli'
+        url = reverse('treeoflife-correct-taxa-names') + f'?query={query}'
         response = self.client.get(url, format='json')
-        names = {el['name'] for el in response.data['names']}
+        names = {el['name'] for el in response.data[query]['names']}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('Escherichia coli', names)
         self.assertEqual(1, len(names))
 
+    def test_canonicalize_multiple_taxa_name(self):
+        """Ensure we can update a defunct taxa name."""
+        q1, q2 = 'Bacillus coli', 'Chondromyces aurantiacus'
+        url = reverse('treeoflife-correct-taxa-names') + f'?query={q1},{q2}'
+        response = self.client.get(url, format='json')
+        names1 = {el['name'] for el in response.data[q1]['names']}
+        names2 = {el['name'] for el in response.data[q2]['names']}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('Escherichia coli', names1)
+        self.assertEqual(1, len(names1))
+        self.assertIn('Stigmatella aurantiaca', names2)
+        self.assertEqual(1, len(names2))
+
     def test_search_taxa_name(self):
         """Ensure we can update a defunct taxa name."""
-        url = reverse('treeoflife-correct-taxa-names') + '?query=Escherichia'
+        query = 'Escherichia'
+        url = reverse('treeoflife-correct-taxa-names') + f'?query={query}'
         response = self.client.get(url, format='json')
-        names = {el['name'] for el in response.data['names']}
+        names = {el['name'] for el in response.data[query]['names']}
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('Shigella dysenteriae', names)
         self.assertIn('Escherichia coli', names)
         self.assertTrue(len(names) >= 10)
+
+    def test_search_non_canon_name(self):
+        """Ensure we can update a defunct taxa name."""
+        query = 'Escherichia'
+        url = reverse('treeoflife-correct-taxa-names') + f'?query={query}&canon=false'
+        response = self.client.get(url, format='json')
+        names = {el['name'] for el in response.data[query]['names']}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data['canon'])
+        self.assertIn('Shigella dysenteriae', names)
+        self.assertIn('Escherichia coli', names)
+        self.assertIn('Bacillus coli', names)
+        self.assertTrue(len(names) >= 11)
+
+    def test_search_taxa_name_rank_specified(self):
+        """Ensure we can update a defunct taxa name."""
+        query = 'Escherichia'
+        url = reverse('treeoflife-correct-taxa-names') + f'?query={query}&rank=species'
+        response = self.client.get(url, format='json')
+        names = {el['name'] for el in response.data[query]['names']}
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['rank'], 'species')
+        self.assertIn('Shigella dysenteriae', names)
+        self.assertIn('Escherichia coli', names)
+        self.assertNotIn('Escherichia', names)
+        self.assertTrue(len(names) >= 9)
