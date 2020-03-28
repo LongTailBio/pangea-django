@@ -1,6 +1,5 @@
 '''
 Additional URLs that support nested access and access by name.
-
 /{org_pk}/
 /{org_pk}/sample_groups/
 /{org_pk}/sample_groups/{grp_pk}/
