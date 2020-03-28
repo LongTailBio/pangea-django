@@ -31,18 +31,29 @@ ALLOWED_NAME_TYPES = [
 
 
 class TaxonName(AutoCreatedUpdatedMixin):
-    taxon_id = models.TextField(primary_key=True, editable=False, db_index=True)
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    taxon_id = models.TextField(editable=False, db_index=True)
     name = models.TextField(blank=False, db_index=True)
     name_type = models.TextField(blank=False, db_index=True)
 
+    @property
+    def tree_node(self):
+        return TreeNode.objects.get(taxon_id=self.taxon_id)
+
+    def __str__(self):
+        return f'{self.name}::{self.name_type}::{self.taxon_id}'
+
+
 
 class TreeNode(AutoCreatedUpdatedMixin):
-    taxon_id = models.TextField(primary_key=True, editable=False, db_index=True)
-    parent = models.ForeignKey('TreeNode')
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    taxon_id = models.TextField(editable=False, db_index=True)
+    parent = models.ForeignKey('TreeNode', on_delete=models.CASCADE, null=True)
     rank = models.TextField(blank=False, db_index=True)
 
+    @property
     def canon_name(self):
-        return TaxonName.objects.get(taxon_id=self.taxon_id, name_type='scientific name').name
+        return TaxonName.objects.get(taxon_id=self.taxon_id, name_type='scientific name')
 
     @classmethod
     def byname(cls, name):
@@ -53,70 +64,70 @@ class TreeNode(AutoCreatedUpdatedMixin):
             return cls.objects.get(taxon_id=tid)
 
 
-class MicrobeDirectoryEntry(AutoCreatedUpdatedMixin):
-    taxon = models.ForeignKey(TreeNode)
+# class MicrobeDirectoryEntry(AutoCreatedUpdatedMixin):
+#     taxon = models.ForeignKey(TreeNode, on_delete=models.CASCADE)
 
 
-class Monera(MicrobeDirectoryEntry):
-    salinity_concentration_range_w_v = models.TextField()
-    low_ph = models.TextField()
-    high_ph = models.TextField()
-    drylands = models.TextField()
-    low_productivity = models.TextField()
-    gram_stain = models.TextField()
-    human_commensal = models.TextField()
-    antimicrobial_susceptibility = models.TextField()
-    optimal_temperature = models.TextField()
-    extreme_environment = models.TextField()
-    biofilm_forming = models.TextField()
-    optimal_ph = models.TextField()
-    animal_pathogen = models.TextField()
-    spore_forming = models.TextField()
-    pathogenicity = models.TextField()
-    plant_pathogen = models.TextField()
-    halotolerance = models.TextField()
-    psychrophilic = models.TextField()
-    radiophilic = models.TextField()
+# class Monera(MicrobeDirectoryEntry):
+#     salinity_concentration_range_w_v = models.TextField()
+#     low_ph = models.TextField()
+#     high_ph = models.TextField()
+#     drylands = models.TextField()
+#     low_productivity = models.TextField()
+#     gram_stain = models.TextField()
+#     human_commensal = models.TextField()
+#     antimicrobial_susceptibility = models.TextField()
+#     optimal_temperature = models.TextField()
+#     extreme_environment = models.TextField()
+#     biofilm_forming = models.TextField()
+#     optimal_ph = models.TextField()
+#     animal_pathogen = models.TextField()
+#     spore_forming = models.TextField()
+#     pathogenicity = models.TextField()
+#     plant_pathogen = models.TextField()
+#     halotolerance = models.TextField()
+#     psychrophilic = models.TextField()
+#     radiophilic = models.TextField()
 
 
-class Bacteria(Monera):
-    pass
+# class Bacteria(Monera):
+#     pass
 
 
-class Archaea(Monera):
-    pass
+# class Archaea(Monera):
+#     pass
 
 
-class Fungi(MicrobeDirectoryEntry):
-    salinity_concentration_range_w_v = models.TextField()
-    human_commensal = models.TextField()
-    antimicrobial_susceptibility = models.TextField()
-    optimal_temperature = models.TextField()
-    extreme_environment = models.TextField()
-    biofilm_forming = models.TextField()
-    optimal_ph = models.TextField()
-    animal_pathogen = models.TextField()
-    spore_forming = models.TextField()
-    pathogenicity = models.TextField()
-    plant_pathogen = models.TextField()
-    halotolerance = models.TextField()
+# class Fungi(MicrobeDirectoryEntry):
+#     salinity_concentration_range_w_v = models.TextField()
+#     human_commensal = models.TextField()
+#     antimicrobial_susceptibility = models.TextField()
+#     optimal_temperature = models.TextField()
+#     extreme_environment = models.TextField()
+#     biofilm_forming = models.TextField()
+#     optimal_ph = models.TextField()
+#     animal_pathogen = models.TextField()
+#     spore_forming = models.TextField()
+#     pathogenicity = models.TextField()
+#     plant_pathogen = models.TextField()
+#     halotolerance = models.TextField()
 
 
-class Virus(MicrobeDirectoryEntry):
-    virus_name = models.TextField()
-    virus_lineage = models.TextField()
-    kegg_genome = models.TextField()
-    kegg_disease = models.TextField()
-    disease = models.TextField()
-    host_name = models.TextField()
-    host_lineage = models.TextField()
-    gram_stain = models.TextField()
-    human_commensal = models.TextField()
-    antimicrobial_susceptibility = models.TextField()
-    optimal_temperature = models.TextField()
-    extreme_environment = models.TextField()
-    optimal_ph = models.TextField()
-    animal_pathogen = models.TextField()
-    spore_forming = models.TextField()
-    pathogenicity = models.TextField()
-    plant_pathogen = models.TextField()
+# class Virus(MicrobeDirectoryEntry):
+#     virus_name = models.TextField()
+#     virus_lineage = models.TextField()
+#     kegg_genome = models.TextField()
+#     kegg_disease = models.TextField()
+#     disease = models.TextField()
+#     host_name = models.TextField()
+#     host_lineage = models.TextField()
+#     gram_stain = models.TextField()
+#     human_commensal = models.TextField()
+#     antimicrobial_susceptibility = models.TextField()
+#     optimal_temperature = models.TextField()
+#     extreme_environment = models.TextField()
+#     optimal_ph = models.TextField()
+#     animal_pathogen = models.TextField()
+#     spore_forming = models.TextField()
+#     pathogenicity = models.TextField()
+#     plant_pathogen = models.TextField()

@@ -9,7 +9,7 @@ from rest_framework.exceptions import ValidationError
 
 from pangea.core.utils import str2bool
 
-from .constants import METASUB_LIBRARY_UUID
+from .models import TaxonName
 
 logger = structlog.get_logger(__name__)
 
@@ -21,10 +21,10 @@ def fuzzy_correct_taxa_names(request):
     if query is None:
         logger.warn('treeoflife__name_correct_no_query_param')
         raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
-    canon = request.query_params.get('canon', True)
-    result = {'query': query, 'names': [], 'canonical_names': canon}
-    for obj in TreeName.objects.get(name__contains=query):
-        if not canon or obj.name_type == 'scientific name':
-            result['names'].append({'name': obj.name, 'taxon_id': obj.taxon_id})
+    result = {'query': query, 'names': []}
+    nodes = {name.tree_node for name in TaxonName.objects.filter(name__contains=query)}
+    canon_names = {node.canon_name for node in nodes}
+    for name in canon_names:
+        result['names'].append({'name': name.name, 'taxon_id': name.taxon_id})
     logger.info(f'treeoflife__responding_to_name_correction_query', query=query)
     return Response(result)
