@@ -27,6 +27,5 @@ class User:
             }
         )
         response.raise_for_status()
-        #self.knex.add_auth_token(response.json()['auth_token'])
         self.login()
         return self
