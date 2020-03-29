@@ -6,12 +6,14 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
 import uuid
+import boto3
 import structlog
 
 from .exceptions import SampleOwnerError
 from .managers import PangeaUserManager
 from .mixins import AutoCreatedUpdatedMixin
 from .utils import random_replicate_name
+# from .encrypted_fields import EncryptedTextField
 
 logger = structlog.get_logger(__name__)
 
@@ -68,6 +70,11 @@ class Organization(AutoCreatedUpdatedMixin):
         sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
 
+    def create_s3apikey(self, *args, **kwargs):
+        s3apikey = S3ApiKey(organization=self, *args, **kwargs)
+        s3apikey.save()
+        return s3apikey
+
     @property
     def _core_sample_group_name(self):
         return f'Default Sample Group for Organization {self.name}'
@@ -92,6 +99,76 @@ class Organization(AutoCreatedUpdatedMixin):
 
     def __repr__(self):
         return f'<Organization name="{self.name}">'
+
+
+class S3ApiKey(AutoCreatedUpdatedMixin):
+    """Represent an S3 API Key.
+
+    At present S3 API keys will be used by an organization to generate
+    short lived presigned URLs to download objects from S3. They will
+    not be used to upload data at this point.
+
+    Each API key must be assigned to a particular endpoint url.
+    Each API key can be assigned to a particular bucket or '*'
+    for all buckets.
+
+    S3ApiKey.private_key should never need to be sent to the client.
+    """
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    description = models.TextField(blank=False, default='')
+    endpoint_url = models.TextField(blank=False)
+    bucket = models.TextField(blank=False, default='*')
+    public_key = models.TextField(blank=False, default=None)
+    private_key = models.TextField(blank=False, default=None)
+    organization = models.ForeignKey(
+        Organization, on_delete=models.CASCADE, related_name='s3_api_keys'
+    )
+
+    def save(self, *args, **kwargs):
+        out = super(S3ApiKey, self).save(*args, **kwargs)
+        logger.info(
+            'saved_s3apikey',
+            obj_uuid=self.uuid,
+            public_key=self.public_key,
+        )
+        return out
+
+    def __str__(self):
+        return f'{self.public_key}'
+
+    def __repr__(self):
+        return f'<S3ApiKey public_key="{self.public_key}">'
+
+    @property
+    def s3(self):
+        return boto3.client(
+            's3',
+            endpoint_url=self.endpoint_url,
+            aws_access_key_id=self.public_key,
+            aws_secret_access_key=self.private_key,
+        )
+
+    def presign_url(self, endpoint_url, s3_url, timeout=24):
+        """Return a presigned read-only version of the url."""
+        assert endpoint_url == self.endpoint_url
+        bucket_name = s3_url.split('s3://')[1].split('/')[0]
+        assert self.bucket_name in ['*', bucket_name]
+        try:
+            response = self.s3.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket, 'Key': object_name},
+                ExpiresIn=(timeout * 60 * 60)
+            )
+            return response  # The response contains the presigned URL
+        except ClientError as e:
+            logger.exception(
+                'create_presigned_url_exception',
+                s3_url=s3_url,
+                endpoint_url=endpoint_url,
+                bucket=bucket,
+                expiration=expiration,
+            )
+            return None
 
 
 class SampleGroup(AutoCreatedUpdatedMixin):

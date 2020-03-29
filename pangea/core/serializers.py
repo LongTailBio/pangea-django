@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import (
     PangeaUser,
     Organization,
+    S3ApiKey,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
@@ -26,6 +27,21 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ('uuid', 'name', 'created_at', 'updated_at', 'core_sample_group_uuid')
         read_only_fields = ('created_at', 'updated_at', 'core_sample_group_uuid')
+
+
+class S3ApiKeySerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = S3ApiKey
+        fields = (
+            'uuid', 'description', 'created_at', 'updated_at',
+            'endpoint_url', 'bucket', 'public_key', 'private_key',
+            'organization',
+        )
+        read_only_fields = ('created_at', 'updated_at', 'uuid')
+        extra_kwargs = {
+            'private_key': {'write_only': True}
+        }
 
 
 class OrganizationAddUserSerializer(serializers.Serializer):
