@@ -1,3 +1,4 @@
+import os
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -585,3 +586,62 @@ class AnalysisResultTests(APITestCase):
         self.assertEqual(SampleAnalysisResult.objects.count(), 1)
         self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
         self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
+
+    def test_presign_s3_url_in_sample_ar_field(self):
+        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
+        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
+        if not pubkey and privkey:
+            return  # Only run this test if the keys are available
+        field = self.sample.create_analysis_result(
+            module_name='test_file',
+        ).create_field(
+            name='file',
+            stored_data={
+                '__type__': 's3',
+                'endpoint_url': 'https://s3.wasabisys.com',
+                's3uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
+            }
+        )
+        self.organization.users.add(self.user)
+        self.organization.create_s3apikey(
+            description='KEY_01',
+            endpoint_url='https://s3.wasabisys.com',
+            public_key=pubkey,
+            private_key=privkey,
+        )
+        url = reverse('sample-ar-fields-details', kwargs={'pk': field.uuid})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data['stored_data']
+        self.assertIn('presigned_url', data)
+        url = data['presigned_url']
+        self.assertTrue(
+            url.startswith('https://s3.wasabisys.com/pangea.test.bucket/my_private_s3_test_file.txt')
+        )
+        self.assertIn('AWSAccessKeyId=', url)
+        self.assertIn('Signature=', url)
+        self.assertIn('Expires=', url)
+
+    def test_no_presign_s3_url_in_sample_ar_field(self):
+        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
+        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
+        if not pubkey and privkey:
+            return  # Only run this test if the keys are available
+        field = self.sample.create_analysis_result(
+            module_name='test_file',
+        ).create_field(
+            name='file',
+            stored_data={
+                '__type__': 's3',
+                'endpoint_url': 'https://s3.wasabisys.com',
+                's3uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
+            }
+        )
+        self.organization.users.add(self.user)
+        url = reverse('sample-ar-fields-details', kwargs={'pk': field.uuid})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data['stored_data']
+        self.assertNotIn('presigned_url', data)

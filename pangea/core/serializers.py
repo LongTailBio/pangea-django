@@ -109,6 +109,22 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
 
 
+def presign_ar_field_stored_data_if_appropriate(ret, org):
+    if ret['stored_data'].get('__type__', None).lower() != 's3':
+        return ret
+    bucket_name = ret['stored_data']['s3uri'].split('s3://')[1].split('/')[0]
+    s3key_query = org.s3_api_keys \
+        .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
+        .filter(Q(bucket='*') | Q(bucket=bucket_name))
+    if s3key_query.exists():
+        s3key = s3key_query[0]
+        ret['stored_data']['presigned_url'] = s3key.presign_url(
+            ret['stored_data']['endpoint_url'],
+            ret['stored_data']['s3uri']
+        )
+    return ret
+
+
 class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
 
     analysis_result_obj = SampleAnalysisResultSerializer(source='analysis_result', read_only=True)
@@ -125,20 +141,10 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Convert `username` to lowercase."""
         ret = super().to_representation(instance)
-        if ret['stored_data'].get('__type__', None).lower() != 's3':
-            return ret
-        org = instance.analysis_result.sample.library.group.organization
-        bucket_name = ret['s3uri'].split('s3://')[1].split('/')[0]
-        s3key_query = org.s3_api_keys \
-            .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
-            .filter(Q(bucket_name='*') | Q(bucket_name=bucket_name))
-        if s3key_query.exists():
-            s3key = s3key_query[0]
-            ret['stored_data']['presigned_url'] = s3key.presign_url(
-                ret['stored_data']['endpoint_url'],
-                ret['stored_data']['s3uri']
-            )
-        return ret
+        return presign_ar_field_stored_data_if_appropriate(
+            ret,
+            instance.analysis_result.sample.library.group.organization,
+        )
 
 
 class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
@@ -158,17 +164,7 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Convert `username` to lowercase."""
         ret = super().to_representation(instance)
-        if ret['stored_data'].get('__type__', None).lower() != 's3':
-            return ret
-        org = instance.analysis_result.group.organization
-        bucket_name = ret['s3uri'].split('s3://')[1].split('/')[0]
-        s3key_query = org.s3_api_keys \
-            .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
-            .filter(Q(bucket_name='*') | Q(bucket_name=bucket_name))
-        if s3key_query.exists():
-            s3key = s3key_query[0]
-            ret['stored_data']['presigned_url'] = s3key.presign_url(
-                ret['stored_data']['endpoint_url'],
-                ret['stored_data']['s3uri']
-            )
-        return ret
+        return presign_ar_field_stored_data_if_appropriate(
+            ret,
+            instance.analysis_result.group.organization,
+        )

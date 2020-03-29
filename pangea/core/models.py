@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 import uuid
 import boto3
+from botocore.exceptions import ClientError
 import structlog
 
 from .exceptions import SampleOwnerError
@@ -154,13 +155,14 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
             msg = f'Endpoint URL {endpoint_url} does not match that specified for key {self}'
             raise ValueError(msg)
         bucket_name = s3_url.split('s3://')[1].split('/')[0]
-        if self.bucket_name not in ['*', bucket_name]:
+        if self.bucket not in ['*', bucket_name]:
             msg = f'Bucket name {bucket_name} does not match that specified for key {self}'
             raise ValueError(msg)
+        object_name = s3_url.split(f's3://{bucket_name}/')[1]
         try:
             response = self.s3.generate_presigned_url(
                 'get_object',
-                Params={'Bucket': bucket, 'Key': object_name},
+                Params={'Bucket': bucket_name, 'Key': object_name},
                 ExpiresIn=(timeout_hours * 60 * 60)
             )
             return response  # The response contains the presigned URL
