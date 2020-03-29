@@ -52,7 +52,7 @@ class TestS3ApiKeyModel(TestCase):
     def test_get_presigned_url(self):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
         privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
-        if not pubkey and privkey:
+        if not (pubkey and privkey):
             return  # Only run this test if the keys are available
         org = Organization.objects.create(name='Test Organization')
         key = S3ApiKey(

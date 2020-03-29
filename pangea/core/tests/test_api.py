@@ -590,7 +590,7 @@ class AnalysisResultTests(APITestCase):
     def test_presign_s3_url_in_sample_ar_field(self):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
         privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
-        if not pubkey and privkey:
+        if not (pubkey and privkey):
             return  # Only run this test if the keys are available
         field = self.sample.create_analysis_result(
             module_name='test_file',
@@ -626,7 +626,7 @@ class AnalysisResultTests(APITestCase):
     def test_no_presign_s3_url_in_sample_ar_field(self):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
         privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
-        if not pubkey and privkey:
+        if not (pubkey and privkey):
             return  # Only run this test if the keys are available
         field = self.sample.create_analysis_result(
             module_name='test_file',
