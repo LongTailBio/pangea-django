@@ -1,6 +1,5 @@
 """Test suite for experimental functions."""
 import random
-
 from os import environ
 from os.path import join, dirname
 from requests.exceptions import HTTPError
