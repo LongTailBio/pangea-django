@@ -101,21 +101,27 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     description = models.TextField(blank=False, default='')
     is_public = models.BooleanField(blank=False, default=True)
+    is_library = models.BooleanField(blank=False, default=False)
     theme = models.TextField(blank=True)
 
     def save(self, *args, **kwargs):
         out = super(SampleGroup, self).save(*args, **kwargs)
+        if self.is_library:  # New SampleGroup
+            lib, created = SampleLibrary.objects.get_or_create(group=self)
+            if created:
+                lib.save()
+                logger.info(
+                    'created_library',
+                    group_uuid=lib.group.uuid,
+                )
         logger.info(
             'saved_sample_group',
             obj_uuid=self.uuid,
             saved_uuid=out.uuid,
             name=self.name,
+            is_library=self.is_library,
         )
         return out
-
-    @property
-    def is_library(self):
-        return hasattr(self, 'library')
 
     def create_sample(self, *args, **kwargs):
         if not self.is_library:
@@ -135,10 +141,9 @@ class SampleGroup(AutoCreatedUpdatedMixin):
 
     @classmethod
     def factory(cls, *args, **kwargs):
-        is_library = kwargs.pop('is_library', False)
         grp = cls.objects.create(*args, **kwargs)
-        if is_library:
-            SampleLibrary.objects.create(group=grp)
+        if grp.is_library:
+            SampleLibrary.objects.get_or_create(group=grp)
         return grp
 
     def __str__(self):

@@ -41,7 +41,7 @@ class SampleGroupSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
             'organization', 'description', 'is_library',
-            'is_public', 'theme', 'organization_obj'
+            'is_public', 'theme', 'organization_obj',
         )
         read_only_fields = ('created_at', 'updated_at', 'organization_obj')
 
