@@ -110,6 +110,10 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
 
 
 def presign_ar_field_stored_data_if_appropriate(ret, org):
+    """Intercept serialization of an analysis result field to add a presigned URL.
+
+    At this point we are assuming the user has permission to access this result.
+    """
     if ret['stored_data'].get('__type__', None).lower() != 's3':
         return ret
     bucket_name = ret['stored_data']['s3uri'].split('s3://')[1].split('/')[0]
