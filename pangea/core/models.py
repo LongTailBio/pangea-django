@@ -134,10 +134,10 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
         return out
 
     def __str__(self):
-        return f'{self.public_key}'
+        return f'{self.uuid}'
 
     def __repr__(self):
-        return f'<S3ApiKey public_key="{self.public_key}">'
+        return f'<S3ApiKey uuid="{self.uuid}" public_key="{self.public_key}">'
 
     @property
     def s3(self):
@@ -145,19 +145,23 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
             's3',
             endpoint_url=self.endpoint_url,
             aws_access_key_id=self.public_key,
-            aws_secret_access_key=self.private_key,
+            aws_secret_access_key=self.private_key.decrypt(),
         )
 
-    def presign_url(self, endpoint_url, s3_url, timeout=24):
+    def presign_url(self, endpoint_url, s3_url, timeout_hours=24):
         """Return a presigned read-only version of the url."""
-        assert endpoint_url == self.endpoint_url
+        if endpoint_url != self.endpoint_url:
+            msg = f'Endpoint URL {endpoint_url} does not match that specified for key {self}'
+            raise ValueError(msg)
         bucket_name = s3_url.split('s3://')[1].split('/')[0]
-        assert self.bucket_name in ['*', bucket_name]
+        if self.bucket_name not in ['*', bucket_name]
+            msg = f'Bucket name {bucket_name} does not match that specified for key {self}'
+            raise ValueError(msg)
         try:
             response = self.s3.generate_presigned_url(
                 'get_object',
                 Params={'Bucket': bucket, 'Key': object_name},
-                ExpiresIn=(timeout * 60 * 60)
+                ExpiresIn=(timeout_hours * 60 * 60)
             )
             return response  # The response contains the presigned URL
         except ClientError as e:
@@ -166,7 +170,7 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
                 s3_url=s3_url,
                 endpoint_url=endpoint_url,
                 bucket=bucket,
-                expiration=expiration,
+                timeout_hours=timeout_hours,
             )
             return None
 

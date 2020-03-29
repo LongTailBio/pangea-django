@@ -1,4 +1,6 @@
+
 from rest_framework import serializers
+from django.db.models import Q
 
 from .models import (
     PangeaUser,
@@ -119,6 +121,23 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
             'analysis_result_obj',
         )
         read_only_fields = ('created_at', 'updated_at', 'analysis_result_obj')
+
+    def to_representation(self, instance):
+        """Convert `username` to lowercase."""
+        ret = super().to_representation(instance)
+        if ret['stored_data'].get('__type__', None).lower() != 's3':
+            return ret
+        org = instance.analysis_result.sample.library.group.organization
+        bucket_name = ret['s3uri'].split('s3://')[1].split('/')[0]
+        s3key = org.s3_api_keys.filter(
+            endpoint_url=ret['stored_data']['endpoint_url'],
+            Q(bucket_name='*') | Q(bucket_name=bucket_name),
+        ).one()
+        ret['stored_data']['presigned_url'] = s3key.presign_url(
+            ret['stored_data']['endpoint_url'],
+            ret['stored_data']['s3uri']
+        )
+        return ret
 
 
 class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):

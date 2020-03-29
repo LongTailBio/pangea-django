@@ -46,7 +46,7 @@ class S3ApiKeyPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if not bool(request.user and request.user.is_authenticated):
             logger.info(
-                'user_missing_or_not_authenticated',
+                's3_permission_user_missing_or_not_authenticated',
                 request={
                     'method': request.method,
                     'user': request.user,
@@ -58,7 +58,7 @@ class S3ApiKeyPermission(permissions.BasePermission):
         has_org_membership = request.user in obj.organization.users.all()
         if not has_org_membership:
             logger.info(
-                'required_organization_membership_not_found',
+                's3_permission_required_organization_membership_not_foundd',
                 request={
                     'method': request.method,
                     'user': request.user,
