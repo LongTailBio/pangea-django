@@ -4,9 +4,11 @@ from django.test import TestCase
 from django.db.utils import IntegrityError
 from unittest import skip
 
+from ..encrypted_fields import EncryptedString
 from ..models import (
     PangeaUser,
     Organization,
+    S3ApiKey,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
@@ -26,6 +28,26 @@ class TestUserModel(TestCase):
         self.assertEqual(org.name, user._personal_org_name)
         self.assertEqual(org.uuid, user.personal_org_uuid)
         self.assertIn(user, org.users.all())
+
+
+class TestS3ApiKeyModel(TestCase):
+
+    def test_encrypt_on_save(self):
+        org = Organization.objects.create(name='Test Organization')
+        key = S3ApiKey(
+            organization=org,
+            description='KEY_01',
+            endpoint_url='https://sys.foobar.com',
+            public_key='my_public_key',
+            private_key='my_private_key',
+        )
+        key.save()
+        self.assertTrue(key.uuid)
+        retrieved = S3ApiKey.objects.get(pk=key.uuid)
+        self.assertEqual(retrieved.public_key, 'my_public_key')
+        self.assertNotEqual(retrieved.private_key, 'my_private_key')
+        self.assertTrue(isinstance(retrieved.private_key, EncryptedString))
+        self.assertEqual(retrieved.private_key.decrypt(), 'my_private_key')
 
 
 class TestSampleModel(TestCase):

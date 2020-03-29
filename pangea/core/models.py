@@ -13,7 +13,7 @@ from .exceptions import SampleOwnerError
 from .managers import PangeaUserManager
 from .mixins import AutoCreatedUpdatedMixin
 from .utils import random_replicate_name
-# from .encrypted_fields import EncryptedTextField
+from .encrypted_fields import EncryptedTextField
 
 logger = structlog.get_logger(__name__)
 
@@ -119,7 +119,7 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
     endpoint_url = models.TextField(blank=False)
     bucket = models.TextField(blank=False, default='*')
     public_key = models.TextField(blank=False, default=None)
-    private_key = models.TextField(blank=False, default=None)
+    private_key = EncryptedTextField(blank=False, default=None)
     organization = models.ForeignKey(
         Organization, on_delete=models.CASCADE, related_name='s3_api_keys'
     )
