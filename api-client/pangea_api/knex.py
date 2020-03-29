@@ -1,7 +1,7 @@
 
 import requests
 
-ENDPOINT = 'https://pangea.gimmebio.com'
+DEFAULT_ENDPOINT = 'https://pangea.gimmebio.com'
 
 
 class TokenAuth(requests.auth.AuthBase):
