@@ -154,7 +154,7 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
             msg = f'Endpoint URL {endpoint_url} does not match that specified for key {self}'
             raise ValueError(msg)
         bucket_name = s3_url.split('s3://')[1].split('/')[0]
-        if self.bucket_name not in ['*', bucket_name]
+        if self.bucket_name not in ['*', bucket_name]:
             msg = f'Bucket name {bucket_name} does not match that specified for key {self}'
             raise ValueError(msg)
         try:
