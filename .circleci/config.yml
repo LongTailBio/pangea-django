@@ -48,6 +48,10 @@ jobs:
             . venv/bin/activate
             python manage.py migrate
 
+      - run: 
+          name: "Setup custom environment variables"
+          command: echo 'export S3_KEY_ENCRYPTION_SECRET="mysecretsecret"' >> $BASH_ENV
+
       - run:
           name: Run application tests
           command: |
