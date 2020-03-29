@@ -1,14 +1,5 @@
 """Test suite for experimental functions."""
 import random
-
-<<<<<<< HEAD
-import random
-=======
-from unittest import TestCase
-from os.path import join, dirname
-from requests.exceptions import HTTPError
->>>>>>> feat: auth updates, test passing
-
 from os import environ
 from os.path import join, dirname
 from requests.exceptions import HTTPError
