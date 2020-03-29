@@ -123,10 +123,6 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         )
         return out
 
-    # @property
-    # def is_library(self):
-    #     return hasattr(self, 'library')
-
     def create_sample(self, *args, **kwargs):
         if not self.is_library:
             raise SampleOwnerError('Only libraries can create samples')
