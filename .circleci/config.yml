@@ -8,6 +8,7 @@ jobs:
           DATABASE_NAME: pangea
           DATABASE_USER: postgres
           DATABASE_PASSWORD: ""
+          S3_KEY_ENCRYPTION_SECRET: "mysecretsecret"
       - image: circleci/postgres:11.6
         environment:
           POSTGRES_DB: pangea
@@ -47,10 +48,6 @@ jobs:
           command: |
             . venv/bin/activate
             python manage.py migrate
-
-      - run: 
-          name: "Setup custom environment variables"
-          command: echo 'export S3_KEY_ENCRYPTION_SECRET="mysecretsecret"' >> $BASH_ENV
 
       - run:
           name: Run application tests
