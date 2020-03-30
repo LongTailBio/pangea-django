@@ -17,7 +17,7 @@ from .constants import (
 )
 
 
-class TaxaSearchTests(APITestCase):
+class MetaSUBTests(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
