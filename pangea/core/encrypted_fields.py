@@ -20,6 +20,7 @@ class XOR:
     """Does this count as rolling my own crypto?
     I can't find any good python libraries and XOR is dummy simple.
     """
+    prefix = 'ENCRYPTED--'
 
     @staticmethod
     def key():
@@ -34,10 +35,14 @@ class XOR:
         xored = ''.join(xored)
         xored = xored.encode('utf-8')
         xored = base64.standard_b64encode(xored)
-        return xored.decode('utf-8')
+        xored = xored.decode('utf-8')
+        xored = XOR.prefix + xored
+        return xored
 
     @staticmethod
     def decrypt(data):
+        assert data.startswith(XOR.prefix)
+        data = data[len(XOR.prefix):]
         key = XOR.key()
         data = data.encode('utf-8')
         data = base64.standard_b64decode(data)
@@ -65,18 +70,18 @@ class EncryptedString:
 class EncryptedTextField(models.Field):
 
     def from_db_value(self, value, expression, context):
+        value = EncryptedString(value)
         return self.to_python(value)
 
     def to_python(self, value):
         if value is None or isinstance(value, EncryptedString):
             return value
-        value = EncryptedString(value)
         return value
 
     def get_prep_value(self, value):
         if value is None or value == '':
             return value
         if isinstance(value, EncryptedString):
-            return str(EncryptedString)
+            return str(value)
         value = XOR.encrypt(value)
         return value
