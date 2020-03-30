@@ -30,7 +30,7 @@ class TaxonName(AutoCreatedUpdatedMixin):
         return TreeNode.objects.get(taxon_id=self.taxon_id)
 
     def __str__(self):
-        return f'{self.name}::{self.name_type}::{self.taxon_id}'
+        return f'<TreeOfLife::TaxonName name="{self.name}" name_type="{self.name_type}" taxon_id="{self.taxon_id}" uuid="{self.uuid}">'
 
 
 class TreeNode(AutoCreatedUpdatedMixin):
@@ -41,6 +41,9 @@ class TreeNode(AutoCreatedUpdatedMixin):
         related_name='children'
     )
     rank = models.TextField(blank=False, db_index=True)
+
+    def __str__(self):
+        return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{self.parent.taxon_id}" uuid="{self.uuid}"'
 
     @property
     def canon_name(self):

@@ -136,7 +136,11 @@ def populate_md2(limit=-1):
                     ancestors = tree_node.ancestors(reducer=lambda x: x.canon_name.name.lower())
                 except:
                     print('!!!')
+                    print(tree_node, file=sys.stderr)
+                    print(tree_node.all_names, file=sys.stderr)
+                    ancestors = tree_node.ancestors(reducer=lambda x: x.all_names)
                     print(ancestors, file=sys.stderr)
+                    print('!!!')
                     raise
                 if 'archaea' in ancestors:
                     save_archaea(tree_node, row)
