@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls')),
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/contrib/covid19/', include('pangea.contrib.covid19.urls')),
+    path('api/contrib/metasub/', include('pangea.contrib.metasub.urls')),
     path('api/contrib/taxasearch/', include('pangea.contrib.taxasearch.urls')),
     path('api/contrib/treeoflife/', include('pangea.contrib.treeoflife.urls')),
 ]
