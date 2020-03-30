@@ -134,8 +134,7 @@ def populate_md2(limit=-1, exclude_bact=False):
             elif kind == 'euk':
                 save_euk(tree_node, row)
             elif kind == 'bact':
-                    ancestors = tree_node.ancestors(reducer=lambda x: x.canon_name.name.lower())
-                    raise
+                ancestors = tree_node.ancestors(reducer=lambda x: x.canon_name.name.lower())
                 if 'archaea' in ancestors:
                     save_archaea(tree_node, row)
                 else:
