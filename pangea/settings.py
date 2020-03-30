@@ -190,7 +190,6 @@ S3_ENDPOINT = os.environ.get('S3_ENDPOINT', 'https://s3.wasabisys.com')
 S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY', None)
 S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY', None)
 S3_BUCKET = os.environ.get('S3_BUCKET', None)
-S3_KEY_ENCRYPTION_SECRET = os.environ.get('S3_KEY_ENCRYPTION_SECRET', None)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
