@@ -85,10 +85,10 @@ def to_uuid(**kwargs):
             filter_field = 'module_name__iexact'
         if filter_field != 'pk' and model in [SampleAnalysisResultField, SampleGroupAnalysisResultField]:
             filter_field = 'field_name__iexact'
-        parent = model.objects.order_by('updated_at')[0](**{
+        parent = model.objects.filter(**{
             parent_key_name: parent.uuid,
             filter_field: kwargs[uuid_key],
-        })
+        }).order_by('updated_at')[0]
         parent_field_name = field_name
     return parent.uuid, parent_field_name
 
