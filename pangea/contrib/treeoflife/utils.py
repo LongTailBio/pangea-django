@@ -1,4 +1,5 @@
 
+import sys
 from django.core.exceptions import ObjectDoesNotExist
 from microbe_directory import (
     bacteria,
@@ -127,8 +128,14 @@ def populate_md2(limit=-1):
             elif kind == 'euk':
                 save_euk(tree_node, row)
             elif kind == 'bact':
-                ancestors = tree_node.ancestors(reducer=lambda x: x.canon_name.name.lower())
+                try:
+                    ancestors = tree_node.ancestors(reducer=lambda x: x.canon_name.name.lower())
+                except:
+                    print('!!!')
+                    print(ancestors, file=sys.stderr)
+                    raise
                 if 'archaea' in ancestors:
                     save_archaea(tree_node, row)
                 else:
                     save_bacteria(tree_node, row)
+        print(f'Finished loading table: {kind}.', file=sys.stderr)
