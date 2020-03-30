@@ -108,7 +108,7 @@ def fuzzy_taxa_search_cities(request):
             city_results[taxa_name][city]['mean_relative_abundance'].append(val['relative_abundance'])
     for taxa_name, city in city_results.items():
         for city_name, vals in city.items():
-            rels = vals['relative_abundance']
+            rels = vals['mean_relative_abundance']
             vals['max_relative_abundance'] = max(rels)
             vals['mean_relative_abundance'] = sum(rels) / len(rels)
 
