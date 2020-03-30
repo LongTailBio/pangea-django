@@ -81,6 +81,10 @@ def to_uuid(**kwargs):
         if uuid_key not in kwargs:
             break
         filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name__iexact'
+        if filter_field != 'pk' and model in [SampleAnalysisResult, SampleGroupAnalysisResult]:
+            filter_field = 'module_name__iexact'
+        if filter_field != 'pk' and model in [SampleAnalysisResultField, SampleGroupAnalysisResultField]:
+            filter_field = 'field_name__iexact'
         parent = model.objects.get(**{
             parent_key_name: parent.uuid,
             filter_field: kwargs[uuid_key],
