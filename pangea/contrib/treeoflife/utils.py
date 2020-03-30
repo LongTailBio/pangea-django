@@ -113,6 +113,10 @@ def save_bacteria(tree_node, row):
 
 
 def populate_md2(limit=-1):
+    Virus.objects.all().delete()
+    Bacteria.objects.all().delete()
+    Fungi.objects.all().delete()
+    Archaea.objects.all().delete()
     for kind, tbl in [('virus', virus()), ('bact', bacteria()), ('euk', eukaryote())]:
         for i, (index, row) in enumerate(tbl.iterrows()):
             if limit > 0 and i >= limit:
