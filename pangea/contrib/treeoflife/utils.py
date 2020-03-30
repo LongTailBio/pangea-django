@@ -1,4 +1,5 @@
 
+import sys
 from django.core.exceptions import ObjectDoesNotExist
 from microbe_directory import (
     bacteria,
@@ -27,12 +28,10 @@ def save_virus(tree_node, row):
         disease=row['disease'],
         host_name=row['host_name'],
         host_lineage=row['host_lineage'],
-        gram_stain=row['gram_stain'],
         human_commensal=row['human_commensal'],
         antimicrobial_susceptibility=row['antimicrobial_susceptibility'],
         optimal_temperature=row['optimal_temperature'],
         extreme_environment=row['extreme_environment'],
-        biofilm_forming=row['biofilm_forming'],
         optimal_ph=row['optimal_ph'],
         animal_pathogen=row['animal_pathogen'],
         spore_forming=row['spore_forming'],
@@ -46,7 +45,6 @@ def save_euk(tree_node, row):
         tree_node=tree_node,
         taxon_id=str(row['taxonomic_id']).strip(),
         salinity_concentration_range_w_v=row['salinity_concentration/range(w/v)'],
-        gram_stain=row['gram_stain'],
         human_commensal=row['human_commensal'],
         antimicrobial_susceptibility=row['antimicrobial_susceptibility'],
         optimal_temperature=row['optimal_temperature'],
@@ -113,8 +111,15 @@ def save_bacteria(tree_node, row):
     ).save()
 
 
-def populate_md2(limit=-1):
+def populate_md2(limit=-1, exclude_bact=False):
+    Virus.objects.all().delete()
+    if not exclude_bact:
+        Bacteria.objects.all().delete()
+    Fungi.objects.all().delete()
+    Archaea.objects.all().delete()
     for kind, tbl in [('virus', virus()), ('bact', bacteria()), ('euk', eukaryote())]:
+        if kind == 'bact' and exclude_bact:
+            continue
         for i, (index, row) in enumerate(tbl.iterrows()):
             if limit > 0 and i >= limit:
                 break
@@ -134,3 +139,4 @@ def populate_md2(limit=-1):
                     save_archaea(tree_node, row)
                 else:
                     save_bacteria(tree_node, row)
+        print(f'Finished loading table: {kind}.', file=sys.stderr)

@@ -39,7 +39,7 @@ def add_names(names_filename, N=1000):
             if i % N == 0:
                 elapsed = int(time() - start_time)
                 sys.stderr.write(f'\rAdded {i:,} taxa to database in {elapsed:,} seconds')
-            batch.append(TaxonName(taxon_id=tkns[0], name=tkns[1], name_type=tkns[2]))
+            batch.append(TaxonName(taxon_id=tkns[0], name=tkns[1], name_type=tkns[3]))
             if len(batch) == N:
                 TaxonName.objects.bulk_create(batch)
                 batch = []
@@ -92,7 +92,7 @@ def add_nodes(nodes_filename):
     TreeNode.objects.all().delete()
     with gzip.open(nodes_filename) as nodes_file:
         for _, tkns in tokenize(nodes_file):
-            taxon_id, parent_id, rank = tkns[0], tkns[1], tkns[3]
+            taxon_id, parent_id, rank = tkns[0], tkns[1], tkns[2]
             tree.add_node(taxon_id, parent_id, rank)
     sys.stderr.write(f'Parsed tree file.\n')
     tree.create_all_nodes_in_db()
@@ -117,6 +117,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Do not add microbe dir annotations',
         )
+        parser.add_argument(
+            '--no-bact',
+            action='store_true',
+            help='Do not add microbe dir annotations for bacteria',
+        )
 
     def handle(cls, *args, **kwargs):
         """Populate database tables with taxonomic info."""
@@ -129,4 +134,4 @@ class Command(BaseCommand):
         if not kwargs['no_nodes']:
             add_nodes(nodes_filename)
         if not kwargs['no_md2']:
-            populate_md2()
+            populate_md2(exclude_bact=kwargs['no_bact'])
