@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from pangea.core.encrypted_fields import EncryptedString
 from pangea.core.models import (
     PangeaUser,
     Organization,
@@ -144,10 +145,15 @@ class S3ApiKeyTests(APITestCase):
             'organization': self.organization.pk,
         }
         response = self.client.post(url, data, format='json')
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(S3ApiKey.objects.count(), 1)
         self.assertEqual(S3ApiKey.objects.get().public_key, 'my_public_key')
+        # Test the private-key's value by accessing the model directly
+        retrieved = S3ApiKey.objects.get(pk=response.data['uuid'])
+        self.assertEqual(retrieved.public_key, 'my_public_key')
+        self.assertNotEqual(retrieved.private_key, 'my_private_key')
+        self.assertTrue(isinstance(retrieved.private_key, EncryptedString))
+        self.assertEqual(retrieved.private_key.decrypt(), 'my_private_key')
 
     def test_unauth_create_key(self):
         url = reverse('s3apikey-create')
