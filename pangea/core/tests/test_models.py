@@ -1,12 +1,14 @@
 """Test suite for Sample model."""
-
+import os
 from django.test import TestCase
 from django.db.utils import IntegrityError
 from unittest import skip
 
+from ..encrypted_fields import EncryptedString
 from ..models import (
     PangeaUser,
     Organization,
+    S3ApiKey,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
@@ -26,6 +28,52 @@ class TestUserModel(TestCase):
         self.assertEqual(org.name, user._personal_org_name)
         self.assertEqual(org.uuid, user.personal_org_uuid)
         self.assertIn(user, org.users.all())
+
+
+class TestS3ApiKeyModel(TestCase):
+
+    def test_encrypt_on_save(self):
+        org = Organization.objects.create(name='Test Organization')
+        key = S3ApiKey(
+            organization=org,
+            description='KEY_01',
+            endpoint_url='https://sys.foobar.com',
+            public_key='my_public_key',
+            private_key='my_private_key',
+        )
+        key.save()
+        self.assertTrue(key.uuid)
+        retrieved = S3ApiKey.objects.get(pk=key.uuid)
+        self.assertEqual(retrieved.public_key, 'my_public_key')
+        self.assertNotEqual(retrieved.private_key, 'my_private_key')
+        self.assertTrue(isinstance(retrieved.private_key, EncryptedString))
+        self.assertEqual(retrieved.private_key.decrypt(), 'my_private_key')
+
+    def test_get_presigned_url(self):
+        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
+        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
+        if not (pubkey and privkey):
+            return  # Only run this test if the keys are available
+        org = Organization.objects.create(name='Test Organization')
+        key = S3ApiKey(
+            organization=org,
+            description='KEY_01',
+            endpoint_url='https://s3.wasabisys.com',
+            public_key=pubkey,
+            private_key=privkey,
+        )
+        key.save()
+        retrieved = S3ApiKey.objects.get(pk=key.uuid)
+        url = retrieved.presign_url(
+            'https://s3.wasabisys.com',
+            's3://pangea.test.bucket/my_private_s3_test_file.txt'
+        )
+        self.assertTrue(
+            url.startswith('https://s3.wasabisys.com/pangea.test.bucket/my_private_s3_test_file.txt')
+        )
+        self.assertIn('AWSAccessKeyId=', url)
+        self.assertIn('Signature=', url)
+        self.assertIn('Expires=', url)
 
 
 class TestSampleModel(TestCase):

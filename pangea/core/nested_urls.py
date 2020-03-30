@@ -81,10 +81,12 @@ def to_uuid(**kwargs):
         if uuid_key not in kwargs:
             break
         filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name__iexact'
-        parent = model.objects.get(**{
+        if filter_field != 'pk' and model in [SampleAnalysisResult, SampleGroupAnalysisResult]:
+            filter_field = 'module_name__iexact'
+        parent = model.objects.filter(**{
             parent_key_name: parent.uuid,
             filter_field: kwargs[uuid_key],
-        })
+        }).order_by('updated_at')[0]
         parent_field_name = field_name
     return parent.uuid, parent_field_name
 

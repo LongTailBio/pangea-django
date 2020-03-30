@@ -26,7 +26,7 @@ def tokenize(filehandle):
         yield i, tkns
 
 
-def add_names(names_filename):
+def add_names(names_filename, N=1000):
     """Add names from names_filename to database.
 
     Note takes up to ~30 mintues to run for the full file.
@@ -73,7 +73,7 @@ class TaxaTree:
     def create_all_nodes_in_db(self):
         start_time = time()
         for i, taxon_id in enumerate(self.rank_map.keys()):
-            if i % (10 * 1000) == 0:
+            if i % (1000) == 0:
                 elapsed = int(time() - start_time)
                 sys.stderr.write(f'\rAdded {i:,} tree nodes to database in {elapsed:,} seconds')
             self.create_node_in_db(taxon_id)

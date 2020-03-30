@@ -7,6 +7,7 @@ from .forms import PangeaUserCreationForm, PangeaUserChangeForm
 from .models import (
     PangeaUser,
     Organization,
+    S3ApiKey,
     SampleGroup,
     SampleLibrary,
     Sample,
@@ -16,12 +17,29 @@ from .models import (
     SampleAnalysisResultField
 )
 
+
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name', 'members',)
 
     def members(self, obj):
         return obj.users.count()
+
+
+@admin.register(S3ApiKey)
+class S3ApiKeyAdmin(admin.ModelAdmin):
+    list_display = ('public_key', 'endpoint_url',)
+    list_filter = (
+        ('organization', admin.RelatedOnlyFieldListFilter),
+    )
+
+    def lookup_allowed(self, lookup, value):
+        return lookup in [
+            'organization__uuid__exact',
+        ]
+
+    def organization_name(self, obj):
+        return obj.organization.name
 
 
 @admin.register(SampleGroup)
@@ -86,8 +104,8 @@ class SampleAnalysisResultAdmin(admin.ModelAdmin):
     list_filter = (
         ('sample__library__group__organization', admin.RelatedOnlyFieldListFilter),
         ('sample__library__group', admin.RelatedOnlyFieldListFilter),
-        ('sample', admin.RelatedOnlyFieldListFilter),
         'module_name',
+        ('sample', admin.RelatedOnlyFieldListFilter),
     )
 
     def lookup_allowed(self, lookup, value):
@@ -114,9 +132,9 @@ class SampleAnalysisResultFieldAdmin(admin.ModelAdmin):
     list_filter = (
         ('analysis_result__sample__library__group__organization', admin.RelatedOnlyFieldListFilter),
         ('analysis_result__sample__library__group', admin.RelatedOnlyFieldListFilter),
-        ('analysis_result__sample', admin.RelatedOnlyFieldListFilter),
         'analysis_result__module_name',
         ('name', FieldNameListFilter),
+        ('analysis_result__sample', admin.RelatedOnlyFieldListFilter),
     )
 
     def lookup_allowed(self, lookup, value):

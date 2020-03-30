@@ -191,7 +191,6 @@ S3_ACCESS_KEY = os.environ.get('S3_ACCESS_KEY', None)
 S3_SECRET_KEY = os.environ.get('S3_SECRET_KEY', None)
 S3_BUCKET = os.environ.get('S3_BUCKET', None)
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 

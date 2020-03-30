@@ -7,11 +7,12 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 from .models import (
     PangeaUser,
     Organization,
+    S3ApiKey,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
@@ -21,6 +22,7 @@ from .models import (
 )
 from .permissions import (
     OrganizationPermission,
+    S3ApiKeyPermission,
     SampleGroupPermission,
     SamplePermission,
     SampleAnalysisResultPermission,
@@ -31,6 +33,7 @@ from .permissions import (
 from .serializers import (
     PangeaUserSerializer,
     OrganizationSerializer,
+    S3ApiKeySerializer,
     OrganizationAddUserSerializer,
     SampleGroupSerializer,
     SampleGroupAddSampleSerializer,
@@ -99,6 +102,46 @@ class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = (OrganizationPermission,)
+
+
+class S3ApiKeyCreateView(generics.ListCreateAPIView):
+    serializer_class = S3ApiKeySerializer
+    permission_classes = (IsAuthenticated, S3ApiKeyPermission)
+
+    def get_queryset(self):
+        perm = S3ApiKeyPermission()
+        s3_ids = {
+            s3.pk
+            for s3 in S3ApiKey.objects.all()
+            if perm.has_object_permission(self.request, self, s3)
+        }
+        return S3ApiKey.objects.filter(pk__in=s3_ids).order_by('created_at')
+
+    def perform_create(self, serializer):
+        """Require organization membership to create sample group."""
+        organization = serializer.validated_data.get('organization')
+        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
+        if not membership_queryset.exists():
+            logger.warning(
+                'attempted_create_s3apikey_without_permission',
+                organization={'uuid': organization.pk, 'name': organization.name},
+            )
+            raise PermissionDenied(_('Organization membership is required to create an s3 api key.'))
+        serializer.save()
+
+
+class S3ApiKeyDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = S3ApiKeySerializer
+    permission_classes = (S3ApiKeyPermission, IsAuthenticated)
+
+    def get_queryset(self):
+        perm = S3ApiKeyPermission()
+        s3_ids = {
+            s3.pk
+            for s3 in S3ApiKey.objects.all()
+            if perm.has_object_permission(self.request, self, s3)
+        }
+        return S3ApiKey.objects.filter(pk__in=s3_ids).order_by('created_at')
 
 
 class SampleGroupCreateView(generics.ListCreateAPIView):
@@ -218,15 +261,17 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
+    queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, )
     filterset_fields = ['uuid', 'sample_id', 'module_name', 'replicate']
 
-    def get_queryset(self):
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SampleAnalysisResultPermission()
         my_ids = {
             samp.pk
-            for samp in SampleAnalysisResult.objects.all()
+            for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
         return SampleAnalysisResult.objects.filter(pk__in=my_ids).order_by('created_at')

@@ -22,7 +22,7 @@ class TokenAuth(requests.auth.AuthBase):
 
 class Knex:
 
-    def __init__(self, endpoint_url=ENDPOINT):
+    def __init__(self, endpoint_url=DEFAULT_ENDPOINT):
         self.endpoint_url = endpoint_url
         self.endpoint_url += '/api'
         self.auth = None
