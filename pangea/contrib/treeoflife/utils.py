@@ -45,7 +45,6 @@ def save_euk(tree_node, row):
         tree_node=tree_node,
         taxon_id=str(row['taxonomic_id']).strip(),
         salinity_concentration_range_w_v=row['salinity_concentration/range(w/v)'],
-        gram_stain=row['gram_stain'],
         human_commensal=row['human_commensal'],
         antimicrobial_susceptibility=row['antimicrobial_susceptibility'],
         optimal_temperature=row['optimal_temperature'],
@@ -112,12 +111,15 @@ def save_bacteria(tree_node, row):
     ).save()
 
 
-def populate_md2(limit=-1):
+def populate_md2(limit=-1, exclude_bact=False):
     Virus.objects.all().delete()
-    Bacteria.objects.all().delete()
+    if not exclude_bact:
+        Bacteria.objects.all().delete()
     Fungi.objects.all().delete()
     Archaea.objects.all().delete()
     for kind, tbl in [('virus', virus()), ('bact', bacteria()), ('euk', eukaryote())]:
+        if kind == 'bact' and exclude_bact:
+            continue
         for i, (index, row) in enumerate(tbl.iterrows()):
             if limit > 0 and i >= limit:
                 break
@@ -132,21 +134,7 @@ def populate_md2(limit=-1):
             elif kind == 'euk':
                 save_euk(tree_node, row)
             elif kind == 'bact':
-                try:
                     ancestors = tree_node.ancestors(reducer=lambda x: x.canon_name.name.lower())
-                except:
-                    print('!!!')
-                    print(tree_node, file=sys.stderr)
-                    print(tree_node.all_names, file=sys.stderr)
-                    ancestors = tree_node.ancestors()
-                    for i, val in enumerate(ancestors):
-                        print(f'-{i} ', list(val.all_names), file=sys.stderr)
-                    for i, val in enumerate(ancestors):
-                        try:
-                            print(f'-{i} ', list(val.canon_name.name), file=sys.stderr)
-                        except:
-                            print(f'-{i} ', 'NONE', file=sys.stderr)
-                    print('!!!')
                     raise
                 if 'archaea' in ancestors:
                     save_archaea(tree_node, row)

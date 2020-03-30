@@ -117,6 +117,11 @@ class Command(BaseCommand):
             action='store_true',
             help='Do not add microbe dir annotations',
         )
+        parser.add_argument(
+            '--no-bact',
+            action='store_true',
+            help='Do not add microbe dir annotations for bacteria',
+        )
 
     def handle(cls, *args, **kwargs):
         """Populate database tables with taxonomic info."""
@@ -129,4 +134,4 @@ class Command(BaseCommand):
         if not kwargs['no_nodes']:
             add_nodes(nodes_filename)
         if not kwargs['no_md2']:
-            populate_md2()
+            populate_md2(exclude_bact=kwargs['no_bact'])
