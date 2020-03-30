@@ -116,7 +116,7 @@ def presign_ar_field_stored_data_if_appropriate(ret, org):
     """
     if ret['stored_data'].get('__type__', '').lower() != 's3':
         return ret
-    bucket_name = ret['stored_data']['s3uri'].split('s3://')[1].split('/')[0]
+    bucket_name = ret['stored_data']['uri'].split('s3://')[1].split('/')[0]
     s3key_query = org.s3_api_keys \
         .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
         .filter(Q(bucket='*') | Q(bucket=bucket_name))
