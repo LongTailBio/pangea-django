@@ -124,7 +124,7 @@ def presign_ar_field_stored_data_if_appropriate(ret, org):
         s3key = s3key_query[0]
         ret['stored_data']['presigned_url'] = s3key.presign_url(
             ret['stored_data']['endpoint_url'],
-            ret['stored_data']['s3uri']
+            ret['stored_data']['uri']
         )
     return ret
 
