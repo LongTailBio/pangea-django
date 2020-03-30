@@ -145,19 +145,20 @@ class S3ApiKeyDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleGroupCreateView(generics.ListCreateAPIView):
-    #queryset = SampleGroup.objects.all().order_by('created_at')
+    queryset = SampleGroup.objects.all().order_by('created_at')
     serializer_class = SampleGroupSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'organization_id', 'name', 'is_public']
 
-    def get_queryset(self):
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SampleGroupPermission()
-        sample_group_ids = {
-            sg.pk
-            for sg in SampleGroup.objects.all()
-            if perm.has_object_permission(self.request, self, sg)
+        my_ids = {
+            samp.pk
+            for samp in filtered
+            if perm.has_object_permission(self.request, self, samp)
         }
-        return SampleGroup.objects.filter(pk__in=sample_group_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def perform_create(self, serializer):
         """Require organization membership to create sample group."""
@@ -182,6 +183,7 @@ class SampleGroupDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class SampleGroupSamplesView(generics.ListAPIView):
     """This class handles managing membership of samples within sample groups."""
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    queryset = Sample.objects.all().order_by('created_at')
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -189,16 +191,16 @@ class SampleGroupSamplesView(generics.ListAPIView):
         if self.request.method == 'POST':
             return SampleGroupAddSampleSerializer
 
-    def get_queryset(self):
-        """Limit sample queryset to samples in the specified sample group."""
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SamplePermission()
         sample_group_uuid = self.kwargs['group_pk']
-        sample_ids = {
+        my_ids = {
             samp.pk
-            for samp in Sample.objects.filter(sample_groups__pk=sample_group_uuid)
+            for samp in filtered.filter(sample_groups__pk=sample_group_uuid)
             if perm.has_object_permission(self.request, self, samp)
         }
-        return Sample.objects.filter(pk__in=sample_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def post(self, request, *args, **kwargs):
         sample_group_uuid = kwargs.get('group_pk')
@@ -225,18 +227,20 @@ class SampleGroupSamplesView(generics.ListAPIView):
 
 
 class SampleCreateView(generics.ListCreateAPIView):
+    queryset = Sample.objects.all().order_by('created_at')
     serializer_class = SampleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'library_id', 'name']
 
-    def get_queryset(self):
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SamplePermission()
-        sample_ids = {
+        my_ids = {
             samp.pk
-            for samp in Sample.objects.all()
+            for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
-        return Sample.objects.filter(pk__in=sample_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('library').group.organization
@@ -274,7 +278,7 @@ class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
             for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
-        return SampleAnalysisResult.objects.filter(pk__in=my_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample').library.group.organization
@@ -300,14 +304,15 @@ class SampleGroupAnalysisResultCreateView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'sample_group_id', 'module_name', 'replicate']
 
-    def get_queryset(self):
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SampleGroupAnalysisResultPermission()
         my_ids = {
             samp.pk
-            for samp in SampleGroupAnalysisResult.objects.all()
+            for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
-        return SampleGroupAnalysisResult.objects.filter(pk__in=my_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('sample_group').organization
@@ -329,18 +334,20 @@ class SampleGroupAnalysisResultDetailsView(generics.RetrieveUpdateDestroyAPIView
 
 
 class SampleAnalysisResultFieldCreateView(generics.ListCreateAPIView):
+    queryset = SampleAnalysisResultField.objects.all().order_by('created_at')
     serializer_class = SampleAnalysisResultFieldSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'name', 'analysis_result_id']
 
-    def get_queryset(self):
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SampleAnalysisResultFieldPermission()
         my_ids = {
             samp.pk
-            for samp in SampleAnalysisResultField.objects.all()
+            for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
-        return SampleAnalysisResultField.objects.filter(pk__in=my_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('analysis_result') \
@@ -362,18 +369,20 @@ class SampleAnalysisResultFieldDetailsView(generics.RetrieveUpdateDestroyAPIView
 
 
 class SampleGroupAnalysisResultFieldCreateView(generics.ListCreateAPIView):
+    queryset = SampleGroupAnalysisResultField.objects.all().order_by('created_at')
     serializer_class = SampleGroupAnalysisResultFieldSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'name', 'analysis_result_id']
 
-    def get_queryset(self):
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SampleGroupAnalysisResultFieldPermission()
         my_ids = {
             samp.pk
-            for samp in SampleGroupAnalysisResultField.objects.all()
+            for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
-        return SampleGroupAnalysisResultField.objects.filter(pk__in=my_ids).order_by('created_at')
+        return filtered.filter(pk__in=my_ids).order_by('created_at')
 
     def perform_create(self, serializer):
         organization = serializer.validated_data.get('analysis_result').sample_group.organization
