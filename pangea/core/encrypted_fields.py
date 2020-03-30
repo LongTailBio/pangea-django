@@ -23,7 +23,7 @@ class XOR:
 
     @staticmethod
     def key():
-        mykey = settings.S3_KEY_ENCRYPTION_SECRET
+        mykey = settings.SECRET_KEY
         assert mykey
         return mykey
 
