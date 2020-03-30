@@ -110,7 +110,7 @@ def fuzzy_taxa_search_cities(request):
         for city_name, vals in city.items():
             rels = vals['relative_abundance']
             vals['max_relative_abundance'] = max(rels)
-            vals['relative_abundance'] = sum(rels) / len(rels)
+            vals['mean_relative_abundance'] = sum(rels) / len(rels)
 
     logger.info(f'metasub__responding_to_city_query', query=query)
     return Response({'results': city_results})
