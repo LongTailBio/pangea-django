@@ -1,3 +1,3 @@
 from django.db import models
 
-# Taxa Search does not require any models.
+# MetaSUB does not require any models.
