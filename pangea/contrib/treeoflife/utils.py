@@ -138,8 +138,14 @@ def populate_md2(limit=-1):
                     print('!!!')
                     print(tree_node, file=sys.stderr)
                     print(tree_node.all_names, file=sys.stderr)
-                    ancestors = tree_node.ancestors(reducer=lambda x: x.all_names)
-                    print(ancestors, file=sys.stderr)
+                    ancestors = tree_node.ancestors()
+                    for i, val in enumerate(ancestors):
+                        print(f'-{i} ', list(val.all_names), file=sys.stderr)
+                    for i, val in enumerate(ancestors):
+                        try:
+                            print(f'-{i} ', list(val.canon_name.name), file=sys.stderr)
+                        except:
+                            print(f'-{i} ', 'NONE', file=sys.stderr)
                     print('!!!')
                     raise
                 if 'archaea' in ancestors:
