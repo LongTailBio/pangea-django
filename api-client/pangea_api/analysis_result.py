@@ -82,7 +82,7 @@ class AnalysisResultField(RemoteObject):
         self.data = data
 
     def nested_url(self):
-        return self.parent.nested_url() + f'/fields/{self.field_name}/'
+        return self.parent.nested_url() + f'/fields/{self.field_name}'
 
     def _get(self):
         """Fetch the result from the server."""

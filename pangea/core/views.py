@@ -261,15 +261,27 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class SampleAnalysisResultCreateView(generics.ListCreateAPIView):
+    queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer
     permission_classes = (IsAuthenticatedOrReadOnly, )
     filterset_fields = ['uuid', 'sample_id', 'module_name', 'replicate']
 
-    def get_queryset(self):
+    # def get_queryset(self):
+    #     self.request.user.organization_set
+    #     perm = SampleAnalysisResultPermission()
+    #     my_ids = {
+    #         samp.pk
+    #         for samp in SampleAnalysisResult.objects.all()
+    #         if perm.has_object_permission(self.request, self, samp)
+    #     }
+    #     return SampleAnalysisResult.objects.filter(pk__in=my_ids).order_by('created_at')
+
+    def filter_queryset(self, queryset):
+        filtered = super().filter_queryset(queryset)
         perm = SampleAnalysisResultPermission()
         my_ids = {
             samp.pk
-            for samp in SampleAnalysisResult.objects.all()
+            for samp in filtered
             if perm.has_object_permission(self.request, self, samp)
         }
         return SampleAnalysisResult.objects.filter(pk__in=my_ids).order_by('created_at')
