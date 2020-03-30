@@ -599,7 +599,7 @@ class AnalysisResultTests(APITestCase):
             stored_data={
                 '__type__': 's3',
                 'endpoint_url': 'https://s3.wasabisys.com',
-                's3uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
+                'uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
             }
         )
         self.organization.users.add(self.user)
@@ -635,7 +635,7 @@ class AnalysisResultTests(APITestCase):
             stored_data={
                 '__type__': 's3',
                 'endpoint_url': 'https://s3.wasabisys.com',
-                's3uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
+                'uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
             }
         )
         self.organization.users.add(self.user)
