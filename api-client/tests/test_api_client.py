@@ -11,6 +11,7 @@ from pangea_api import (
     Organization,
     SampleGroup,
     User,
+    RemoteObjectError,
 )
 
 PACKET_DIR = join(dirname(__file__), 'built_packet')
@@ -118,6 +119,21 @@ class TestPangeaApiClient(TestCase):
         self.assertTrue(org.uuid)
         self.assertTrue(grp.uuid)
         self.assertTrue(samp.uuid)
+
+    def test_delete_sample(self):
+        """Test that we can create a sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        # N.B. It should NOT be necessary to call <parent>.create()
+        samp = grp.sample(f'my_client_test_sample {key}')
+        samp.create()
+        self.assertTrue(samp.uuid)
+        samp.delete()
+        self.assertRaises(lambda: setattr(samp, 'name', 'foo'), RemoteObjectError)
+        retrieved = grp.sample(f'my_client_test_sample {key}')
+        self.assertRaises(retrieved.get, HTTPError)
+        self.assertRaises()
 
     def test_modify_sample_save(self):
         """Test that we can create a sample group."""
