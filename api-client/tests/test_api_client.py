@@ -23,7 +23,7 @@ def random_str(len=12):
     return ''.join(out)
 
 
-class TestPacketParser(TestCase):
+class TestPangeaApiClient(TestCase):
     """Test suite for packet building."""
 
     def setUp(self):
@@ -119,6 +119,35 @@ class TestPacketParser(TestCase):
         self.assertTrue(grp.uuid)
         self.assertTrue(samp.uuid)
 
+    def test_modify_sample_save(self):
+        """Test that we can create a sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        # N.B. It should NOT be necessary to call <parent>.create()
+        samp = grp.sample(f'my_client_test_sample {key}')
+        samp.create()
+        self.assertTrue(grp.is_public)
+        self.assertTrue(samp.uuid)
+        samp.metadata = {f'metadata_{key}': 'some_new_metadata'}
+        samp.save()
+        retrieved = grp.sample(f'my_client_test_sample {key}').get()
+        self.assertIn(f'metadata_{key}', retrieved.metadata)
+
+    def test_modify_sample_idem(self):
+        """Test that we can create a sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        # N.B. It should NOT be necessary to call <parent>.create()
+        samp = grp.sample(f'my_client_test_sample {key}')
+        samp.create()
+        self.assertTrue(samp.uuid)
+        samp.metadata = {f'metadata_{key}': 'some_new_metadata'}
+        samp.idem()
+        retrieved = grp.sample(f'my_client_test_sample {key}').get()
+        self.assertIn(f'metadata_{key}', retrieved.metadata)
+
     def test_create_sample_result(self):
         """Test that we can create a sample group."""
         key = random_str()
@@ -148,3 +177,19 @@ class TestPacketParser(TestCase):
         self.assertTrue(samp.uuid)
         self.assertTrue(ar.uuid)
         self.assertTrue(field.uuid)
+
+    def test_modify_sample_result_field_idem(self):
+        """Test that we can create a sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        samp = grp.sample(f'my_client_test_sample {key}')
+        ar = samp.analysis_result(f'my_client_test_module_name')  # no {key} necessary
+        # N.B. It should NOT be necessary to call <parent>.create()
+        field = ar.field(f'my_client_test_field_name {key}', {'foo': 'bar'})
+        field.create()
+        self.assertTrue(field.uuid)
+        field.stored_data = {'foo': 'bizz'}  # TODO: handle deep modifications
+        field.idem()
+        retrieved = ar.field(f'my_client_test_field_name {key}').get()
+        self.assertEqual(retrieved.stored_data['foo'], 'bizz')

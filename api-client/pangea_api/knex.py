@@ -63,6 +63,16 @@ class Knex:
         response.raise_for_status()
         return response.json()
 
+    def put(self, url, json={}):
+        response = requests.put(
+            f'{self.endpoint_url}/{url}',
+            headers=self.headers,
+            auth=self.auth,
+            json=json
+        )
+        response.raise_for_status()
+        return response.json()
+
     def delete(self, url):
         response = requests.delete(
             f'{self.endpoint_url}/{url}',

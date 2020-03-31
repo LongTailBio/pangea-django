@@ -5,6 +5,15 @@ from .analysis_result import SampleGroupAnalysisResult
 
 
 class SampleGroup(RemoteObject):
+    remote_fields = [
+        'uuid',
+        'created_at',
+        'updated_at',
+        'name',
+        'is_library',
+        'is_public',
+    ]
+    parent_field = 'org'
 
     def __init__(self, knex, org, name, is_library=False):
         super().__init__(self)
@@ -13,14 +22,17 @@ class SampleGroup(RemoteObject):
         self.name = name
         self.is_library = is_library
 
-    def load_blob(self, blob):
-        self.uuid = blob['uuid']
-        self.created_at = blob['created_at']
-        self.updated_at = blob['updated_at']
-        self.is_library = blob['is_library']
-
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
+
+    def _save(self):
+        data = {
+            field: getattr(self, field)
+            for field in self.remote_fields if hasattr(self, field)
+        }
+        data['organization'] = self.org.uuid
+        url = f'sample_groups/{self.uuid}'
+        self.knex.put(url, json=data)
 
     def _get(self):
         """Fetch the result from the server."""
