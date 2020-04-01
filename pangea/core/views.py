@@ -150,9 +150,9 @@ class PermissionedListCreateAPIView(generics.ListCreateAPIView):
         filtered = super().filter_queryset(queryset)
         perm = self.permission()
         my_ids = {
-            samp.pk
-            for samp in filtered
-            if perm.has_object_permission(self.request, self, samp)
+            record.pk
+            for record in filtered
+            if perm.has_object_permission(self.request, self, record)
         }
         return filtered.filter(pk__in=my_ids).order_by('created_at')
 
