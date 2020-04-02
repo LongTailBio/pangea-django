@@ -129,6 +129,7 @@ def presign_ar_field_stored_data_if_appropriate(ret, org):
         )
         return ret
 
+
 def _presign_ar_field_stored_data_if_appropriate(ret, org):
     if ret['stored_data'].get('__type__', '').lower() != 's3':
         return ret
@@ -186,5 +187,5 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return presign_ar_field_stored_data_if_appropriate(
             ret,
-            instance.analysis_result.group.organization,
+            instance.analysis_result.sample_group.organization,
         )

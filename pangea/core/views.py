@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 
 from rest_framework import generics
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -228,6 +228,49 @@ class SampleGroupSamplesView(generics.ListAPIView):
 
         sample.sample_groups.add(sample_group)
         return Response({ "status": "success" })
+
+
+@api_view(['GET'])
+def get_sample_group_manifest(request, pk):
+    """Reply with a sample group manifest."""
+    grp = SampleGroup.objects.get(pk=pk)
+    if not grp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to get group manifest.'))
+    blob = SampleGroupSerializer(grp).data
+    blob['samples'] = []
+    for sample in grp.sample_set.all():
+        sample_blob = SampleSerializer(sample).data
+        del sample_blob['library_obj']
+        sample_blob['analysis_results'] = []
+        for ar in sample.analysis_result_set.all():
+            ar_blob = SampleAnalysisResultSerializer(ar).data
+            del ar_blob['sample_obj']
+            ar_blob['fields'] = []
+            for field in ar.fields.all():
+                field_blob = SampleAnalysisResultFieldSerializer(field).data
+                del field_blob['analysis_result_obj']
+                ar_blob['fields'].append(field_blob)
+            sample_blob['analysis_results'].append(ar_blob)
+        blob['samples'].append(sample_blob)
+
+    blob['analysis_results'] = []
+    for ar in grp.analysis_result_set.all():
+        ar_blob = SampleGroupAnalysisResultSerializer(ar).data
+        del ar_blob['sample_group_obj']
+        ar_blob['fields'] = []
+        for field in ar.fields.all():
+            field_blob = SampleGroupAnalysisResultFieldSerializer(field).data
+            del field_blob['analysis_result_obj']
+            ar_blob['fields'].append(field_blob)
+        blob['analysis_results'].append(ar_blob)
+
+    return Response(blob)
 
 
 class SampleCreateView(PermissionedListCreateAPIView):
