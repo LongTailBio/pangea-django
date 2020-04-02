@@ -91,7 +91,7 @@ def to_uuid(**kwargs):
         }).order_by('updated_at')
         if not parent.exists():
             raise ObjectDoesNotExist()
-        parent = parent[-1]
+        parent = parent[0]
         parent_field_name = field_name
     return parent.uuid, parent_field_name
 
