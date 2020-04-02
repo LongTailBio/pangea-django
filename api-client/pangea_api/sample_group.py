@@ -55,3 +55,10 @@ class SampleGroup(RemoteObject):
     def analysis_result(self, module_name, replicate=None):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
+    def get_samples(self):
+        """Return a list of samples fetched from the server."""
+        pass
+
+    def get_analysis_results(self):
+        """Return a list of group analysis results fetched from the server."""
+        pass

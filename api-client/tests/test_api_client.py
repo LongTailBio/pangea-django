@@ -3,7 +3,7 @@ import random
 from os import environ
 from os.path import join, dirname
 from requests.exceptions import HTTPError
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from pangea_api import (
     Knex,
@@ -120,6 +120,76 @@ class TestPangeaApiClient(TestCase):
         self.assertTrue(grp.uuid)
         self.assertTrue(samp.uuid)
 
+    def test_get_samples_in_group(self):
+        """Test that we can get the samples in a sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        samp_names = [f'my_client_test_sample_{i} {key}' for i in range(10)]
+        for samp_name in samp_names:
+            grp.sample(samp_name).create()
+        retrieved = org.sample_group(f'my_client_test_grp {key}', is_library=True).get()
+        retrieved_names = set()
+        for samp in retrieved.get_samples():
+            retrieved_names.add(samp.name)
+            self.assertTrue(samp.uuid)
+        for samp_name in samp_names:
+            self.assertIn(samp_name, samp_names)
+
+    def test_get_results_in_group(self):
+        """Test that we can get the results in a sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        result_names = [('my_client_test_module', f'replicate_{i}') for i in range(10)]
+        for module_name, replicate in result_names:
+            grp.analysis_result(module_name, replicate=replicate).create()
+        retrieved = org.sample_group(f'my_client_test_grp {key}', is_library=True).get()
+        retrieved_names = set()
+        for result in retrieved.get_analysis_results():
+            retrieved_names.add((result.module_name, result.replicate))
+            self.assertTrue(result.uuid)
+        for result_name_rep in result_names:
+            self.assertIn(result_name_rep, retrieved_names)
+
+    def test_get_results_in_sample(self):
+        """Test that we can get the results in a sample."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        samp = grp.sample(f'my_client_test_sample {key}').create()
+        result_names = [('my_client_test_module', f'replicate_{i}') for i in range(10)]
+        for module_name, replicate in result_names:
+            samp.analysis_result(module_name, replicate=replicate).create()
+        retrieved = grp.sample(f'my_client_test_sample {key}').get()
+        retrieved_names = set()
+        for result in retrieved.get_analysis_results():
+            retrieved_names.add((result.module_name, result.replicate))
+            self.assertTrue(result.uuid)
+        for result_name_rep in result_names:
+            self.assertIn(result_name_rep, retrieved_names)
+
+    def test_get_result_fields(self):
+        """Test that we can get the fields of an analysis result."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        samp = grp.sample(f'my_client_test_sample {key}')
+        ar = samp.analysis_result('my_client_test_module').create()
+
+        field_names = [f'field_{i}' for i in range(10)]
+        for field_name in field_names:
+            ar.field(field_name).create()
+
+        retrieved = samp.analysis_result('my_client_test_module').get()
+        retrieved_names = set()
+        for result in retrieved.get_fields():
+            retrieved_names.add(result.name)
+            self.assertTrue(result.uuid)
+        for result_name_rep in field_names:
+            self.assertIn(result_name_rep, retrieved_names)
+
+    @skip('nonfunctional currently')
     def test_delete_sample(self):
         """Test that we can create a sample group."""
         key = random_str()

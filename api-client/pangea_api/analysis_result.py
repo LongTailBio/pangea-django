@@ -37,6 +37,10 @@ class AnalysisResult(RemoteObject):
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
+    def get_fields(self):
+        """Return a list of ar-fields fetched from the server."""
+        pass
+
 
 class SampleAnalysisResult(AnalysisResult):
     parent_field = 'sample'

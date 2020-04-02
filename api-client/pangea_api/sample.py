@@ -52,3 +52,7 @@ class Sample(RemoteObject):
 
     def analysis_result(self, module_name, replicate=None):
         return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
+
+    def get_analysis_results(self):
+        """Return a list of sample analysis results fetched from the server."""
+        pass
