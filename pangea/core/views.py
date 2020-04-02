@@ -302,6 +302,34 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (SamplePermission,)
 
 
+@api_view(['GET'])
+def get_sample_manifest(request, pk):
+    """Reply with a sample group manifest."""
+    sample = Sample.objects.get(pk=pk)
+    mygrp = sample.library.group
+    if not mygrp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=mygrp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to get group manifest.'))
+    blob = SampleSerializer(sample).data
+    blob['analysis_results'] = []
+    for ar in sample.analysis_result_set.all():
+        ar_blob = SampleAnalysisResultSerializer(ar).data
+        del ar_blob['sample_obj']
+        ar_blob['fields'] = []
+        for field in ar.fields.all():
+            field_blob = SampleAnalysisResultFieldSerializer(field).data
+            del field_blob['analysis_result_obj']
+            ar_blob['fields'].append(field_blob)
+        blob['analysis_results'].append(ar_blob)
+
+    return Response(blob)
+
+
 class SampleAnalysisResultCreateView(PermissionedListCreateAPIView):
     queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer

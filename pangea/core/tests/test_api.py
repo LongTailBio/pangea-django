@@ -465,6 +465,36 @@ class SampleTests(APITestCase):
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
         self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
 
+    def test_get_sample_manifest(self):
+        """Ensure authorized user can create sample group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 TUFHGGJHFD',
+            is_public=True,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 TUFHGGJHFD')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        ar.create_field(name='my_sample_field_name', stored_data={})
+
+        url = reverse('sample-manifest', kwargs={'pk': sample.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unauth_get_sample_manifest(self):
+        """Ensure authorized user can create sample group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 TDSFDHORUEI',
+            is_public=False,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 TDSFDHORUEI')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        ar.create_field(name='my_sample_field_name', stored_data={})
+
+        url = reverse('sample-manifest', kwargs={'pk': sample.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
 
 class SampleGroupMembershipTests(APITestCase):
 
