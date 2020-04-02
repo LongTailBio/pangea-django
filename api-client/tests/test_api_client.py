@@ -129,7 +129,7 @@ class TestPangeaApiClient(TestCase):
 
         grp = org.sample_group(f'my_client_test_grp {key}', is_library=False).create()
         grp.add_sample(samp).save()
-        self.assertIn(samp, grp.get_samples())
+        self.assertIn(samp.uuid, {samp.uuid for samp in grp.get_samples()})
 
     def test_get_samples_in_group(self):
         """Test that we can get the samples in a sample group."""
@@ -145,7 +145,7 @@ class TestPangeaApiClient(TestCase):
             retrieved_names.add(samp.name)
             self.assertTrue(samp.uuid)
         for samp_name in samp_names:
-            self.assertIn(samp_name, samp_names)
+            self.assertIn(samp_name, retrieved_names)
 
     def test_get_results_in_group(self):
         """Test that we can get the results in a sample group."""
@@ -187,6 +187,7 @@ class TestPangeaApiClient(TestCase):
         grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
         samp = grp.sample(f'my_client_test_sample {key}')
         ar = samp.analysis_result('my_client_test_module').create()
+        self.assertTrue(grp.uuid)
 
         field_names = [f'field_{i}' for i in range(10)]
         for field_name in field_names:
@@ -226,8 +227,13 @@ class TestPangeaApiClient(TestCase):
         samp.create()
         self.assertTrue(grp.is_public)
         self.assertTrue(samp.uuid)
+        self.assertTrue(samp._already_fetched)
+        self.assertFalse(samp._modified)
         samp.metadata = {f'metadata_{key}': 'some_new_metadata'}
+        self.assertTrue(samp._modified)
         samp.save()
+        self.assertTrue(samp._already_fetched)
+        self.assertFalse(samp._modified)
         retrieved = grp.sample(f'my_client_test_sample {key}').get()
         self.assertIn(f'metadata_{key}', retrieved.metadata)
 
@@ -240,8 +246,13 @@ class TestPangeaApiClient(TestCase):
         samp = grp.sample(f'my_client_test_sample {key}')
         samp.create()
         self.assertTrue(samp.uuid)
+        self.assertTrue(samp._already_fetched)
+        self.assertFalse(samp._modified)
         samp.metadata = {f'metadata_{key}': 'some_new_metadata'}
+        self.assertTrue(samp._modified)
         samp.idem()
+        self.assertTrue(samp._already_fetched)
+        self.assertFalse(samp._modified)
         retrieved = grp.sample(f'my_client_test_sample {key}').get()
         self.assertIn(f'metadata_{key}', retrieved.metadata)
 

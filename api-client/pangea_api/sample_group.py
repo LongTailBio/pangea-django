@@ -21,6 +21,7 @@ class SampleGroup(RemoteObject):
         self.org = org
         self.name = name
         self.is_library = is_library
+        self._sample_cache = []
 
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
@@ -33,6 +34,12 @@ class SampleGroup(RemoteObject):
         data['organization'] = self.org.uuid
         url = f'sample_groups/{self.uuid}'
         self.knex.put(url, json=data)
+
+        for sample in self._sample_cache:
+            sample.idem()
+            url = f'sample_groups/{self.uuid}/samples'
+            self.knex.post(url, json={'sample_uuid': sample.uuid})
+        self._sample_cache = []
 
     def _get(self):
         """Fetch the result from the server."""
@@ -54,7 +61,9 @@ class SampleGroup(RemoteObject):
 
         Do not contact server until `.save()` is called on this group.
         """
-        pass
+        self._sample_cache.append(sample)
+        self._modified = True
+        return self
 
     def sample(self, sample_name, metadata={}):
         return Sample(self.knex, self, sample_name, metadata=metadata)
@@ -63,9 +72,27 @@ class SampleGroup(RemoteObject):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
     def get_samples(self):
-        """Return a list of samples fetched from the server."""
-        pass
+        """Yield samples fetched from the server."""
+        url = f'sample_groups/{self.uuid}/samples'
+        result = self.knex.get(url)
+        for sample_blob in result['results']:
+            sample = self.sample(sample_blob['name'])
+            sample.load_blob(sample_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            # sample._already_fetched = True
+            # sample._modified = False
+            yield sample
 
     def get_analysis_results(self):
-        """Return a list of group analysis results fetched from the server."""
-        pass
+        """Yield group analysis results fetched from the server."""
+        url = f'sample_group_ars?sample_group_id={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.analysis_result(result_blob['module_name'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result

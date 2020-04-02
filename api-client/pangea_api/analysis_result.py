@@ -26,20 +26,11 @@ class AnalysisResult(RemoteObject):
         'replicate',
     ]
 
-    def load_blob(self, blob):
-        self.uuid = blob['uuid']
-        self.created_at = blob['created_at']
-        self.updated_at = blob['updated_at']
-
     def _get(self):
         """Fetch the result from the server."""
         self.parent.idem()
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
-
-    def get_fields(self):
-        """Return a list of ar-fields fetched from the server."""
-        pass
 
 
 class SampleAnalysisResult(AnalysisResult):
@@ -72,12 +63,25 @@ class SampleAnalysisResult(AnalysisResult):
             'module_name': self.module_name,
         }
         if self.replicate:
-            data['replicate'] = replicate
+            data['replicate'] = self.replicate
         blob = self.knex.post(f'sample_ars?format=json', json=data)
         self.load_blob(blob)
 
-    def field(self, field_name, data=None):
+    def field(self, field_name, data={}):
         return SampleAnalysisResultField(self.knex, self, field_name, data=data)
+
+    def get_fields(self):
+        """Return a list of ar-fields fetched from the server."""
+        url = f'sample_ar_fields?analysis_result_id={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.field(result_blob['name'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result
 
 
 class SampleGroupAnalysisResult(AnalysisResult):
@@ -110,12 +114,25 @@ class SampleGroupAnalysisResult(AnalysisResult):
             'module_name': self.module_name,
         }
         if self.replicate:
-            data['replicate'] = replicate
+            data['replicate'] = self.replicate
         blob = self.knex.post(f'sample_group_ars?format=json', json=data)
         self.load_blob(blob)
 
-    def field(self, field_name, data=None):
+    def field(self, field_name, data={}):
         return SampleGroupAnalysisResultField(self.knex, self, field_name, data=data)
+
+    def get_fields(self):
+        """Return a list of ar-fields fetched from the server."""
+        url = f'sample_group_ar_fields?analysis_result_id={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.field(result_blob['name'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result
 
 
 class AnalysisResultField(RemoteObject):
@@ -128,7 +145,7 @@ class AnalysisResultField(RemoteObject):
     ]
     parent_field = 'parent'
 
-    def __init__(self, knex, parent, field_name, data=None):
+    def __init__(self, knex, parent, field_name, data={}):
         super().__init__(self)
         self.knex = knex
         self.parent = parent
@@ -158,9 +175,8 @@ class AnalysisResultField(RemoteObject):
         data = {
             'analysis_result': self.parent.uuid,
             'name': self.name,
+            'stored_data': self.stored_data,
         }
-        if self.stored_data:
-            data['stored_data'] = self.stored_data
         blob = self.knex.post(f'{self.canon_url()}?format=json', json=data)
         self.load_blob(blob)
 

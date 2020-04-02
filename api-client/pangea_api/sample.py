@@ -10,7 +10,7 @@ class Sample(RemoteObject):
         'updated_at',
         'name',
         'metadata',
-        'library'
+        'library',
     ]
     parent_field = 'lib'
 
@@ -54,5 +54,14 @@ class Sample(RemoteObject):
         return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
     def get_analysis_results(self):
-        """Return a list of sample analysis results fetched from the server."""
-        pass
+        """Yield sample analysis results fetched from the server."""
+        url = f'sample_ars?sample_id={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.analysis_result(result_blob['module_name'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result

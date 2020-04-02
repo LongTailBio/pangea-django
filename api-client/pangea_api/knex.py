@@ -3,6 +3,11 @@ import requests
 
 DEFAULT_ENDPOINT = 'https://pangea.gimmebio.com'
 
+def clean_url(url):
+    if url[-1] == '/':
+        url = url[:-1]
+    return url
+
 
 class TokenAuth(requests.auth.AuthBase):
     """Attaches MetaGenScope Token Authentication to the given Request object."""
@@ -45,6 +50,7 @@ class Knex:
         return self
 
     def get(self, url):
+        url = clean_url(url)
         response = requests.get(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -54,6 +60,7 @@ class Knex:
         return response.json()
 
     def post(self, url, json={}):
+        url = clean_url(url)
         response = requests.post(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -64,6 +71,7 @@ class Knex:
         return response.json()
 
     def put(self, url, json={}):
+        url = clean_url(url)
         response = requests.put(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -74,6 +82,7 @@ class Knex:
         return response.json()
 
     def delete(self, url):
+        url = clean_url(url)
         response = requests.delete(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
