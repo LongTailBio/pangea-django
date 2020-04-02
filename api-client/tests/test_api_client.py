@@ -120,6 +120,17 @@ class TestPangeaApiClient(TestCase):
         self.assertTrue(grp.uuid)
         self.assertTrue(samp.uuid)
 
+    def test_add_sample(self):
+        """Test that we can add a sample to a (non-library) sample group."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        lib = org.sample_group(f'my_client_test_lib {key}', is_library=True)
+        samp = lib.sample(f'my_client_test_sample {key}').create()
+
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=False).create()
+        grp.add_sample(samp).save()
+        self.assertIn(samp, grp.get_samples())
+
     def test_get_samples_in_group(self):
         """Test that we can get the samples in a sample group."""
         key = random_str()

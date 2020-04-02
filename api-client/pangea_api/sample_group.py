@@ -49,6 +49,13 @@ class SampleGroup(RemoteObject):
         })
         self.load_blob(blob)
 
+    def add_sample(self, sample):
+        """Return this group and add a sample to this group.
+
+        Do not contact server until `.save()` is called on this group.
+        """
+        pass
+
     def sample(self, sample_name, metadata={}):
         return Sample(self.knex, self, sample_name, metadata=metadata)
 
