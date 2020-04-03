@@ -17,6 +17,8 @@ Additional URLs that support nested access and access by name.
 
 from django.urls import path
 from django.db.models.functions import Lower
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import Http404
 from uuid import UUID
 from rest_framework.urlpatterns import format_suffix_patterns
 
@@ -86,7 +88,10 @@ def to_uuid(**kwargs):
         parent = model.objects.filter(**{
             parent_key_name: parent.uuid,
             filter_field: kwargs[uuid_key],
-        }).order_by('updated_at')[0]
+        }).order_by('updated_at')
+        if not parent.exists():
+            raise ObjectDoesNotExist()
+        parent = parent[0]
         parent_field_name = field_name
     return parent.uuid, parent_field_name
 
@@ -101,7 +106,10 @@ def nested_path(url, base_view, *out_args, **out_kwargs):
         for key in ['org_pk', 'grp_pk', 'sample_pk', 'ar_pk', 'field_pk']:
             if key in kwargs:
                 uuid_kwargs[key] = kwargs.pop(key)
-        uuid, field_name = to_uuid(**uuid_kwargs)
+        try:
+            uuid, field_name = to_uuid(**uuid_kwargs)
+        except ObjectDoesNotExist:
+            raise Http404()
         if create:
             post = request.POST.copy()
             post[field_name] = uuid

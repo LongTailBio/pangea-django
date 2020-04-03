@@ -4,19 +4,29 @@ from .sample_group import SampleGroup
 
 
 class Organization(RemoteObject):
+    remote_fields = [
+        'uuid',
+        'created_at',
+        'updated_at',
+        'name',
+    ]
+    parent_field = None
 
     def __init__(self, knex, name):
         super().__init__(self)
         self.knex = knex
         self.name = name
 
-    def load_blob(self, blob):
-        self.uuid = blob['uuid']
-        self.created_at = blob['created_at']
-        self.updated_at = blob['updated_at']
-
     def nested_url(self):
         return f'nested/{self.name}'
+
+    def _save(self):
+        data = {
+            field: getattr(self, field)
+            for field in self.remote_fields if hasattr(self, field)
+        }
+        url = f'organizations/{self.uuid}'
+        self.knex.put(url, json=data)
 
     def _get(self):
         """Fetch the result from the server."""

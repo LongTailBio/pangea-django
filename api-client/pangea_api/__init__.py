@@ -11,3 +11,4 @@ from .analysis_result import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
 )
+from .remote_object import RemoteObjectError

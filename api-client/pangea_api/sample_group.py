@@ -5,6 +5,15 @@ from .analysis_result import SampleGroupAnalysisResult
 
 
 class SampleGroup(RemoteObject):
+    remote_fields = [
+        'uuid',
+        'created_at',
+        'updated_at',
+        'name',
+        'is_library',
+        'is_public',
+    ]
+    parent_field = 'org'
 
     def __init__(self, knex, org, name, is_library=False):
         super().__init__(self)
@@ -12,15 +21,25 @@ class SampleGroup(RemoteObject):
         self.org = org
         self.name = name
         self.is_library = is_library
-
-    def load_blob(self, blob):
-        self.uuid = blob['uuid']
-        self.created_at = blob['created_at']
-        self.updated_at = blob['updated_at']
-        self.is_library = blob['is_library']
+        self._sample_cache = []
 
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
+
+    def _save(self):
+        data = {
+            field: getattr(self, field)
+            for field in self.remote_fields if hasattr(self, field)
+        }
+        data['organization'] = self.org.uuid
+        url = f'sample_groups/{self.uuid}'
+        self.knex.put(url, json=data)
+
+        for sample in self._sample_cache:
+            sample.idem()
+            url = f'sample_groups/{self.uuid}/samples'
+            self.knex.post(url, json={'sample_uuid': sample.uuid})
+        self._sample_cache = []
 
     def _get(self):
         """Fetch the result from the server."""
@@ -37,13 +56,49 @@ class SampleGroup(RemoteObject):
         })
         self.load_blob(blob)
 
+    def add_sample(self, sample):
+        """Return this group and add a sample to this group.
+
+        Do not contact server until `.save()` is called on this group.
+        """
+        self._sample_cache.append(sample)
+        self._modified = True
+        return self
+
     def sample(self, sample_name, metadata={}):
         return Sample(self.knex, self, sample_name, metadata=metadata)
 
     def analysis_result(self, module_name, replicate=None):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
+    def get_samples(self):
+        """Yield samples fetched from the server."""
+        url = f'sample_groups/{self.uuid}/samples'
+        result = self.knex.get(url)
+        for sample_blob in result['results']:
+            sample = self.sample(sample_blob['name'])
+            sample.load_blob(sample_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            # sample._already_fetched = True
+            # sample._modified = False
+            yield sample
+
+    def get_analysis_results(self):
+        """Yield group analysis results fetched from the server."""
+        url = f'sample_group_ars?sample_group_id={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.analysis_result(result_blob['module_name'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result
+
     def get_manifest(self):
         """Return a manifest for this group."""
         url = f'sample_groups/{self.uuid}/manifest'
         return self.knex.get(url)
+
