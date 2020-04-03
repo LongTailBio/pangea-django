@@ -53,6 +53,7 @@ class Sample(RemoteObject):
     def analysis_result(self, module_name, replicate=None):
         return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
+
     def get_analysis_results(self):
         """Yield sample analysis results fetched from the server."""
         url = f'sample_ars?sample_id={self.uuid}'
@@ -65,3 +66,9 @@ class Sample(RemoteObject):
             result._already_fetched = True
             result._modified = False
             yield result
+
+    def get_manifest(self):
+        """Return a manifest for this sample."""
+        url = f'samples/{self.uuid}/manifest'
+        return self.knex.get(url)
+

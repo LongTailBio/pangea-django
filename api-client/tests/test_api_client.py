@@ -292,7 +292,7 @@ class TestPangeaApiClient(TestCase):
         org = Organization(self.knex, f'my_client_test_org {key}')
         grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
         samp = grp.sample(f'my_client_test_sample {key}')
-        ar = samp.analysis_result(f'my_client_test_module_name')  # no {key} necessary
+        ar = samp.analysis_result(f'my_client_test_module_name')  # no {key} necessary      
         # N.B. It should NOT be necessary to call <parent>.create()
         field = ar.field(f'my_client_test_field_name {key}', {'foo': 'bar'})
         field.create()
@@ -301,3 +301,27 @@ class TestPangeaApiClient(TestCase):
         field.idem()
         retrieved = ar.field(f'my_client_test_field_name {key}').get()
         self.assertEqual(retrieved.stored_data['foo'], 'bizz')
+
+    def test_get_sample_group_manifest(self):
+        """Test that we can get a group manifest."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        samp = grp.sample(f'my_client_test_sample {key}')
+        ar = samp.analysis_result(f'my_client_test_module_name')  # no {key} necessary      
+        field = ar.field('my_client_test_field_name', {'foo': 'bar'})
+        field.create()
+        manifest = grp.get_manifest()
+        self.assertTrue(manifest)
+
+    def test_get_sample_manifest(self):
+        """Test that we can get a group manifest."""
+        key = random_str()
+        org = Organization(self.knex, f'my_client_test_org {key}')
+        grp = org.sample_group(f'my_client_test_grp {key}', is_library=True)
+        samp = grp.sample(f'my_client_test_sample {key}')
+        ar = samp.analysis_result(f'my_client_test_module_name')  # no {key} necessary
+        field = ar.field('my_client_test_field_name', {'foo': 'bar'})
+        field.create()
+        manifest = samp.get_manifest()
+        self.assertTrue(manifest)

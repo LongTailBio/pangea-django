@@ -1,6 +1,7 @@
 
 from rest_framework import serializers
 from django.db.models import Q
+import structlog
 
 from .models import (
     PangeaUser,
@@ -13,6 +14,8 @@ from .models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
 )
+
+logger = structlog.get_logger(__name__)
 
 
 class PangeaUserSerializer(serializers.ModelSerializer):
@@ -114,6 +117,20 @@ def presign_ar_field_stored_data_if_appropriate(ret, org):
 
     At this point we are assuming the user has permission to access this result.
     """
+    try:
+        return _presign_ar_field_stored_data_if_appropriate(ret, org)
+    except Exception as e:
+        # Gracefully fail here. Presigning fail isn't a reason to fail to respond
+        logger.error(
+            'presigning_url_failed_during_serialization',
+            org_uuid=org.uuid,
+            stored_data=ret,
+            exception=str(e),
+        )
+        return ret
+
+
+def _presign_ar_field_stored_data_if_appropriate(ret, org):
     if ret['stored_data'].get('__type__', '').lower() != 's3':
         return ret
     bucket_name = ret['stored_data']['uri'].split('s3://')[1].split('/')[0]

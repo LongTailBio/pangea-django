@@ -96,3 +96,9 @@ class SampleGroup(RemoteObject):
             result._already_fetched = True
             result._modified = False
             yield result
+
+    def get_manifest(self):
+        """Return a manifest for this group."""
+        url = f'sample_groups/{self.uuid}/manifest'
+        return self.knex.get(url)
+
