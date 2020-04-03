@@ -43,3 +43,7 @@ class SampleGroup(RemoteObject):
     def analysis_result(self, module_name, replicate=None):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
+    def get_manifest(self):
+        """Return a manifest for this group."""
+        url = f'sample_groups/{self.uuid}/manifest'
+        return self.knex.get(url)

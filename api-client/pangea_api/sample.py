@@ -39,3 +39,8 @@ class Sample(RemoteObject):
 
     def analysis_result(self, module_name, replicate=None):
         return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
+
+    def get_manifest(self):
+        """Return a manifest for this sample."""
+        url = f'samples/{self.uuid}/manifest'
+        return self.knex.get(url)
