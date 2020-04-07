@@ -72,7 +72,10 @@ class TaxaTree:
                 continue
             parent = ''
             if taxon != 'root':
-                parent = TreeNode.byname(taxon).parent.canon_name.name
+                print(taxon)
+                node = TreeNode.byname(taxon)
+                parent_node = node.parent
+                parent = parent_node.canon_name.name
             taxon_list.append(taxon)
             parent_list.append(parent)
             added.add(taxon)
