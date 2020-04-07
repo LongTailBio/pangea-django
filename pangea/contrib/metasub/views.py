@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 
 from pangea.core.utils import str2bool
+from pangea.core.models import Sample, SampleAnalysisResultField
+from pangea.contrib.treeoflife.taxa_tree import TaxaTree
 
 from .constants import METASUB_LIBRARY_UUID
 
@@ -114,3 +116,25 @@ def fuzzy_taxa_search_cities(request):
 
     logger.info(f'metasub__responding_to_city_query', query=query)
     return Response({'results': city_results})
+
+
+@api_view(['GET'])
+def sample_taxonomy_sunburst(request, pk):
+    """Reply with the taxonomy of a sample prepped for a Plotly sunburst plot."""
+    sample = Sample.objects \
+        .filter(library_id=METASUB_LIBRARY_UUID()) \
+        .get(uuid=pk)  # this clause ensures the sample is actually a MetaSUB sample
+    taxa = SampleAnalysisResultField.objects \
+        .filter(analysis_result__module_name='krakenuniq_taxonomy') \
+        .filter(name='relative_abundance') \
+        .get(analysis_result__sample__uuid=sample.uuid). \
+        stored_data
+    taxa_list, parent_list = TaxaTree.get_taxon_parent_lists(taxa)
+    abundances = [taxa.get(taxon, 0) for taxon in taxa_list]
+
+    logger.info(f'metasub__responding_to_sample_taxonomy_sunburst_query', sample_uuid=pk)
+    return Response({
+        'taxa': taxa_list,
+        'parents': parent_list,
+        'abundances': abundances,
+    })

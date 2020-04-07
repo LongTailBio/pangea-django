@@ -21,7 +21,8 @@ RANKS = ['species', 'genus', 'family', 'order', 'class', 'phylum', 'superkingdom
 
 class TaxaTree:
 
-    def ancestors(self, taxon):
+    @staticmethod
+    def ancestors(taxon):
         """Return a list of all ancestors of the taxon starting with the taxon itself."""
         node = TreeNode.byname(taxon)
         parents = [node.canon_name()]
@@ -30,7 +31,8 @@ class TaxaTree:
             node = node.parent
         return parents
 
-    def ranked_ancestors(self, taxon):
+    @staticmethod
+    def ranked_ancestors(taxon):
         """Return a dict of all ancestors of the taxon starting with the taxon itself.
         Keys of the dict are taxon ranks
         """
@@ -41,9 +43,9 @@ class TaxaTree:
             node = node.parent
         return parents
 
-    def ancestor_rank(self, rank, taxon, default=None):
+    @staticmethod
+    def ancestor_rank(rank, taxon, default=None):
         """Return the ancestor of taxon at the given rank."""
-        parent_num = self.parent_map[self._node(taxon)]
         node = TreeNode.byname(taxon)
         while node.parent.canon_name() != 'root':
             if rank == node.parent.rank:
@@ -52,3 +54,28 @@ class TaxaTree:
         if not default:
             raise KeyError(f'{rank} for taxa {taxon} not found.')
         return default
+
+    @staticmethod
+    def get_taxon_parent_lists(taxa):
+        """Return a pair of lists giving the name of each taxon and its parent.
+
+        Give an empty string as the parent of the root.
+
+        This function is used to prepare data for a Plotly suburst plot.
+        """
+        queue = list(taxa)[::1]  # deep copy
+        added = set()
+        taxon_list, parent_list = [], []
+        while queue:
+            taxon = queue.pop()
+            if taxon in added:
+                continue
+            parent = ''
+            if taxon != 'root':
+                parent = TreeNode.byname(taxon).parent.canon_name()
+            taxon_list.append(taxon)
+            parent_list.append(parent)
+            added.add(taxon)
+            if taxon != 'root':
+                queue.append(parent)
+        return taxon_list, parent_list
