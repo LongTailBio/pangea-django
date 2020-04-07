@@ -82,7 +82,7 @@ class TreeNode(AutoCreatedUpdatedMixin):
         try:
             return cls.objects.get(taxon_id=name)
         except ObjectDoesNotExist:
-            tid = TaxonName.objects.get(name=name).taxon_id
+            tid = TaxonName.objects.get(name__iexact=name).taxon_id
             return cls.objects.get(taxon_id=tid)
 
 
