@@ -25,9 +25,9 @@ class TaxaTree:
     def ancestors(taxon):
         """Return a list of all ancestors of the taxon starting with the taxon itself."""
         node = TreeNode.byname(taxon)
-        parents = [node.canon_name()]
-        while node.parent.canon_name() != 'root':
-            parents.append(node.parent.canon_name())
+        parents = [node.canon_name.name]
+        while node.parent.canon_name.name != 'root':
+            parents.append(node.parent.canon_name.name)
             node = node.parent
         return parents
 
@@ -37,9 +37,9 @@ class TaxaTree:
         Keys of the dict are taxon ranks
         """
         node = TreeNode.byname(taxon)
-        parents = {node.rank: node.canon_name()}
-        while node.parent.canon_name() != 'root':
-            parents[node.parent.rank] = node.parent.canon_name()
+        parents = {node.rank: node.canon_name.name}
+        while node.parent.canon_name.name != 'root':
+            parents[node.parent.rank] = node.parent.canon_name.name
             node = node.parent
         return parents
 
@@ -47,9 +47,9 @@ class TaxaTree:
     def ancestor_rank(rank, taxon, default=None):
         """Return the ancestor of taxon at the given rank."""
         node = TreeNode.byname(taxon)
-        while node.parent.canon_name() != 'root':
+        while node.parent.canon_name.name != 'root':
             if rank == node.parent.rank:
-                return node.parent.canon_name()
+                return node.parent.canon_name.name
             node = node.parent
         if not default:
             raise KeyError(f'{rank} for taxa {taxon} not found.')
@@ -72,7 +72,7 @@ class TaxaTree:
                 continue
             parent = ''
             if taxon != 'root':
-                parent = TreeNode.byname(taxon).parent.canon_name()
+                parent = TreeNode.byname(taxon).parent.canon_name.name
             taxon_list.append(taxon)
             parent_list.append(parent)
             added.add(taxon)
