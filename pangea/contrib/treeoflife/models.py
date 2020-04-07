@@ -50,7 +50,7 @@ class TreeNode(AutoCreatedUpdatedMixin):
 
     @property
     def is_root(self):
-        return self.taxon_id != '1'
+        return self.taxon_id == '1'
 
     @property
     def canon_name(self):
