@@ -44,7 +44,7 @@ class TreeNode(AutoCreatedUpdatedMixin):
 
     def __str__(self):
         parent_id = self.taxon_id  # root
-        if self.taxon_id != 1:
+        if self.taxon_id != '1':
             parent_id = self.parent.taxon_id
         return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{parent_id}" uuid="{self.uuid}"'
 
