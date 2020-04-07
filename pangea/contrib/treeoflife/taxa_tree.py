@@ -63,21 +63,19 @@ class TaxaTree:
 
         This function is used to prepare data for a Plotly suburst plot.
         """
-        queue = list(taxa)[::1]  # deep copy
+        queue = [TreeNode.byname(taxon) for taxon in taxa]
         added = set()
         taxon_list, parent_list = [], []
         while queue:
-            taxon = queue.pop()
-            if taxon in added:
+            node = queue.pop()
+            if node.taxon_id in added:
                 continue
-            parent = ''
-            if taxon != 'root':
-                node = TreeNode.byname(taxon)
-                parent_node = node.parent
-                parent = parent_node.canon_name.name
-            taxon_list.append(taxon)
-            parent_list.append(parent)
-            added.add(taxon)
-            if taxon != 'root':
-                queue.append(parent)
+            taxon_list.append(node.canon_name.name)
+            parent_name = ''
+            if not node.is_root:
+                parent_name = node.parent.canon_name.name
+                queue.append(node.parent)
+            parent_list.append(parent_name)
+            added.add(node.taxon_id)
+
         return taxon_list, parent_list

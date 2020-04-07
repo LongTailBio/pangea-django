@@ -49,6 +49,10 @@ class TreeNode(AutoCreatedUpdatedMixin):
         return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{parent_id}" uuid="{self.uuid}"'
 
     @property
+    def is_root(self):
+        return self.taxon_id != '1'
+
+    @property
     def canon_name(self):
         return TaxonName.objects.get(taxon_id=self.taxon_id, name_type='scientific name')
 
