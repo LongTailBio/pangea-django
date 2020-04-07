@@ -79,14 +79,24 @@ class TreeNode(AutoCreatedUpdatedMixin):
 
     @classmethod
     def byname(cls, name):
+
+        def get_tid(myname):
+            names = TaxonName.objects.filter(name=myname)  # rarely returns more than one name
+            if len(names) > 1:
+                snames = names.filter(name_type='scientific name')
+                if len(snames) > 0:
+                    names = snames
+            tid = names[0].taxon_id
+            return tid
+
         try:
             return cls.objects.get(taxon_id=name)
         except ObjectDoesNotExist:
             try:
-                tid = TaxonName.objects.get(name=name).taxon_id
+                tid = get_tid(name)
                 return cls.objects.get(taxon_id=tid)
             except (ObjectDoesNotExist, MultipleObjectsReturned):
-                tid = TaxonName.objects.get(name=name.lower()).taxon_id
+                tid = get_tid(name.lower())
                 return cls.objects.get(taxon_id=tid)
 
 
