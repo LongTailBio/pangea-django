@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import uuid
 import random
 import structlog
@@ -85,7 +85,7 @@ class TreeNode(AutoCreatedUpdatedMixin):
             try:
                 tid = TaxonName.objects.get(name=name).taxon_id
                 return cls.objects.get(taxon_id=tid)
-            except:  # TODO broad except
+            except (ObjectDoesNotExist, MultipleObjectsReturned):
                 tid = TaxonName.objects.get(name=name.lower()).taxon_id
                 return cls.objects.get(taxon_id=tid)
 
