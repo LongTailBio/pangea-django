@@ -121,7 +121,7 @@ def fuzzy_taxa_search_cities(request):
 @api_view(['GET'])
 def sample_taxonomy_sunburst(request, pk):
     """Reply with the taxonomy of a sample prepped for a Plotly sunburst plot."""
-    min_abundance = request.query_params.get('min_abundance', 0.001)
+    min_abundance = float(request.query_params.get('min_abundance', 0.001))
     sample = Sample.objects \
         .filter(library_id=METASUB_LIBRARY_UUID()) \
         .get(uuid=pk)  # this clause ensures the sample is actually a MetaSUB sample
