@@ -97,7 +97,7 @@ def fuzzy_taxa_search_cities(request):
             city = val['sample_metadata']['city']
             if city not in city_results[taxa_name]:
                 city_results[taxa_name][city] = {
-                    'mean_relative_abundance': [],
+                    'all_relative_abundances': [],
                     'city_name': city,
                 }
                 try:
@@ -105,10 +105,10 @@ def fuzzy_taxa_search_cities(request):
                     city_results[taxa_name][city]['longitude'] = val['sample_metadata']['city_longitude']
                 except KeyError:
                     pass
-            city_results[taxa_name][city]['mean_relative_abundance'].append(val['relative_abundance'])
+            city_results[taxa_name][city]['all_relative_abundances'].append(val['relative_abundance'])
     for taxa_name, city in city_results.items():
         for city_name, vals in city.items():
-            rels = vals['mean_relative_abundance']
+            rels = vals['all_relative_abundances']
             vals['max_relative_abundance'] = max(rels)
             vals['mean_relative_abundance'] = sum(rels) / len(rels)
 
