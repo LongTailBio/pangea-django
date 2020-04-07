@@ -43,7 +43,10 @@ class TreeNode(AutoCreatedUpdatedMixin):
     rank = models.TextField(blank=False, db_index=True)
 
     def __str__(self):
-        return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{self.parent.taxon_id}" uuid="{self.uuid}"'
+        parent_id = self.taxon_id  # root
+        if self.taxon_id != 1:
+            parent_id = self.parent.taxon_id
+        return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{parent_id}" uuid="{self.uuid}"'
 
     @property
     def canon_name(self):
