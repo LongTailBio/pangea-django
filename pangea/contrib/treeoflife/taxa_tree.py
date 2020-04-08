@@ -70,10 +70,17 @@ class TaxaTree:
             node = queue.pop()
             if node.taxon_id in added:
                 continue
-            taxon_list.append(node.canon_name.name)
+            node_name = node.canon_name.name
+            taxon_list.append(node_name)
             parent_name = ''
             if not node.is_root:
-                parent_name = node.parent.canon_name.name
+                parent_node = node.parent
+                parent_name = parent_node.canon_name.name
+                while parent_name == node_name:
+                    parent_node = parent_node.parent
+                    parent_name = ''
+                    if parent_node:
+                        parent_name = parent_node.canon_name.name
                 queue.append(node.parent)
             parent_list.append(parent_name)
             added.add(node.taxon_id)
