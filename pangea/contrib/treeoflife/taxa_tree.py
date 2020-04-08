@@ -71,6 +71,8 @@ class TaxaTree:
             if node.taxon_id in added:
                 continue
             node_name = node.canon_name.name
+            if node_name in added:
+                continue
             taxon_list.append(node_name)
             parent_name = ''
             if not node.is_root:
@@ -80,9 +82,10 @@ class TaxaTree:
                     parent_node = parent_node.parent
                     parent_name = ''
                     if parent_node:
-                        parent_name = parent_node.canon_name.name
+                    parent_name = parent_node.canon_name.name
                 queue.append(node.parent)
             parent_list.append(parent_name)
             added.add(node.taxon_id)
+            added.add(node_name)
 
         return taxon_list, parent_list
