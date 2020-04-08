@@ -83,7 +83,7 @@ class TaxaTree:
                     parent_name = ''
                     if parent_node:
                         parent_name = parent_node.canon_name.name
-                queue.append(node.parent)
+                queue.append(parent_node)
             parent_list.append(parent_name)
             added.add(node.taxon_id)
             added.add(node_name)
