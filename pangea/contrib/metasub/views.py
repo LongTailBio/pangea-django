@@ -140,3 +140,21 @@ def sample_taxonomy_sunburst(request, pk):
         'parents': parent_list,
         'abundances': abundances,
     })
+
+
+@api_view(['GET'])
+def all_taxa(request):
+    """Reply with a list of all taxa names in MetaSUB."""
+    taxa_relative_abundance = SampleAnalysisResultField.objects \
+        .filter(analysis_result__module_name='krakenuniq_taxonomy') \
+        .filter(name='relative_abundance')
+    samples = Sample.objects.filter(library_id=METASUB_LIBRARY_UUID())
+    taxa_list = set()
+    for sample in samples:
+        result_field = taxa_relative_abundance.get(analysis_result__sample__uuid=sample.uuid)
+        for taxon in result_field.stored_data.keys():
+            taxa_list.add(taxon.replace('_', ' '))
+
+    return Response({
+        'taxa': list(taxa_list),
+    })
