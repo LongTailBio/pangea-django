@@ -2,10 +2,11 @@ import structlog
 
 from django.db import connection
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError, ObjectDoesNotExist
+from rest_framework.exceptions import ValidationError
 
 from pangea.core.utils import str2bool
 from pangea.core.models import Sample, SampleAnalysisResultField
