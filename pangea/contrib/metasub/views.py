@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, ObjectDoesNotExist
 
 from pangea.core.utils import str2bool
 from pangea.core.models import Sample, SampleAnalysisResultField
@@ -151,9 +151,12 @@ def all_taxa(request):
     samples = Sample.objects.filter(library_id=METASUB_LIBRARY_UUID())
     taxa_list = set()
     for sample in samples:
-        result_field = taxa_relative_abundance.get(analysis_result__sample__uuid=sample.uuid)
-        for taxon in result_field.stored_data.keys():
-            taxa_list.add(taxon.replace('_', ' '))
+        try:
+            result_field = taxa_relative_abundance.get(analysis_result__sample__uuid=sample.uuid)
+            for taxon in result_field.stored_data.keys():
+                taxa_list.add(taxon.replace('_', ' '))
+        except ObjectDoesNotExist:
+            pass
 
     return Response({
         'taxa': list(taxa_list),
