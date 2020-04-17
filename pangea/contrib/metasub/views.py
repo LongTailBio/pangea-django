@@ -187,7 +187,7 @@ def fuzzy_taxa_search_materials(request):
     for taxa_name, vals in results.items():
         material_results[taxa_name] = {}
         for val in vals:
-            material = normalize_surface(val['sample_metadata']['surface_material'])
+            material = normalize_surface(val['sample_metadata'].get('surface', 'Other'))
             if material not in material_results[taxa_name]:
                 material_results[taxa_name][material] = {
                     'all_relative_abundances': [],
