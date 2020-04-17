@@ -119,6 +119,92 @@ def fuzzy_taxa_search_cities(request):
     return Response({'results': city_results})
 
 
+def normalize_surface(el):
+    try:
+        el = el.lower()
+    except AttributeError:
+        return el
+    el = '_'.join(el.split())
+    return {
+        'ground': 'floor',
+        'palm_left': 'human_hand',
+        'vert_pole': 'pole',
+        'palm_right': 'human_hand',
+        'pedestrian_crossing_button': 'button',
+        'wooden bench': 'seat',
+        'gargabe_can': 'garbage',
+        'horiz_pole': 'railing',
+        'stairwell railing': 'railing',
+        'bike kiosk': 'kiosk',
+        'bench1': 'seat',
+        'kiosk2': 'kiosk',
+        'kiosk1': 'kiosk',
+        'ticket_machine': 'kiosk',
+        'escalator_handrail': 'railing',
+        'bench2': 'seat',
+        'lift_buttons': 'button',
+        'overhead_handrail': 'railing',
+        'poll': 'pole',
+        'garbage_can': 'garbage',
+        'bench': 'seat',
+        'door_handle;door_handle': 'door_knob',
+        'glass': 'window',
+        'ceiling_rail': 'railing',
+        'seat_rail': 'railing',
+        'ticket_hall;ticket_machine': 'kiosk',
+        'bench;platform': 'seat',
+        'platform;bench': 'seat',
+        'ticket_machine;ticket_hall': 'kiosk',
+        'wooden_bench': 'seat',
+        'stairwell_railing': 'railing',
+        'trolley_handle': '',
+        'turnstile_or_alternatives;turnstile_or_alternatives': 'turnstile',
+        'ticket_kiosks;ticket_kiosks': 'kiosk',
+        'ticket_machine;ticket_machine': 'kiosk',
+        'station_eletronic_kiosk': 'kiosk',
+        'station_railing': 'railing',
+        'station_seat': 'seat',
+        'center_seat': 'seat',
+        'negative_control_(air)': '',
+        'ceiling_rail;ceiling_rail': 'railing',
+        'rail': 'railing',
+        'seat_near_door': 'seat',
+        'ticketing_machine;ticketing_machine_': 'kiosk',
+        'jetway_1_seats_waiting_area': 'seat',
+    }.get(el, el)
+
+
+@api_view(['GET'])
+def fuzzy_taxa_search_materials(request):
+    """Return samples with taxa results aggregated by materials."""
+    query = request.query_params.get('query', None)
+    if query is None:
+        logger.warn('metasub_taxasearch__no_query_param')
+        raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
+
+    results = fuzzy_taxa_search(query)
+    material_results = {}
+    for taxa_name, vals in results.items():
+        material_results[taxa_name] = {}
+        for val in vals:
+            material = normalize_surface(val['sample_metadata']['surface_material'])
+            if material not in material_results[taxa_name]:
+                material_results[taxa_name][material] = {
+                    'all_relative_abundances': [],
+                    'material_name': material,
+                }
+            material_results[taxa_name][material]['all_relative_abundances'] \
+                .append(val['relative_abundance'])
+    for taxa_name, material in material_results.items():
+        for material_name, vals in material.items():
+            rels = vals['all_relative_abundances']
+            vals['max_relative_abundance'] = max(rels)
+            vals['mean_relative_abundance'] = sum(rels) / len(rels)
+
+    logger.info(f'metasub__responding_to_city_query', query=query)
+    return Response({'results': material_results})
+
+
 @api_view(['GET'])
 def sample_taxonomy_sunburst(request, pk):
     """Reply with the taxonomy of a sample prepped for a Plotly sunburst plot."""
