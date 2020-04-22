@@ -28,6 +28,7 @@ class SampleAnalysisResult(AnalysisResult):
         self.parent = self.sample
         self.module_name = module_name
         self.replicate = replicate
+        self._get_field_cache = []
 
     def nested_url(self):
         return self.sample.nested_url() + f'/analysis_results/{self.module_name}'
@@ -55,8 +56,12 @@ class SampleAnalysisResult(AnalysisResult):
     def field(self, field_name, data={}):
         return SampleAnalysisResultField(self.knex, self, field_name, data=data)
 
-    def get_fields(self):
+    def get_fields(self, cache=True):
         """Return a list of ar-fields fetched from the server."""
+        if cache and self._get_field_cache:
+            for field in self._get_field_cache:
+                yield field
+            return
         url = f'sample_ar_fields?analysis_result_id={self.uuid}'
         result = self.knex.get(url)
         for result_blob in result['results']:
@@ -66,7 +71,13 @@ class SampleAnalysisResult(AnalysisResult):
             # meta properties to reflect that
             result._already_fetched = True
             result._modified = False
-            yield result
+            if cache:
+                self._get_field_cache.append(result)
+            else:
+                yield result
+        if cache:
+            for field in self._get_field_cache:
+                yield field
 
 
 class SampleGroupAnalysisResult(AnalysisResult):

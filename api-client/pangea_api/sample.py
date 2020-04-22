@@ -20,6 +20,7 @@ class Sample(RemoteObject):
         self.lib = lib
         self.name = name
         self.metadata = metadata
+        self._get_result_cache = []
 
     def nested_url(self):
         return self.lib.nested_url() + f'/samples/{self.name}'
@@ -53,9 +54,12 @@ class Sample(RemoteObject):
     def analysis_result(self, module_name, replicate=None):
         return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
-
-    def get_analysis_results(self):
+    def get_analysis_results(self, cache=True):
         """Yield sample analysis results fetched from the server."""
+        if cache and self._get_result_cache:
+            for ar in self._get_result_cache:
+                yield ar
+            return
         url = f'sample_ars?sample_id={self.uuid}'
         result = self.knex.get(url)
         for result_blob in result['results']:
@@ -65,10 +69,21 @@ class Sample(RemoteObject):
             # meta properties to reflect that
             result._already_fetched = True
             result._modified = False
-            yield result
+            if cache:
+                self._get_result_cache.append(result)
+            else:
+                yield result
+        if cache:
+            for ar in self._get_result_cache:
+                yield ar
 
     def get_manifest(self):
         """Return a manifest for this sample."""
         url = f'samples/{self.uuid}/manifest'
         return self.knex.get(url)
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
