@@ -50,7 +50,6 @@ def categories_from_metadata(samples, min_size=2):
     dict
         Dictionary of form {<category_name>: [category_value[, category_value]]}
     """
-    print('categorizing')
     categories = {}
 
     # Gather categories and values
@@ -98,7 +97,6 @@ def group_samples_by_metadata(samples, min_size=2, group_apply=lambda x: x):
         }
     """
     categories = categories_from_metadata(samples, min_size=min_size)
-    print('grouping 2')
     grouped_samples = {}
     for category_name, category_values in categories.items():
         grouped_samples[category_name] = {}
@@ -107,5 +105,4 @@ def group_samples_by_metadata(samples, min_size=2, group_apply=lambda x: x):
                 sample for sample in samples
                 if category_name == 'All' or sample.metadata.get(category_name, None) == cat_val
             ])
-    print('grouping 3')
     return categories, grouped_samples

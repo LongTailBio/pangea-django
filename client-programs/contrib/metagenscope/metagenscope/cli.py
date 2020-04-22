@@ -1,5 +1,6 @@
 
 import click
+import json
 from os import environ
 from pangea_api import (
     Knex,
@@ -36,7 +37,7 @@ def run_group(endpoint, email, password, org_name, grp_name):
         return
     click.echo('Group meets requirements, processing', err=True)
     field = TopTaxaModule.process_group(grp)
-    click.echo(field.stored_data)
+    click.echo(json.dumps(field.stored_data))
 
 
 @run.command('sample')
@@ -58,4 +59,4 @@ def run_sample(endpoint, email, password, org_name, grp_name, sample_name):
         return
     click.echo('Sample meets requirements, processing', err=True)
     field = TopTaxaModule.process_sample(sample)
-    click.echo(field.stored_data)
+    click.echo(json.dumps(field.stored_data))

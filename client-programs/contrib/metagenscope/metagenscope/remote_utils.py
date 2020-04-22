@@ -10,7 +10,7 @@ def download_s3_file(blob):
     except KeyError:
         url = blob['uri']
     if url.startswith('s3://'):
-        url = blob['endpoint_url'] + url[5:]
+        url = blob['endpoint_url'] + '/' + url[5:]
     myfile = NamedTemporaryFile(delete=False)
     myfile.close()
     urlretrieve(url, myfile.name)

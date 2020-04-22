@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 from pangea_api import (
     Sample,
@@ -29,13 +30,20 @@ def parse_report(report):
     local_path = download_s3_file(blob)
     out, abundance_sum = {}, 0
     with open(local_path) as taxa_file:
-        for line in taxa_file:
+        for line_num, line in enumerate(taxa_file):
             line = line.strip()
             tkns = line.split('\t')
             if not line or len(tkns) < 2:
                 continue
-            out[tkns[0]] = float(tkns[1])
-            abundance_sum += float(tkns[1])
+            if len(tkns) == 2:
+                out[tkns[0]] = float(tkns[1])
+                abundance_sum += float(tkns[1])
+            else:
+                if line_num == 0:
+                    continue
+                out[tkns[1]] = float(tkns[3])
+                abundance_sum += float(tkns[3])
+    os.remove(local_path)
     out = {k: v / abundance_sum for k, v in out.items()}
     return out
 
@@ -55,7 +63,7 @@ def group_apply(samples):
         for kingdom in ['all_kingdoms']:
             # kingdom_taxa_matrix = filter_taxa_by_kingdom(taxa_matrix, kingdom)
             out[tool][kingdom] = {
-                'abundance': taxa_matrix.mean(),
+                'abundance': taxa_matrix.mean().to_dict(),
                 #'prevalence': kingdom_taxa_matrix.operated_cols(lambda col: col.num_non_zero()),
             }
     return out
