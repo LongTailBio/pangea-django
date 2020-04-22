@@ -10,6 +10,7 @@ from pangea_api import (
 from .modules import (
     TopTaxaModule,
     SampleSimilarityModule,
+    AveGenomeSizeModule,
 )
 
 
@@ -35,7 +36,7 @@ def run_group(endpoint, email, password, org_name, grp_name):
     User(knex, email, password).login()
     org = Organization(knex, org_name).get()
     grp = org.sample_group(grp_name).get()
-    for module in [SampleSimilarityModule, TopTaxaModule]:
+    for module in [AveGenomeSizeModule, SampleSimilarityModule, TopTaxaModule]:
         if not module.group_has_required_modules(grp):
             click.echo(f'Group does not meet requirements for module {module.name()}', err=True)
             continue

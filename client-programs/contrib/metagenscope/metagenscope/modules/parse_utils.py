@@ -13,6 +13,15 @@ def proportions(tbl):
     return tbl
 
 
+def parse_generic(report: SampleAnalysisResultField, parser):
+    blob = report.stored_data
+    local_path = download_s3_file(blob)
+    with open(local_path) as taxa_file:
+        out = parser(taxa_file)
+    os.remove(local_path)
+    return out
+
+
 def parse_taxa_report(report: SampleAnalysisResultField) -> dict:
     """Return a dict of taxa_name to relative abundance."""
     blob = report.stored_data
