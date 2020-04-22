@@ -7,7 +7,10 @@ from pangea_api import (
     User,
     Organization,
 )
-from .modules.top_taxa import TopTaxaModule
+from .modules import (
+    TopTaxaModule,
+    SampleSimilarityModule,
+)
 
 
 @click.group()
@@ -32,12 +35,13 @@ def run_group(endpoint, email, password, org_name, grp_name):
     User(knex, email, password).login()
     org = Organization(knex, org_name).get()
     grp = org.sample_group(grp_name).get()
-    if not TopTaxaModule.group_has_required_modules(grp):
-        click.echo('Group does not meet requirements', err=True)
-        return
-    click.echo('Group meets requirements, processing', err=True)
-    field = TopTaxaModule.process_group(grp)
-    click.echo(json.dumps(field.stored_data))
+    for module in [SampleSimilarityModule, TopTaxaModule]:
+        if not module.group_has_required_modules(grp):
+            click.echo(f'Group does not meet requirements for module {module.name()}', err=True)
+            continue
+        click.echo(f'Group meets requirements for module {module.name()}, processing', err=True)
+        field = module.process_group(grp)
+        click.echo(json.dumps(field.stored_data))
 
 
 @run.command('sample')

@@ -1,4 +1,4 @@
-import os
+
 import pandas as pd
 from pangea_api import (
     Sample,
@@ -12,9 +12,8 @@ from ..data_utils import (
     group_samples_by_metadata,
     sample_module_field,
 )
-from ..remote_utils import download_s3_file
-
-KRAKENUNIQ_NAMES = ('cap1::krakenhll_taxonomy_profiling', 'report', 'KrakenUniq')
+from .constants import KRAKENUNIQ_NAMES
+from .parse_utils import parse_taxa_report
 
 
 def filter_taxa_by_kingdom(taxa_matrix, kingdom):
@@ -24,36 +23,12 @@ def filter_taxa_by_kingdom(taxa_matrix, kingdom):
     raise ValueError(f'Kingdom {kingdom} not found.')
 
 
-def parse_report(report):
-    """Return a dict of taxa_name to relative abundance."""
-    blob = report.stored_data
-    local_path = download_s3_file(blob)
-    out, abundance_sum = {}, 0
-    with open(local_path) as taxa_file:
-        for line_num, line in enumerate(taxa_file):
-            line = line.strip()
-            tkns = line.split('\t')
-            if not line or len(tkns) < 2:
-                continue
-            if len(tkns) == 2:
-                out[tkns[0]] = float(tkns[1])
-                abundance_sum += float(tkns[1])
-            else:
-                if line_num == 0:
-                    continue
-                out[tkns[1]] = float(tkns[3])
-                abundance_sum += float(tkns[3])
-    os.remove(local_path)
-    out = {k: v / abundance_sum for k, v in out.items()}
-    return out
-
-
 def group_apply(samples):
     out = {}
     for module, field, tool in [KRAKENUNIQ_NAMES]:
         out[tool] = {}
         samples = {
-            sample.name: parse_report(sample_module_field(sample, module, field))
+            sample.name: parse_taxa_report(sample_module_field(sample, module, field))
             for sample in samples
         }
         taxa_matrix = pd.DataFrame.from_dict(
