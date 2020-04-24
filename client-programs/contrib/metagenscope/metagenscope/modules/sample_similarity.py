@@ -30,24 +30,35 @@ def taxa_tool_umap(samples, module, field):
         for sample in samples
     }, orient='index').fillna(0)
     samples = proportions(samples)
-    reduced = umap(samples).to_dict()
+    reduced = umap(samples).to_dict(orient='index')
     return reduced
 
 
 def processor(samples):
     """Combine Sample Similarity components."""
+    data_records = []
+    sample_map = {sample.name: sample.metadata for sample in samples}
+    for sample_name, coords in taxa_tool_umap(samples, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]).items():
+        rec = {
+            'name': sample_name,
+            f'{KRAKENUNIQ_NAMES[2]}_x': coords['C0'],
+            f'{KRAKENUNIQ_NAMES[2]}_y': coords['C1'],
+        }
+        for key, val in sample_map[sample_name].items():
+            if key in ['name']:
+                continue
+            rec[key] = val
+        rec['All'] = 'All'
+        data_records.append(rec)
     return {
         'categories': categories_from_metadata(samples),
         'tools': {
-            KRAKENUNIQ_NAMES[2]: taxa_tool_umap(samples, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]),
-        },
-        'data_records': {
-            sample.name: {
-                category_name: scrub_category_val(category_value)
-                for category_name, category_value in sample.metadata.items()
+            KRAKENUNIQ_NAMES[2]: {
+                'x_label': KRAKENUNIQ_NAMES[2] + '_x',
+                'y_label': KRAKENUNIQ_NAMES[2] + '_y',
             }
-            for sample in samples
         },
+        'data_records': data_records,
     }
 
 

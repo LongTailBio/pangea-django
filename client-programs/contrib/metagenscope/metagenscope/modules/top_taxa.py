@@ -16,10 +16,16 @@ from .constants import KRAKENUNIQ_NAMES
 from .parse_utils import parse_taxa_report
 
 
-def filter_taxa_by_kingdom(taxa_matrix, kingdom):
+def filter_taxa_by_kingdom(taxa_matrix, kingdom, n=20):
     """Return taxa in the given kingdom."""
     if kingdom == 'all_kingdoms':
-        return taxa_matrix.filtered_cols(lambda taxa_name, _: 's__' in taxa_name.split('|')[-1])
+        cols_to_keep = [col for col in taxa_matrix.columns if '|s__' in col]
+        taxa_matrix = taxa_matrix[cols_to_keep]
+        taxa_matrix.columns = [col.split('|s__')[-1].split('|')[0] for col in taxa_matrix.columns]
+        n = min(n, taxa_matrix.shape[1])
+        thresh = sorted(list(taxa_matrix.mean()), reverse=True)[n - 1]
+        taxa_matrix = taxa_matrix[taxa_matrix.mean()[taxa_matrix.mean() >= thresh].index]
+        return taxa_matrix
     raise ValueError(f'Kingdom {kingdom} not found.')
 
 
@@ -36,10 +42,10 @@ def group_apply(samples):
             orient='index'
         )
         for kingdom in ['all_kingdoms']:
-            # kingdom_taxa_matrix = filter_taxa_by_kingdom(taxa_matrix, kingdom)
+            taxa_matrix = filter_taxa_by_kingdom(taxa_matrix, kingdom)
             out[tool][kingdom] = {
                 'abundance': taxa_matrix.mean().to_dict(),
-                #'prevalence': kingdom_taxa_matrix.operated_cols(lambda col: col.num_non_zero()),
+                'prevalence': (taxa_matrix > 0).mean().to_dict(),
             }
     return out
 
