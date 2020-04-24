@@ -14,18 +14,15 @@ def proportions(tbl):
 
 
 def parse_generic(report: SampleAnalysisResultField, parser):
-    blob = report.stored_data
-    local_path = download_s3_file(blob)
+    local_path = report.download_file()
     with open(local_path) as taxa_file:
         out = parser(taxa_file)
-    os.remove(local_path)
     return out
 
 
 def parse_taxa_report(report: SampleAnalysisResultField) -> dict:
     """Return a dict of taxa_name to relative abundance."""
-    blob = report.stored_data
-    local_path = download_s3_file(blob)
+    local_path = report.download_file()
     out, abundance_sum = {}, 0
     with open(local_path) as taxa_file:
         for line_num, line in enumerate(taxa_file):
@@ -41,7 +38,6 @@ def parse_taxa_report(report: SampleAnalysisResultField) -> dict:
                     continue
                 out[tkns[1]] = float(tkns[3])
                 abundance_sum += float(tkns[3])
-    os.remove(local_path)
     out = {k: v / abundance_sum for k, v in out.items()}
     return out
 
