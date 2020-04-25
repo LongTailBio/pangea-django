@@ -6,6 +6,7 @@ from ..remote_utils import download_s3_file
 from pangea_api import (
     SampleAnalysisResultField,
 )
+from sklearn.decomposition import PCA
 
 
 def proportions(tbl):
@@ -57,3 +58,12 @@ def umap(mytbl, **kwargs):
     umap_tbl.index = mytbl.index
     umap_tbl = umap_tbl.rename(columns={i: f'C{i}' for i in range(n_comp)})
     return umap_tbl
+
+
+def run_pca(tbl, n_comp=2):
+    tbl = proportions(tbl)
+    pca = PCA(n_components=n_comp)
+    tbl_pca = pd.DataFrame(pca.fit_transform(tbl))
+    tbl_pca.index = tbl.index
+    tbl_pca = tbl_pca.rename(columns={i: f'C{i}' for i in range(n_comp)})
+    return tbl_pca

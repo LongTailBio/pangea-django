@@ -12,9 +12,11 @@ from .modules import (
     SampleSimilarityModule,
     AveGenomeSizeModule,
     AlphaDiversityModule,
+    MultiAxisModule,
 )
 
 GROUP_MODULES = [
+    MultiAxisModule,
     AlphaDiversityModule,
     TopTaxaModule,
     AveGenomeSizeModule,
