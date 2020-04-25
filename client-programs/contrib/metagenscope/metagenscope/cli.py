@@ -11,7 +11,15 @@ from .modules import (
     TopTaxaModule,
     SampleSimilarityModule,
     AveGenomeSizeModule,
+    AlphaDiversityModule,
 )
+
+GROUP_MODULES = [
+    AlphaDiversityModule,
+    TopTaxaModule,
+    AveGenomeSizeModule,
+    SampleSimilarityModule
+]
 
 
 @click.group()
@@ -36,7 +44,11 @@ def run_group(endpoint, email, password, org_name, grp_name):
     User(knex, email, password).login()
     org = Organization(knex, org_name).get()
     grp = org.sample_group(grp_name).get()
-    for module in [TopTaxaModule, AveGenomeSizeModule, SampleSimilarityModule]:
+    already_run = {ar.module_name for ar in grp.get_analysis_results()}
+    for module in GROUP_MODULES:
+        if module.name() in already_run:
+            click.echo(f'Module {module.name()} has already been run for this group', err=True)
+            continue
         if not module.group_has_required_modules(grp):
             click.echo(f'Group does not meet requirements for module {module.name()}', err=True)
             continue
