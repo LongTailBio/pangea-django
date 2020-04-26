@@ -5,3 +5,4 @@ from .average_genome_size import AveGenomeSizeModule
 from .alpha_diversity import AlphaDiversityModule
 from .multi_axis import MultiAxisModule
 from .volcano import VolcanoModule
+from .microbe_directory import MicrobeDirectoryModule

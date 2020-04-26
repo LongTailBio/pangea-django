@@ -14,6 +14,7 @@ from .modules import (
     AlphaDiversityModule,
     MultiAxisModule,
     VolcanoModule,
+    MicrobeDirectoryModule,
 )
 from .api import auto_metadata
 
@@ -24,6 +25,7 @@ GROUP_MODULES = [
     AveGenomeSizeModule,
     SampleSimilarityModule,
     VolcanoModule,
+    MicrobeDirectoryModule,
 ]
 
 
