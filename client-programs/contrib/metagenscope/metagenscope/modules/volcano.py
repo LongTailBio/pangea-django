@@ -32,7 +32,7 @@ def stats(col, cat1_samples, cat2_samples):
     lratio = math.log2(cat1.mean() / cat2.mean())
     return pd.Series({
         'xval': lratio,
-        'yval': -math.log2(pval),
+        'yval': pval,
         'zval': col.mean(),
     })
 
@@ -69,6 +69,7 @@ def scatter(taxa, samples, cat_name, cat_val):
     pts = pts.T
     pts['name'] = pts.index.map(lambda el: el.split('|')[-1].split('__')[1])
     pvals = pval_hist(pts['yval'])
+    pts['yval'] = pts['yval'].map(lambda x: -math.log2(x))
     return pts.to_dict('records'), pvals
 
 
