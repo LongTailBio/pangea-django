@@ -1,6 +1,7 @@
 
 import os
-from .remote_object import RemoteObject
+import json
+from .remote_object import RemoteObject, RemoteObjectError
 from urllib.request import urlretrieve
 from tempfile import NamedTemporaryFile
 
@@ -171,6 +172,8 @@ class AnalysisResultField(RemoteObject):
         self.load_blob(blob)
 
     def _create(self):
+        if json.loads(json.dumps(self.stored_data)) != self.stored_data:
+            raise RemoteObjectError('JSON Serialization modifies object')
         self.parent.idem()
         data = {
             'analysis_result': self.parent.uuid,
