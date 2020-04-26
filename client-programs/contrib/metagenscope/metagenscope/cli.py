@@ -13,14 +13,17 @@ from .modules import (
     AveGenomeSizeModule,
     AlphaDiversityModule,
     MultiAxisModule,
+    VolcanoModule,
 )
+from .api import auto_metadata
 
 GROUP_MODULES = [
     MultiAxisModule,
     AlphaDiversityModule,
     TopTaxaModule,
     AveGenomeSizeModule,
-    SampleSimilarityModule
+    SampleSimilarityModule,
+    VolcanoModule,
 ]
 
 
@@ -46,6 +49,7 @@ def run_group(endpoint, email, password, org_name, grp_name):
     User(knex, email, password).login()
     org = Organization(knex, org_name).get()
     grp = org.sample_group(grp_name).get()
+    auto_metadata(list(grp.get_samples()))
     already_run = {ar.module_name for ar in grp.get_analysis_results()}
     for module in GROUP_MODULES:
         if module.name() in already_run:
