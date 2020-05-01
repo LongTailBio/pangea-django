@@ -16,10 +16,12 @@ from .modules import (
     VolcanoModule,
     MicrobeDirectoryModule,
     TaxaSunburstModule,
+    ReadsClassifiedModule,
 )
 from .api import auto_metadata
 
 GROUP_MODULES = [
+    ReadsClassifiedModule,
     MultiAxisModule,
     AlphaDiversityModule,
     TopTaxaModule,
@@ -31,6 +33,7 @@ GROUP_MODULES = [
 
 SAMPLE_MODULES = [
     MicrobeDirectoryModule,
+    ReadsClassifiedModule,
     TaxaSunburstModule,
 ]
 
