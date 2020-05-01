@@ -89,6 +89,15 @@ class MicrobeDirectoryModule(Module):
         return field
 
     @classmethod
+    def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:
+        data = json.loads(json.dumps(process([sample])))
+        field = sample.analysis_result(MicrobeDirectoryModule.name()).field(
+            'md1',
+            data={'samples': data}
+        )
+        return field
+
+    @classmethod
     def group_has_required_modules(cls, grp: SampleGroup) -> bool:
         for sample in grp.get_samples():
             if cls.sample_has_required_modules(sample):

@@ -28,6 +28,10 @@ GROUP_MODULES = [
     MicrobeDirectoryModule,
 ]
 
+SAMPLE_MODULES = [
+    MicrobeDirectoryModule,
+]
+
 
 @click.group()
 def main():
@@ -80,9 +84,15 @@ def run_sample(endpoint, email, password, org_name, grp_name, sample_name):
     org = Organization(knex, org_name).get()
     grp = org.sample_group(grp_name).get()
     sample = grp.sample(sample_name).get()
-    if not TopTaxaModule.sample_has_required_modules(sample):
-        click.echo('Sample does not meet requirements', err=True)
-        return
-    click.echo('Sample meets requirements, processing', err=True)
-    field = TopTaxaModule.process_sample(sample)
-    click.echo(json.dumps(field.stored_data))
+    already_run = {ar.module_name for ar in sample.get_analysis_results()}
+    for module in SAMPLE_MODULES:
+        if module.name() in already_run:
+            click.echo(f'Module {module.name()} has already been run for this sample', err=True)
+            continue
+        if not module.sample_has_required_modules(sample):
+            click.echo(f'Sample does not meet requirements for module {module.name()}', err=True)
+            continue
+        click.echo(f'Sample meets requirements for module {module.name()}, processing', err=True)
+        field = module.process_sample(sample)
+        field.idem()
+        click.echo('done.', err=True)
