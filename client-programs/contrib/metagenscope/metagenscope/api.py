@@ -1,40 +1,63 @@
-
-import pandas as pd
-from .modules.constants import KRAKENUNIQ_NAMES
-from .modules.parse_utils import(
-    proportions,
-    run_pca,
-    parse_taxa_report,
+from .autometa import add_taxa_auto_metadata
+from .modules import (
+    TopTaxaModule,
+    SampleSimilarityModule,
+    AveGenomeSizeModule,
+    AlphaDiversityModule,
+    MultiAxisModule,
+    VolcanoModule,
+    MicrobeDirectoryModule,
+    TaxaSunburstModule,
+    ReadsClassifiedModule,
 )
-from .data_utils import sample_module_field
+
+GROUP_MODULES = [
+    ReadsClassifiedModule,
+    MultiAxisModule,
+    AlphaDiversityModule,
+    TopTaxaModule,
+    AveGenomeSizeModule,
+    SampleSimilarityModule,
+    VolcanoModule,
+    MicrobeDirectoryModule,
+]
+
+SAMPLE_MODULES = [
+    MicrobeDirectoryModule,
+    ReadsClassifiedModule,
+    TaxaSunburstModule,
+]
 
 
-def sample_has_modules(sample):
-    has_all = True
-    for module_name, field, _ in [KRAKENUNIQ_NAMES]:
-        try:
-            sample_module_field(sample, module_name, field)
-        except KeyError:
-            has_all = False
-    return has_all
+def auto_metadata(samples, logger):
+    add_taxa_auto_metadata(samples, logger)
 
 
-def auto_metadata(samples):
-    taxa_matrix = proportions(pd.DataFrame.from_dict(
-        {
-            sample.name: parse_taxa_report(
-                sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1])
-            )
-            for sample in samples
-            if sample_has_modules(sample)
-        },
-        orient='index'
-    ).fillna(0))
-    pc1 = run_pca(taxa_matrix, n_comp=1)['C0']
-    for sample in samples:
-        pcval = 'Not Found in PC1'
-        if pc1[sample.name] >= pc1.median():
-            pcval = 'Above PC1 Median'
-        elif pc1[sample.name] < pc1.median():
-            pcval = 'Below PC1 Median'
-        sample.metadata['MGS - PC1'] = pcval
+def run_group(grp, logger):
+    already_run = {ar.module_name for ar in grp.get_analysis_results()}
+    for module in GROUP_MODULES:
+        if module.name() in already_run:
+            logger(f'Module {module.name()} has already been run for this group')
+            continue
+        if not module.group_has_required_modules(grp):
+            logger(f'Group does not meet requirements for module {module.name()}')
+            continue
+        logger(f'Group meets requirements for module {module.name()}, processing')
+        field = module.process_group(grp)
+        field.idem()
+        logger('done.')
+
+
+def run_sample(sample, logger):
+    already_run = {ar.module_name for ar in sample.get_analysis_results()}
+    for module in SAMPLE_MODULES:
+        if module.name() in already_run:
+            logger(f'Module {module.name()} has already been run for this sample')
+            continue
+        if not module.sample_has_required_modules(sample):
+            logger(f'Sample does not meet requirements for module {module.name()}')
+            continue
+        logger(f'Sample meets requirements for module {module.name()}, processing')
+        field = module.process_sample(sample)
+        field.idem()
+        logger('done.')

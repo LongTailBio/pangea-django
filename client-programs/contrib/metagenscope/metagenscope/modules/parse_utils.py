@@ -9,6 +9,12 @@ from pangea_api import (
 from sklearn.decomposition import PCA
 
 
+def format_taxon_name(taxon):
+    taxon = taxon.replace('_', ' ')
+    taxon = taxon[0].upper() + taxon[1:].lower()
+    return taxon
+
+
 def proportions(tbl):
     tbl = (tbl.T / tbl.T.sum()).T
     return tbl

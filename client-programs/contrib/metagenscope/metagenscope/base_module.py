@@ -13,7 +13,7 @@ class Module:
 
     @classmethod
     def name(cls) -> str:
-        return f'metagenscope::v0.1.0::{cls._name()}'
+        return f'metagenscope::v3.0.0::{cls._name()}'
 
     @classmethod
     def _name(cls) -> str:
