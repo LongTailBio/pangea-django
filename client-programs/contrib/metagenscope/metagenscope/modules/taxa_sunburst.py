@@ -50,8 +50,9 @@ def recurse_tree(tree, tkns, i, leaf_size):
     except KeyError:
         tree['children'][tkn] = {
             'name': tkn,
+            'id': tkn,
             'parent': 'root',
-            'size': 0,
+            'value': 0,
             'children': {},
         }
         if i > 0:
@@ -66,17 +67,41 @@ def recurse_tree(tree, tkns, i, leaf_size):
 def reduce_taxa_list(taxa_list, delim='|'):
     """Return a tree built from a taxa list."""
     factor = 100 / get_total(taxa_list, delim)
-    taxa_tree = {
-        'name': 'root',
-        'parent': None,
-        'size': 100,
-        'children': {}
+    nodes = {
+        'root': {
+            'id': 'root',
+            'name': 'root',
+            'parent': '',
+            'value': 100,
+        }
     }
     for taxon, abund in taxa_list.items():
         tkns = get_taxa_tokens(taxon, delim)
-        recurse_tree(taxa_tree, tkns, 0, factor * abund)
-    taxa_tree = convert_children_to_list(taxa_tree)
-    return taxa_tree
+        for i, taxon in enumerate(tkns):
+            if taxon not in nodes:
+                nodes[taxon] = {
+                    'name': taxon,
+                    'id': taxon,
+                    'parent': 'root' if i == 0 else tkns[i - 1],
+                }
+        nodes[tkns[-1]]['value'] = factor * abund
+    return list(nodes.values())
+
+
+# def reduce_taxa_list(taxa_list, delim='|'):
+#     """Return a tree built from a taxa list."""
+#     factor = 100 / get_total(taxa_list, delim)
+#     taxa_tree = {
+#         'name': 'root',
+#         'parent': None,
+#         'size': 100,
+#         'children': {}
+#     }
+#     for taxon, abund in taxa_list.items():
+#         tkns = get_taxa_tokens(taxon, delim)
+#         recurse_tree(taxa_tree, tkns, 0, factor * abund)
+#     taxa_tree = convert_children_to_list(taxa_tree)
+#     return taxa_tree
 
 
 def trees_from_sample(sample):
