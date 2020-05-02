@@ -6,6 +6,10 @@ class RemoteObjectError(Exception):
     pass
 
 
+class RemoteObjectOverwriteError(RemoteObjectError):
+    pass
+
+
 class RemoteObject:
 
     def __init__(self, *args, **kwargs):
@@ -28,7 +32,7 @@ class RemoteObject:
             current = getattr(self, field, None)
             new = blob[field]
             if current and current != new:
-                raise RemoteObjectError(f'Loading blob would overwrite field "{field}"')
+                raise RemoteObjectOverwriteError(f'Loading blob would overwrite field "{field}":\n\tcurrent: "{current}"\n\tnew: "{new}"')
             setattr(self, field, new)
 
     def get(self):

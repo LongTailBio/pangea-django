@@ -231,6 +231,27 @@ class SampleGroupSamplesView(generics.ListAPIView):
 
 
 @api_view(['GET'])
+def get_sample_ar_counts_in_group(request, pk):
+    """Reply with counts for all types of sample analysis results in the group."""
+    grp = SampleGroup.objects.get(pk=pk)
+    if not grp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to access group.'))
+    blob = {'n_samples': 0}
+    for sample in grp.sample_set.all():
+        blob['n_samples'] += 1
+        for module_name in {ar.module_name for ar in sample.analysis_result_set.all()}:
+            blob[module_name] = 1 + blob.get(module_name, 0)
+
+    return Response(blob)
+
+
+@api_view(['GET'])
 def get_sample_group_manifest(request, pk):
     """Reply with a sample group manifest."""
     grp = SampleGroup.objects.get(pk=pk)

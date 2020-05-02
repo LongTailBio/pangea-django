@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 import uuid
 import random
 import structlog
@@ -43,7 +43,14 @@ class TreeNode(AutoCreatedUpdatedMixin):
     rank = models.TextField(blank=False, db_index=True)
 
     def __str__(self):
-        return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{self.parent.taxon_id}" uuid="{self.uuid}"'
+        parent_id = self.taxon_id  # root
+        if self.taxon_id != '1':
+            parent_id = self.parent.taxon_id
+        return f'<TreeOfLife::TreeNode taxon_id="{self.taxon_id}" parent_id="{parent_id}" uuid="{self.uuid}"'
+
+    @property
+    def is_root(self):
+        return self.taxon_id == '1'
 
     @property
     def canon_name(self):
@@ -76,11 +83,25 @@ class TreeNode(AutoCreatedUpdatedMixin):
 
     @classmethod
     def byname(cls, name):
+
+        def get_tid(myname):
+            names = TaxonName.objects.filter(name=myname)  # rarely returns more than one name
+            if len(names) > 1:
+                snames = names.filter(name_type='scientific name')
+                if len(snames) > 0:
+                    names = snames
+            tid = names[0].taxon_id
+            return tid
+
         try:
             return cls.objects.get(taxon_id=name)
         except ObjectDoesNotExist:
-            tid = TaxonName.objects.get(name=name).taxon_id
-            return cls.objects.get(taxon_id=tid)
+            try:
+                tid = get_tid(name)
+                return cls.objects.get(taxon_id=tid)
+            except (ObjectDoesNotExist, MultipleObjectsReturned):
+                tid = get_tid(name.lower())
+                return cls.objects.get(taxon_id=tid)
 
 
 class MicrobeDirectoryEntry(AutoCreatedUpdatedMixin):
