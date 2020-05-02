@@ -22,6 +22,8 @@ class SampleGroup(RemoteObject):
         self.name = name
         self.is_library = is_library
         self._sample_cache = []
+        self._get_sample_cache = []
+        self._get_result_cache = []
 
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
@@ -71,8 +73,12 @@ class SampleGroup(RemoteObject):
     def analysis_result(self, module_name, replicate=None):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
-    def get_samples(self):
+    def get_samples(self, cache=True):
         """Yield samples fetched from the server."""
+        if cache and self._get_sample_cache:
+            for sample in self._get_sample_cache:
+                yield sample
+            return
         url = f'sample_groups/{self.uuid}/samples'
         result = self.knex.get(url)
         for sample_blob in result['results']:
@@ -80,12 +86,22 @@ class SampleGroup(RemoteObject):
             sample.load_blob(sample_blob)
             # We just fetched from the server so we change the RemoteObject
             # meta properties to reflect that
-            # sample._already_fetched = True
-            # sample._modified = False
-            yield sample
+            sample._already_fetched = True
+            sample._modified = False
+            if cache:
+                self._get_sample_cache.append(sample)
+            else:
+                yield sample
+        if cache:
+            for sample in self._get_sample_cache:
+                yield sample
 
-    def get_analysis_results(self):
+    def get_analysis_results(self, cache=True):
         """Yield group analysis results fetched from the server."""
+        if cache and self._get_result_cache:
+            for ar in self._get_result_cache:
+                yield ar
+            return
         url = f'sample_group_ars?sample_group_id={self.uuid}'
         result = self.knex.get(url)
         for result_blob in result['results']:
@@ -95,7 +111,13 @@ class SampleGroup(RemoteObject):
             # meta properties to reflect that
             result._already_fetched = True
             result._modified = False
-            yield result
+            if cache:
+                self._get_result_cache.append(result)
+            else:
+                yield result
+        if cache:
+            for ar in self._get_result_cache:
+                yield ar
 
     def get_manifest(self):
         """Return a manifest for this group."""

@@ -1,5 +1,9 @@
 
-from .remote_object import RemoteObject
+import os
+import json
+from .remote_object import RemoteObject, RemoteObjectError
+from urllib.request import urlretrieve
+from tempfile import NamedTemporaryFile
 
 
 class AnalysisResult(RemoteObject):
@@ -28,6 +32,7 @@ class SampleAnalysisResult(AnalysisResult):
         self.parent = self.sample
         self.module_name = module_name
         self.replicate = replicate
+        self._get_field_cache = []
 
     def nested_url(self):
         return self.sample.nested_url() + f'/analysis_results/{self.module_name}'
@@ -55,8 +60,12 @@ class SampleAnalysisResult(AnalysisResult):
     def field(self, field_name, data={}):
         return SampleAnalysisResultField(self.knex, self, field_name, data=data)
 
-    def get_fields(self):
+    def get_fields(self, cache=True):
         """Return a list of ar-fields fetched from the server."""
+        if cache and self._get_field_cache:
+            for field in self._get_field_cache:
+                yield field
+            return
         url = f'sample_ar_fields?analysis_result_id={self.uuid}'
         result = self.knex.get(url)
         for result_blob in result['results']:
@@ -66,7 +75,13 @@ class SampleAnalysisResult(AnalysisResult):
             # meta properties to reflect that
             result._already_fetched = True
             result._modified = False
-            yield result
+            if cache:
+                self._get_field_cache.append(result)
+            else:
+                yield result
+        if cache:
+            for field in self._get_field_cache:
+                yield field
 
 
 class SampleGroupAnalysisResult(AnalysisResult):
@@ -136,6 +151,7 @@ class AnalysisResultField(RemoteObject):
         self.parent = parent
         self.name = field_name
         self.stored_data = data
+        self._cached_filename = None  # Used if the field points to S3, FTP, etc
 
     def nested_url(self):
         return self.parent.nested_url() + f'/fields/{self.name}'
@@ -156,6 +172,8 @@ class AnalysisResultField(RemoteObject):
         self.load_blob(blob)
 
     def _create(self):
+        if json.loads(json.dumps(self.stored_data)) != self.stored_data:
+            raise RemoteObjectError('JSON Serialization modifies object')
         self.parent.idem()
         data = {
             'analysis_result': self.parent.uuid,
@@ -164,6 +182,29 @@ class AnalysisResultField(RemoteObject):
         }
         blob = self.knex.post(f'{self.canon_url()}?format=json', json=data)
         self.load_blob(blob)
+
+    def download_file(self, cache=True):
+        """Return a local filepath to the file this result points to."""
+        if self.stored_data.get('__type__', '').lower() != 's3':
+            raise TypeError('Cannot fetch a file for a BLOB type result field.')
+        if cache and self._cached_filename:
+            return self._cached_filename
+        try:
+            url = self.stored_data['presigned_url']
+        except KeyError:
+            url = self.stored_data['uri']
+        if url.startswith('s3://'):
+            url = self.stored_data['endpoint_url'] + '/' + url[5:]
+        myfile = NamedTemporaryFile(delete=False)
+        myfile.close()
+        urlretrieve(url, myfile.name)
+        if cache:
+            self._cached_filename = myfile.name
+        return self._cached_filename
+
+    def __del__(self):
+        if self._cached_filename:
+            os.remove(self._cached_filename)
 
 
 class SampleAnalysisResultField(AnalysisResultField):
