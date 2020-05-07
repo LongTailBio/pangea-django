@@ -1,4 +1,7 @@
-from .autometa import add_taxa_auto_metadata
+from .autometa import (
+    add_taxa_auto_metadata,
+    regularize_metadata,
+)
 from .modules import (
     TopTaxaModule,
     SampleSimilarityModule,
@@ -30,6 +33,7 @@ SAMPLE_MODULES = [
 
 
 def auto_metadata(samples, logger):
+    regularize_metadata(samples, logger)
     add_taxa_auto_metadata(samples, logger)
 
 
@@ -48,7 +52,7 @@ def run_group(grp, logger):
         logger('done.')
 
 
-def run_sample(sample, logger):
+def run_sample(sample, logger, strict=False):
     already_run = {ar.module_name for ar in sample.get_analysis_results()}
     for module in SAMPLE_MODULES:
         if module.name() in already_run:
@@ -58,6 +62,17 @@ def run_sample(sample, logger):
             logger(f'Sample does not meet requirements for module {module.name()}')
             continue
         logger(f'Sample meets requirements for module {module.name()}, processing')
-        field = module.process_sample(sample)
-        field.idem()
-        logger('done.')
+        try:
+            field = module.process_sample(sample)
+            logger('done.')
+        except Exception as e:
+            logger(f'[error] failed while running module {module.name()} for sample {sample.name}\nException:\n{e}')
+            if strict:
+                raise
+        try:
+            field.idem()
+            logger('saved.')
+        except Exception as e:
+            logger(f'[error] failed while saving module {module.name()} for sample {sample.name}\nException:\n{e}')
+            if strict:
+                raise

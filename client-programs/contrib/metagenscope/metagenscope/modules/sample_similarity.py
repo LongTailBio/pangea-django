@@ -85,6 +85,12 @@ class SampleSimilarityModule(Module):
             sample for sample in grp.get_samples()
             if sample_has_modules(sample)
         ]
+        meta = pd.DataFrame.from_dict(
+            {sample.name: sample.metadata for sample in samples},
+            orient='index'
+        ).fillna('Unknown')
+        for sample in samples:
+            sample.metadata = meta.loc[sample.name].to_dict()
         return grp.analysis_result(cls.name()).field(
             'dim_reduce',
             data=processor(samples),

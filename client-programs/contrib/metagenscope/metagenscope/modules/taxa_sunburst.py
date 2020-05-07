@@ -52,7 +52,11 @@ def reduce_taxa_list(taxa_list, delim='|'):
                     'id': taxon,
                     'parent': 'root' if i == 0 else tkns[i - 1],
                 }
-        nodes[tkns[-1]]['value'] = factor * abund
+        proportion = factor * abund
+        if proportion >= 0.01:
+            nodes[tkns[-1]]['value'] = proportion
+        else:
+            del nodes[tkns[-1]]
     return list(nodes.values())
 
 
