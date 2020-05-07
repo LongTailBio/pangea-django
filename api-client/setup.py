@@ -6,13 +6,18 @@ import setuptools
 setuptools
 setuptools.setup(
     name='pangea_api',
-    version='0.2.1',
+    version='0.4.0',
     author="David C. Danko",
     author_email='dcdanko@gmail.com',
     packages=setuptools.find_packages(),
     package_dir={'pangea_api': 'pangea_api'},
     install_requires=[
     ],
+    entry_points={
+        'console_scripts': [
+            'pangea-api=pangea_api.cli:main'
+        ]
+    },
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

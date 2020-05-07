@@ -83,7 +83,7 @@ class Sample(RemoteObject):
         return self.knex.get(url)
 
     def __str__(self):
-        return self.name
+        return f'<Pangea::Sample {self.name} {self.uuid} />'
 
     def __repr__(self):
-        return self.name
+        return f'<Pangea::Sample {self.name} {self.uuid} />'

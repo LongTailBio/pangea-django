@@ -124,3 +124,8 @@ class SampleGroup(RemoteObject):
         url = f'sample_groups/{self.uuid}/manifest'
         return self.knex.get(url)
 
+    def __str__(self):
+        return f'<Pangea::SampleGroup {self.name} {self.uuid} />'
+
+    def __repr__(self):
+        return f'<Pangea::SampleGroup {self.name} {self.uuid} />'

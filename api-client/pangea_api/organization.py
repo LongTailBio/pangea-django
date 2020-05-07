@@ -39,3 +39,16 @@ class Organization(RemoteObject):
 
     def sample_group(self, group_name, is_library=False):
         return SampleGroup(self.knex, self, group_name, is_library=is_library)
+
+    def get_sample_groups(self):
+        """Yield samplegroups fetched from the server."""
+        url = f'sample_groups?organization_id={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.sample_group(result_blob['name'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result

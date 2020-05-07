@@ -32,7 +32,21 @@ class RemoteObject:
             current = getattr(self, field, None)
             new = blob[field]
             if current and current != new:
-                raise RemoteObjectOverwriteError(f'Loading blob would overwrite field "{field}":\n\tcurrent: "{current}"\n\tnew: "{new}"')
+                is_overwrite = True
+                if isinstance(current, dict) and isinstance(new, dict):
+                    append_only = True
+                    for k, v in current.items():
+                        if (k not in new) or (new[k] != v):
+                            append_only = False
+                        break
+                    if append_only:
+                        is_overwrite = False
+                if is_overwrite:
+                    raise RemoteObjectOverwriteError((
+                        f'Loading blob would overwrite field "{field}":\n\t'
+                        f'current: "{current}" (type: "{type(current)}")\n\t'
+                        f'new: "{new}" (type: "{type(new)}")'
+                    ))
             setattr(self, field, new)
 
     def get(self):
