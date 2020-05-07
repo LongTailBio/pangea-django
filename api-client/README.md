@@ -78,7 +78,17 @@ $ pangea-api download sample-results --help
 
 Please see `pangea_api/cli.py` for examples of how to download data using the Python API directly.
 
-## Testing
+## Installing and Testing
+
+### Install from source
+
+Download this directory and run `python setup.py install`
+
+### Install from PyPi
+
+`pip install pangea-api`
+
+### Testing
 
 To test you will need a local version of pange-django running.
 
