@@ -37,6 +37,9 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    url(r'^api/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    url(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'^api/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api/', include('pangea.core.urls')),
     path('api/nested/', include('pangea.core.nested_urls')),
     path('api/auth/', include('djoser.urls')),
@@ -45,7 +48,4 @@ urlpatterns = [
     path('api/contrib/metasub/', include('pangea.contrib.metasub.urls')),
     path('api/contrib/taxasearch/', include('pangea.contrib.taxasearch.urls')),
     path('api/contrib/treeoflife/', include('pangea.contrib.treeoflife.urls')),
-    url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    url(r'^redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
