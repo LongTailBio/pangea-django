@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'pangea.contrib.covid19',
     'pangea.contrib.taxasearch',
     'pangea.contrib.treeoflife',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
