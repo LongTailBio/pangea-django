@@ -58,6 +58,7 @@ def omni_search(query):
     return out
 
 
+
 def taxon_search(taxon_query):
     try:
         taxon = TaxonName.objects.get(taxon_id=taxon_query).tree_node
@@ -149,5 +150,12 @@ def fuzzy_taxa_search(query):
             ''', [query, query])
 
         results = {row[0]: row[1] for row in cursor.fetchall()}
-    return results
+    if query not in results:
+        return []
+    samples = [
+        Sample.objects.get(id=el['sample_uuid'])
+        for el in results[query]
+    ]
+    serialized = [SampleSerializer(sample).data for sample in samples]
+    return serialized
 
