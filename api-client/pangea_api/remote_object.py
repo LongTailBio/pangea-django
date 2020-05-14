@@ -30,7 +30,10 @@ class RemoteObject:
             raise RemoteObjectError('This object has been deleted.')
         for field in self.remote_fields:
             current = getattr(self, field, None)
-            new = blob[field]
+            try:
+                new = blob[field]
+            except KeyError:
+                raise KeyError(f'Key {field} is missing for object {self} (type {type(self)}) in blob: {blob}')
             if current and current != new:
                 is_overwrite = True
                 if isinstance(current, dict) and isinstance(new, dict):
