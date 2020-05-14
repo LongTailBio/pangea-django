@@ -34,7 +34,7 @@ def omni_search(query):
         out['taxon'] = {
             'canon_name': taxon,
             'annotation': taxon_result.annotation,
-            'samples': fuzzy_taxa_search(taxon)[taxon]
+            'samples': fuzzy_taxa_search(taxon)
         }
     if is_dna(query):
         dna_result = dna_search(query)
