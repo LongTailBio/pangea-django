@@ -128,10 +128,10 @@ def metadata_search(query):
                     (m.value ilike %s)
             )
             ''', [f'%{key}%', f'%{val}%'])
-    samples = [
-        Sample.objects.get(pk=row[0])
-        for row in cursor.fetchall()
-    ]
+        samples = [
+            Sample.objects.get(pk=row[0])
+            for row in cursor.fetchall()
+        ]
     serialized = [SampleSerializer(sample).data for sample in samples]
     return serialized
 
