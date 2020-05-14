@@ -113,6 +113,8 @@ def metadata_search(query):
         if len(tkns) != 2:
             return []
         key, val = tkns[0].strip(), tkns[1].strip()
+    else:
+        return []
     with connection.cursor() as cursor:
         cursor.execute(f'''
             select
