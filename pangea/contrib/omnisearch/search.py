@@ -105,7 +105,7 @@ def keyword_search(query):
 
 
 def fuzzy_taxa_search(query):
-    query = f'%{query}%'
+    sql_query = f'%{query}%'
     with connection.cursor() as cursor:
         cursor.execute(f'''
             -- Use text-based search to restrict the search space
@@ -147,11 +147,11 @@ def fuzzy_taxa_search(query):
                 filtered_taxa.key
             order by
                 filtered_taxa.key
-            ''', [query, query])
+            ''', [sql_query, sql_query])
 
         results = {row[0]: row[1] for row in cursor.fetchall()}
     if query not in results:
-        return ['foo']
+        return []
     samples = [
         Sample.objects.get(pk=el['sample_uuid'])
         for el in results[query]
