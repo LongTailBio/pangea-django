@@ -30,7 +30,7 @@ def omni_search(query):
     }
     taxon_result = taxon_search(query)
     if taxon_result:
-        taxon = taxon_result.canon_name
+        taxon = taxon_result.canon_name.name
         out['taxon'] = {
             'canon_name': taxon,
             'annotation': taxon_result.annotation,
