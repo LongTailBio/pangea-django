@@ -18,7 +18,7 @@ logger = structlog.get_logger(__name__)
 
 
 def is_dna(query):
-    for char in query[:min(len(query, 100))]:
+    for char in query[:min(len(query), 100)]:
         if char not in 'ATCGUN':
             return False
     return True
