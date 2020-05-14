@@ -100,7 +100,7 @@ def fuzzy_taxa_search(query):
                     select
                         core_sample.uuid as sample_uuid,
                         core_sample.name as sample_name,
-                        core_sample.library_id as sample_library_uuid,
+                        core_sample.library_id as sample_library_uuid
                     order by
                         core_sample.library_id
                 ) as x)) as samples
