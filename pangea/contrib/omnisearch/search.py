@@ -151,9 +151,9 @@ def fuzzy_taxa_search(query):
 
         results = {row[0]: row[1] for row in cursor.fetchall()}
     if query not in results:
-        return []
+        return ['foo']
     samples = [
-        Sample.objects.get(id=el['sample_uuid'])
+        Sample.objects.get(pk=el['sample_uuid'])
         for el in results[query]
     ]
     serialized = [SampleSerializer(sample).data for sample in samples]
