@@ -32,19 +32,29 @@ def is_dna(query):
 
 def omni_search(query):
     out = {
-        'keyword': keyword_search(query),
+        'samples': [],
+        'sample_groups': [],
+        'organizations': [],
+        'taxa': [],
     }
+
+    keyword_result = keyword_search(query)
+    for key in ['samples', 'sample_groups', 'organizations']:
+        out[key] += keyword_result[key]
+
     taxon_result = taxon_search(query)
     if taxon_result:
         taxon = taxon_result.canon_name.name
         out['taxon'] = {
             'canon_name': taxon,
             'annotation': taxon_result.annotation,
-            'samples': fuzzy_taxa_search(taxon)
         }
+        out['samples'] += fuzzy_taxa_search(taxon)
+
     if is_dna(query):
         dna_result = dna_search(query)
-        out['nucleotide_sequence'] = dna_result
+        out['samples'] += dna_result
+
     return out
 
 
