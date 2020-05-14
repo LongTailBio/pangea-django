@@ -44,10 +44,10 @@ def omni_search(query):
 
 def taxon_search(taxon_query):
     try:
-        taxon = TaxonName.objects.get(taxon_id=taxon_id).tree_node
+        taxon = TaxonName.objects.get(taxon_id=taxon_query).tree_node
     except ObjectDoesNotExist:
         try:
-            taxon = TaxonName.objects.get(name__iexact=taxon_name).tree_node
+            taxon = TaxonName.objects.get(name__iexact=taxon_query).tree_node
         except ObjectDoesNotExist:
             return None
     return taxon
