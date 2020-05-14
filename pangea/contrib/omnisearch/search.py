@@ -55,6 +55,8 @@ def omni_search(query):
         dna_result = dna_search(query)
         out['samples'] += dna_result
 
+    out['samples'] += metadata_search(query)
+
     return out
 
 
@@ -102,6 +104,36 @@ def keyword_search(query):
         'organizations': filter_serialize('organization', OrganizationSerializer),
     }
     return result
+
+
+def metadata_search(query):
+    if '=' in query:
+        tkns = query.split('=')
+        if len(tkns) != 2:
+            return []
+        key, val = tkns[0].strip(), tkns[1].strip()
+    with connection.cursor() as cursor:
+        cursor.execute(f'''
+            select
+                core_sample.uuid
+            from
+                core_sample
+            where exists (
+                select 1
+                from
+                    jsonb_each_text(core_sample.metadata) m
+                where
+                    (m.key ilike %s)
+                    and
+                    (m.value ilike %s)
+            )
+            ''', [f'%{key}%', f'%{val}%'])
+    samples = [
+        Sample.objects.get(pk=row[0])
+        for row in cursor.fetchall()
+    ]
+    serialized = [SampleSerializer(sample).data for sample in samples]
+    return serialized
 
 
 def fuzzy_taxa_search(query):
