@@ -35,7 +35,7 @@ def omni_search(query):
         'samples': [],
         'sample_groups': [],
         'organizations': [],
-        'taxa': [],
+        'taxon': {},
     }
 
     keyword_result = keyword_search(query)
