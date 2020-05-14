@@ -1,5 +1,6 @@
 
 import structlog
+import requests
 
 from django.db import connection
 from haystack.query import SearchQuerySet
@@ -7,7 +8,12 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework.exceptions import ValidationError
 from pangea.contrib.treeoflife.models import TaxonName
+from pangea.contrib.metasub.constants import METASUB_LIBRARY_UUID
 
+from pangea.core.models import (
+    SampleGroup,
+    Sample,
+)
 from pangea.core.serializers import (
     SampleSerializer,
     SampleGroupSerializer,
@@ -54,7 +60,23 @@ def taxon_search(taxon_query):
 
 
 def dna_search(seq):
-    return {}
+    response = requests.post(
+        'http://dnaloc.ethz.ch/raw-search',
+        json={
+            'input_data': seq,
+            'database': 'metasub19',
+        }
+    )
+    response.raise_for_status()
+    samples = [
+        Sample.objects.filter(
+            library=METASUB_LIBRARY_UUID(),
+            name=el['sample_name'],
+        )[0]
+        for el in response.json()[0]['results']
+    ]
+    serialized = [SampleSerializer(sample).data for sample in samples]
+    return serialized
 
 
 def keyword_search(query):
