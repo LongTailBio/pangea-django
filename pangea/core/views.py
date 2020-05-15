@@ -254,7 +254,8 @@ def get_sample_metadata_in_group(request, pk):
         tbl = pd.DataFrame.from_dict(metadata, orient='index')
         metadata = tbl.to_csv()
         response = HttpResponse(content=metadata, content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="{grp.name}_metadata.csv"'
+        grp_name = grp.name.replace(' ', '_')
+        response['Content-Disposition'] = f'attachment; filename="{grp_name}_metadata.csv"'
         return response
 
     return HttpResponse(json.dumps(metadata), content_type="application/json")
