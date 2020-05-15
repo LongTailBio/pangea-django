@@ -233,7 +233,7 @@ class SampleGroupSamplesView(generics.ListAPIView):
         return Response({ "status": "success" })
 
 
-@require_GET()
+@require_GET
 def get_sample_metadata_in_group(request, pk):
     """Reply with metadata for samples in group."""
     grp = SampleGroup.objects.get(pk=pk)
