@@ -1,8 +1,10 @@
 import structlog
 import pandas as pd
+import json
 
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
+from django.views.decorators.http import require_GET
 
 from rest_framework import generics
 from rest_framework.decorators import api_view
@@ -231,7 +233,7 @@ class SampleGroupSamplesView(generics.ListAPIView):
         return Response({ "status": "success" })
 
 
-@api_view(['GET'])
+@require_GET()
 def get_sample_metadata_in_group(request, pk):
     """Reply with metadata for samples in group."""
     grp = SampleGroup.objects.get(pk=pk)
@@ -250,8 +252,11 @@ def get_sample_metadata_in_group(request, pk):
     if request.query_params.get('format', None) == 'csv':
         tbl = pd.DataFrame.from_dict(metadata, orient='index')
         metadata = tbl.to_csv()
+        response = HttpResponse(content=metadata, content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{grp.name}_metadata.csv"'
+        return response
 
-    return Response(metadata)
+    return HttpResponse(json.dumps(metadata), content_type="application/json")
 
 
 @api_view(['GET'])
