@@ -249,7 +249,7 @@ def get_sample_metadata_in_group(request, pk):
     for sample in grp.sample_set.all():
         metadata[sample.name] = sample.metadata
 
-    if request.query_params.get('format', None) == 'csv':
+    if request.GET.get('format', None) == 'csv':
         tbl = pd.DataFrame.from_dict(metadata, orient='index')
         metadata = tbl.to_csv()
         response = HttpResponse(content=metadata, content_type='text/csv')
