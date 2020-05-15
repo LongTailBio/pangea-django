@@ -1,4 +1,5 @@
 import structlog
+import pandas as pd
 
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
@@ -228,6 +229,29 @@ class SampleGroupSamplesView(generics.ListAPIView):
 
         sample.sample_groups.add(sample_group)
         return Response({ "status": "success" })
+
+
+@api_view(['GET'])
+def get_sample_metadata_in_group(request, pk):
+    """Reply with metadata for samples in group."""
+    grp = SampleGroup.objects.get(pk=pk)
+    if not grp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to access group.'))
+    metadata = {}
+    for sample in grp.sample_set.all():
+        metadata[sample.name] = sample.metadata
+
+    if request.query_params.get('format', None) == 'csv':
+        tbl = pd.DataFrame.from_dict(metadata, orient='index')
+        metadata = tbl.to_csv()
+
+    return Response(metadata)
 
 
 @api_view(['GET'])
