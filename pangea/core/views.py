@@ -8,11 +8,12 @@ from django.views.decorators.http import require_GET
 from django.http import HttpResponse
 
 from rest_framework import generics
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
+from .param_auth import TokenParamAuthentication
 from .models import (
     PangeaUser,
     Organization,
@@ -234,7 +235,8 @@ class SampleGroupSamplesView(generics.ListAPIView):
         return Response({ "status": "success" })
 
 
-@require_GET
+@api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
 def get_sample_metadata_in_group(request, pk):
     """Reply with metadata for samples in group."""
     grp = SampleGroup.objects.get(pk=pk)
@@ -250,7 +252,7 @@ def get_sample_metadata_in_group(request, pk):
     for sample in grp.sample_set.all():
         metadata[sample.name] = sample.metadata
 
-    if request.GET.get('format', None) == 'csv':
+    if request.GET.get('kind', None) == 'csv':
         tbl = pd.DataFrame.from_dict(metadata, orient='index')
         metadata = tbl.to_csv()
         response = HttpResponse(content=metadata, content_type='text/csv')
@@ -262,6 +264,7 @@ def get_sample_metadata_in_group(request, pk):
 
 
 @api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
 def get_sample_ar_counts_in_group(request, pk):
     """Reply with counts for all types of sample analysis results in the group."""
     grp = SampleGroup.objects.get(pk=pk)
@@ -283,6 +286,7 @@ def get_sample_ar_counts_in_group(request, pk):
 
 
 @api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
 def get_sample_group_manifest(request, pk):
     """Reply with a sample group manifest."""
     grp = SampleGroup.objects.get(pk=pk)
@@ -355,6 +359,7 @@ class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
 def get_sample_manifest(request, pk):
     """Reply with a sample group manifest."""
     sample = Sample.objects.get(pk=pk)
