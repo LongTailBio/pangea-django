@@ -90,6 +90,26 @@ def get_descendants(request):
 
 
 @api_view(['GET'])
+def get_ancestors(request):
+    """Reply with ancestor taxa."""
+    logger.info(
+        f'treeoflife__taxonomic_ancestors',
+        query_params=request.query_params,
+    )
+    queries = request.query_params.get('query', None).split(',')
+
+    result = {}
+    for query in queries:
+        try:
+            ancestors = TaxonName.objects.get(name__iexact=query).tree_node.ancestors()
+        except ObjectDoesNotExist:
+            raise ValidationError(_(f'Provided parameter {query} does not match any taxa.'))
+        result[query] = [tree_node.canon_name.name for tree_node in ancestors]
+
+    return Response(result)
+
+
+@api_view(['GET'])
 def annotate_taxa(request):
     """Reply with annotations for the taxa."""
     logger.info(
