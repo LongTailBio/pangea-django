@@ -67,7 +67,8 @@ def cli_create_samples(email, password, endpoint, sample_names, outfile, org_nam
     lib = org.sample_group(library_name, is_library=True).get()
     for sample_name in sample_names:
         sample_name = sample_name.strip()
-        lib.sample(sample_name).idem()
+        sample = lib.sample(sample_name).idem()
+        print(sample, file=outfile)
 
 
 @main.group('download')
