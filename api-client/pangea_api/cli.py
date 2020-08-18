@@ -66,6 +66,7 @@ def cli_create_samples(email, password, endpoint, sample_names, outfile, org_nam
     org = Organization(knex, org_name).get()
     lib = org.sample_group(library_name, is_library=True).get()
     for sample_name in sample_names:
+        sample_name = sample_name.strip()
         lib.sample(sample_name).idem()
 
 
