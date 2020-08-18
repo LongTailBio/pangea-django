@@ -24,6 +24,7 @@ class PangeaUser(AbstractUser):
     username = None
     email = models.EmailField(_('email address'), unique=True)
     personal_org_uuid = models.UUIDField(blank=True, null=True)
+    saved_sample_groups = models.ManyToManyField('SampleGroup')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

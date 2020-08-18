@@ -62,7 +62,7 @@ def to_uuid(**kwargs):
     # Identify which routing branch was taken based on presence of named path params
     if 'sample_pk' in kwargs:
         keys += [
-            ('sample_pk', 'library', Sample, 'sample'),
+            ('sample_pk', 'sample_groups', Sample, 'sample'),
             ('ar_pk', 'sample', SampleAnalysisResult, 'analysis_result'),
             ('field_pk', 'analysis_result', SampleAnalysisResultField, None),
         ]
