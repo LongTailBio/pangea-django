@@ -19,6 +19,56 @@ def main():
     pass
 
 
+@main.group('list')
+def cli_list():
+    pass
+
+
+@cli_list.command('samples')
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('-o', '--outfile', default='-', type=click.File('w'))
+@click.argument('org_name')
+@click.argument('grp_name')
+def cli_list_samples(email, password, endpoint, outfile, org_name, grp_name):
+    """Print a list of samples in the specified group."""
+    knex = Knex(endpoint)
+    if email and password:
+        User(knex, email, password).login()
+    org = Organization(knex, org_name).get()
+    grp = org.sample_group(grp_name).get()
+    for sample in grp.get_samples():
+        print(sample, file=outfile)
+
+
+@main.group('create')
+def cli_create():
+    pass
+
+
+@cli_create.command('samples')
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('-s', '--sample-names', default='-', type=click.File('r'))
+@click.option('-o', '--outfile', default='-', type=click.File('w'))
+@click.argument('org_name')
+@click.argument('library_name')
+def cli_create_samples(email, password, endpoint, sample_names, outfile, org_name, library_name):
+    """Create samples in the specified group.
+
+    `sample_names` is a list of samples with one line per sample
+    """
+    knex = Knex(endpoint)
+    if email and password:
+        User(knex, email, password).login()
+    org = Organization(knex, org_name).get()
+    lib = org.sample_group(library_name, is_library=True).get()
+    for sample_name in sample_names:
+        lib.sample(sample_name).idem()
+
+
 @main.group('download')
 def cli_download():
     pass
@@ -36,8 +86,8 @@ def _setup_download(email, password, endpoint, sample_manifest, org_name, grp_na
 
 
 @cli_download.command('metadata')
-@click.option('-e', '--email', default=environ.get('PANGEA_USER', None))
-@click.option('-p', '--password', default=environ.get('PANGEA_PASS', None))
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('-o', '--outfile', default='-', type=click.File('w'))
 @click.option('--sample-manifest', type=click.File('r'),
@@ -61,8 +111,8 @@ def cli_download_sample_results(email, password, endpoint, outfile, sample_manif
 
 
 @cli_download.command('sample-results')
-@click.option('-e', '--email', default=environ.get('PANGEA_USER', None))
-@click.option('-p', '--password', default=environ.get('PANGEA_PASS', None))
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('--module-name')
 @click.option('--field-name')
