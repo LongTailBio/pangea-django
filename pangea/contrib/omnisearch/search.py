@@ -140,6 +140,7 @@ def metadata_search(query):
 
 
 def fuzzy_taxa_search(query):
+    return []  # temporarily disable fuzzy taxa search
     sql_query = f'%{query}%'
     with connection.cursor() as cursor:
         cursor.execute(f'''
