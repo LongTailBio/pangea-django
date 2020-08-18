@@ -79,16 +79,32 @@ class SampleGroupSamplesView(generics.ListAPIView):
         if self.request.method == 'POST':
             return SampleGroupAddSampleSerializer
 
+    def _filter_queryset_library(self, queryset, sample_grp_uuid, sample_grp, perm):
+        """
+        if the group is a library it should not have samples from other groups
+        so we only check this group
+        """
+        has_permission = perm.has_object_permission(self.request, self, sample_grp)
+        if not has_permission:
+            return []
+        samples = super().filter_queryset(queryset).filter(sample_groups__pk=sample_grp_uuid)
+        return samples.order_by('created_at')
+
     def filter_queryset(self, queryset):
-        filtered = super().filter_queryset(queryset)
-        perm = SamplePermission()
-        sample_group_uuid = self.kwargs['group_pk']
-        my_ids = {
-            samp.pk
-            for samp in filtered.filter(sample_groups__pk=sample_group_uuid)
-            if perm.has_object_permission(self.request, self, samp)
-        }
-        return filtered.filter(pk__in=my_ids).order_by('created_at')
+        sample_grp_uuid = self.kwargs.get('group_pk')
+        sample_group = SampleGroup.objects.get(pk=sample_grp_uuid)
+        perm, has_permission = SampleGroupPermission(), True
+        if sample_group.is_library:
+            return self._filter_queryset_library(
+                queryset, sample_grp_uuid, sample_group, perm
+            )
+        samples = super().filter_queryset(queryset).filter(sample_groups__pk=sample_grp_uuid)
+        libraries = {samp.library.group for samp in samples}
+        for lib in libraries:
+            has_permission &= perm.has_object_permission(self.request, self, lib)
+        if not has_permission:
+            return []
+        return samples.order_by('created_at')
 
     def post(self, request, *args, **kwargs):
         sample_group_uuid = kwargs.get('group_pk')
