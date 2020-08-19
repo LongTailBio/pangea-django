@@ -329,10 +329,10 @@ def download_file(ar_field, local_filepath):
     if s3key_query.exists():
         s3key = s3key_query[0]
         url = s3key.presign_url(
-            ret['stored_data']['endpoint_url'],
-            ret['stored_data']['uri']
+            ar_field.stored_data['endpoint_url'],
+            ar_field.stored_data['uri']
         )
     else:
-        assert False 
+        url = url.replace('s3://', ar_field.stored_data['endpoint_url'])
     urlretrieve(url, local_filepath)
     return local_filepath
