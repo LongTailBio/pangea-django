@@ -333,6 +333,6 @@ def download_file(ar_field, local_filepath):
             ret['stored_data']['uri']
         )
     else:
-
+        assert False 
     urlretrieve(url, local_filepath)
     return local_filepath
