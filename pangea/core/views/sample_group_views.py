@@ -300,6 +300,10 @@ def referenced_filename(arf):
     return filename
 
 
+class AnalysisResultFieldDownloadError(Exception):
+    pass
+
+
 def make_tarball(tarball_name, analysis_results):
 
     with tarfile.open(tarball_name, 'w:gz') as tarball:
@@ -308,7 +312,7 @@ def make_tarball(tarball_name, analysis_results):
                 local_filepath = referenced_filename(arf)
                 try:
                     download_file(arf, local_filepath)
-                except TypeError:
+                except AnalysisResultFieldDownloadError:
                     open(local_filepath, 'w').write(json.dumps(arf.stored_data))
                 tarball.add(local_filepath)
     return tarball_name
@@ -316,10 +320,10 @@ def make_tarball(tarball_name, analysis_results):
 
 def download_file(ar_field, local_filepath):
     if ar_field.stored_data.get('__type__', '').lower() != 's3':
-        raise TypeError('Not an S3 AR Field')
+        raise AnalysisResultFieldDownloadError('Not an S3 AR Field')
     bucket_name = ar_field.stored_data['uri'].split('s3://')[1].split('/')[0]
     s3key_query = ar_field.analysis_result.sample.library.group.organization.s3_api_keys \
-        .filter(endpoint_url=ar_field['stored_data']['endpoint_url']) \
+        .filter(endpoint_url=ar_field.stored_data['endpoint_url']) \
         .filter(Q(bucket='*') | Q(bucket=bucket_name))
     url = ar_field.stored_data['uri']
     if s3key_query.exists():
