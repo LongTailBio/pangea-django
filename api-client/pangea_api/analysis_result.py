@@ -1,6 +1,8 @@
 
 import os
 import json
+from os.path import join
+
 from .remote_object import RemoteObject, RemoteObjectError
 from urllib.request import urlretrieve
 from tempfile import NamedTemporaryFile
@@ -157,6 +159,33 @@ class AnalysisResultField(RemoteObject):
     def nested_url(self):
         return self.parent.nested_url() + f'/fields/{self.name}'
 
+    def get_blob_filename(self):
+        sname = self.parent.parent.name.replace('.', '-')
+        mname = self.parent.module_name.replace('.', '-')
+        fname = self.name.replace('.', '-')
+        filename = join(
+            self.parent.parent.name, f'{sname}.{mname}.{fname}.json'
+        ).replace('::', '__')
+        return filename
+
+    def get_referenced_filename(self):
+        key = None
+        for key in ['filename', 'uri', 'url']:
+            if key in self.stored_data:
+                break
+        if key is None:
+            raise TypeError('Cannot make a reference filename for a BLOB type result field.')
+        ext = self.stored_data[key].split('.')[-1]
+        if ext in ['gz']:
+            ext = self.stored_data[key].split('.')[-2] + '.' + ext
+        sname = self.parent.parent.name.replace('.', '-')
+        mname = self.parent.module_name.replace('.', '-')
+        fname = self.name.replace('.', '-')
+        filename = join(
+            self.parent.parent.name, f'{sname}.{mname}.{fname}.{ext}'
+        ).replace('::', '__')
+        return filename
+
     def _save(self):
         data = {
             field: getattr(self, field)
@@ -192,11 +221,11 @@ class AnalysisResultField(RemoteObject):
         if cache and self._cached_filename:
             return self._cached_filename
         if blob_type == 's3':
-            return self._download_s3(filename)
+            return self._download_s3(filename, cache)
         elif blob_type == 'sra':
-            return self._download_sra(filename)
+            return self._download_sra(filename, cache)
 
-    def _download_s3(self, filename):
+    def _download_s3(self, filename, cache):
         try:
             url = self.stored_data['presigned_url']
         except KeyError:
@@ -213,7 +242,7 @@ class AnalysisResultField(RemoteObject):
             self._cached_filename = filename
         return filename
 
-    def _download_sra(self, filename):
+    def _download_sra(self, filename, cache):
         url = self.stored_data['url']
         if not filename:
             self._temp_filename = True

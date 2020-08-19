@@ -139,20 +139,15 @@ def cli_download_sample_results(email, password, endpoint, module_name, field_na
             for field in ar.get_fields(cache=False):
                 if field_name and field.name != field_name:
                     continue
-                ext = field.stored_data.get('uri', 'json').split('.')[-1]
-                if ext in ['gz']:
-                    ext = field.stored_data['uri'].split('.')[-2] + '.'
-                sname = sample.name.replace('.', '-'),
-                mname = ar.module_name.replace('.', '-')
-                fname = field.name.replace('.', '-')
-                filename = join(
-                    target_dir, sample.name, f'{sname}.{mname}.{fname}.{ext}'
-                ).replace('::', '__')
+                filename = join(target_dir, field.get_blob_filename()).replace('::', '__')
                 makedirs(dirname(filename), exist_ok=True)
-                click.echo(f'Downloading {sample} :: {ar} :: {field} to {filename}', err=True)
+                click.echo(f'Downloading BLOB {sample} :: {ar} :: {field} to {filename}', err=True)
+                with open(filename, 'w') as blob_file:
+                    blob_file.write(json.dumps(field.stored_data))
                 try:
+                    filename = join(target_dir, field.get_referenced_filename()).replace('::', '__')
+                    click.echo(f'Downloading FILE {sample} :: {ar} :: {field} to {filename}', err=True)
                     field.download_file(filename=filename)
                 except TypeError:
-                    with open(filename, 'w') as blob_file:
-                        blob_file.write(json.dumps(field.stored_data))
+                    pass
                 click.echo('done.', err=True)
