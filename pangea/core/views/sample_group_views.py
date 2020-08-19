@@ -1,6 +1,10 @@
 import structlog
 import pandas as pd
 import json
+import os
+import tarfile
+import datetime
+from urllib.request import urlretrieve
 
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
@@ -36,6 +40,7 @@ from ..serializers import (
     SampleAnalysisResultFieldSerializer,
     SampleGroupAnalysisResultFieldSerializer,
 )
+from ...settings import TAR_DIR
 
 
 logger = structlog.get_logger(__name__)
@@ -222,3 +227,105 @@ def get_sample_group_manifest(request, pk):
         blob['analysis_results'].append(ar_blob)
 
     return Response(blob)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
+def get_sample_data_in_group(request, pk, module_name):
+    """Reply with metadata for samples in group."""
+    grp = SampleGroup.objects.get(pk=pk)
+    if not grp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to access group.'))
+    kind = request.GET.get('kind', 'tar')
+    ars = {}
+    for sample in grp.sample_set.all():
+        try:
+            ar = SampleAnalysisResult.objects.get(module_name=module_name, sample=sample.uuid)
+            ars[sample.name] = ar
+        except ObjectDoesNotExistError:
+            pass
+
+    if kind == 'list':
+        pass
+    elif kind == 'tar':
+        filename = get_tarball(grp.name, module_name, ars)
+        content = open(filename, mode='rb')
+        response = HttpResponse(content=content, content_type='binary')
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(filename)}"'
+        return response
+
+    return HttpResponse(json.dumps(metadata), content_type="application/json")
+
+
+def clean_tarball_cache():
+    timestamp = datetime.datetime.now().isoformat().split('T')[0]
+    for fname in os.listdir(TAR_DIR):
+        if timestamp not in fname:
+            os.remove(os.path.join(TAR_DIR, fname))
+
+
+def get_tarball(group_name, module_name, analysis_results):
+    clean_tarball_cache()
+    group_name = group_name.replace('.', '-').replace(' ', '_')
+    module_name = module_name.replace('.', '-').replace(' ', '_')
+    timestamp = datetime.datetime.now().isoformat().split('T')[0]
+    tarball_name = f'{group_name}__{module_name}__{timestamp}.tar.gz'.replace('::', '__')
+    tarball_name = os.path.join(TAR_DIR, tarball_name)
+    if not os.path.isfile(tarball_name):
+        make_tarball(tarball_name, analysis_results)
+    return tarball_name
+
+
+def referenced_filename(arf):
+    key, ext = None, 'json'
+    for a_key in ['filename', 'uri', 'url']:
+        if a_key in arf.stored_data:
+            key = a_key
+            break
+    if key is not None:
+        ext = arf.stored_data[key].split('.')[-1]
+        if ext in ['gz']:
+            ext = arf.stored_data[key].split('.')[-2] + '.' + ext
+    sname = arf.analysis_result.sample.name.replace('.', '-').replace(' ', '_')
+    mname = arf.analysis_result.module_name.replace('.', '-').replace(' ', '_')
+    fname = arf.name.replace('.', '-')
+    filename = f'{sname}.{mname}.{fname}.{ext}'.replace('::', '__')
+    return filename
+
+
+def make_tarball(tarball_name, analysis_results):
+
+    with tarfile.open(tarball_name, 'w:gz') as tarball:
+        for sample_name, ar in analysis_results.items():
+            for arf in SampleAnalysisResultField.objects.filter(analysis_result=ar.uuid).all():
+                local_filepath = referenced_filename(arf)
+                try:
+                    download_file(arf, local_filepath)
+                except TypeError:
+                    open(local_filepath, 'w').write(json.dumps(arf.stored_data))
+                tarball.add(local_filepath)
+    return tarball_name
+
+
+def download_file(ar_field, local_filepath):
+    if ar_field.stored_data.get('__type__', '').lower() != 's3':
+        raise TypeError('Not an S3 AR Field')
+    bucket_name = ar_field.stored_data['uri'].split('s3://')[1].split('/')[0]
+    s3key_query = ar_field.analysis_result.sample.library.group.organization.s3_api_keys \
+        .filter(endpoint_url=ar_field['stored_data']['endpoint_url']) \
+        .filter(Q(bucket='*') | Q(bucket=bucket_name))
+    url = ar_field.stored_data['uri']
+    if s3key_query.exists():
+        s3key = s3key_query[0]
+        url = s3key.presign_url(
+            ret['stored_data']['endpoint_url'],
+            ret['stored_data']['uri']
+        )
+    urlretrieve(url, local_filepath)
+    return local_filepath

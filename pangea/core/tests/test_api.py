@@ -375,7 +375,6 @@ class SampleGroupTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-
     def test_unauth_get_sample_group_manifest(self):
         """Ensure authorized user can create sample group."""
         group = self.organization.create_sample_group(
@@ -392,7 +391,6 @@ class SampleGroupTests(APITestCase):
         url = reverse('sample-group-manifest', kwargs={'pk': group.uuid})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
 
     def test_get_sample_group_metadata_with_token_as_param(self):
         """Ensure authorized user can get a manifest using the tokan as a param."""
@@ -428,6 +426,22 @@ class SampleGroupTests(APITestCase):
         url = reverse('sample-group-metadata', kwargs={'pk': group.uuid})
         url += f'?token={token}'
         response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_tarball(self):
+        group = self.organization.create_sample_group(
+            name='GRP_01 TFHJADGSDFTGH',
+            is_public=True,
+            is_library=True,
+        )
+        s1 = group.create_sample(name='SMPL_01 TFHJADGSDFTGH')
+        s2 = group.create_sample(name='SMPL_02 TFHJADGSDFTGH')
+        ar1 = s1.create_analysis_result(module_name='foo')
+        ar2 = s2.create_analysis_result(module_name='foo')
+        arf1 = ar1.create_field(name='bar', stored_data={'a': 1, 'b': 1})
+        arf2 = ar2.create_field(name='bar', stored_data={'a': 2, 'b': 1})
+        url = reverse('sample-group-download', kwargs={'pk': group.uuid, 'module_name': 'foo'})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 class SampleTests(APITestCase):
