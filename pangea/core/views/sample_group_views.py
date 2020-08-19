@@ -332,5 +332,7 @@ def download_file(ar_field, local_filepath):
             ret['stored_data']['endpoint_url'],
             ret['stored_data']['uri']
         )
+    else:
+
     urlretrieve(url, local_filepath)
     return local_filepath
