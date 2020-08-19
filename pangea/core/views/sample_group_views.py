@@ -10,6 +10,7 @@ from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
 from django.views.decorators.http import require_GET
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import generics
 from rest_framework.decorators import api_view, authentication_classes
@@ -248,7 +249,7 @@ def get_sample_data_in_group(request, pk, module_name):
         try:
             ar = SampleAnalysisResult.objects.get(module_name=module_name, sample=sample.uuid)
             ars[sample.name] = ar
-        except ObjectDoesNotExistError:
+        except ObjectDoesNotExist:
             pass
 
     if kind == 'list':
