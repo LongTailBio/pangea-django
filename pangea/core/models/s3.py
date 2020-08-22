@@ -34,12 +34,10 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
     """
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     description = models.TextField(blank=False, default='')
-    endpoint_url = models.TextField(blank=False)
-    bucket = models.TextField(blank=False, default='*')
     public_key = models.TextField(blank=False, default=None)
     private_key = EncryptedTextField(blank=False, default=None)
-    organization = models.ForeignKey(
-        'Organization', on_delete=models.CASCADE, related_name='s3_api_keys'
+    bucket = models.OneToOneField(
+        'S3Bucket', on_delete=models.CASCADE, related_name='api_keys'
     )
 
     def save(self, *args, **kwargs):
@@ -61,19 +59,19 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
     def s3(self):
         return boto3.client(
             's3',
-            endpoint_url=self.endpoint_url,
+            endpoint_url=self.bucket.endpoint_url,
             aws_access_key_id=self.public_key,
             aws_secret_access_key=self.private_key.decrypt(),
         )
 
     def presign_url(self, endpoint_url, s3_url, timeout_hours=24):
         """Return a presigned read-only version of the url."""
-        if endpoint_url != self.endpoint_url:
+        if endpoint_url != self.bucket.endpoint_url:
             msg = f'Endpoint URL {endpoint_url} does not match that specified for key {self}'
             raise ValueError(msg)
         bucket_name = s3_url.split('s3://')[1].split('/')[0]
-        if self.bucket not in ['*', bucket_name]:
-            msg = f'Bucket name {bucket_name} does not match that specified for key {self}'
+        if self.bucket.name != bucket_name:
+            msg = f'URI "{s3_url}" {bucket_name} does not match bucket "{self.bucket.name}"'
             raise ValueError(msg)
         object_name = s3_url.split(f's3://{bucket_name}/')[1]
         try:
@@ -92,3 +90,10 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
                 timeout_hours=timeout_hours,
             )
             return None
+
+
+class S3Bucket(AutoCreatedUpdatedMixin):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.TextField(blank=False, unique=False)
+    endpoint_url = models.TextField(blank=False)
+    organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=False)

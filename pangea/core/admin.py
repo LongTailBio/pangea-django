@@ -28,7 +28,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 @admin.register(S3ApiKey)
 class S3ApiKeyAdmin(admin.ModelAdmin):
-    list_display = ('public_key', 'bucket', 'endpoint_url',)
+    list_display = ('public_key', 'bucket',)
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )

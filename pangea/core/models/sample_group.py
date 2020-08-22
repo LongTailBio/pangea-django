@@ -31,6 +31,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     is_public = models.BooleanField(blank=False, default=True)
     is_library = models.BooleanField(blank=False, default=False)
     theme = models.TextField(blank=True)
+    bucket = models.ForeignKey('S3Bucket', on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
         out = super(SampleGroup, self).save(*args, **kwargs)
