@@ -234,7 +234,8 @@ class SampleGroupTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.organization = Organization.objects.create(name='Test Organization')
-        cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
 
     def test_public_sample_group_read(self):
         """Ensure no login is required to read public group."""
@@ -335,16 +336,55 @@ class SampleGroupTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_unauth_get_sample_group_manifest(self):
-        """Ensure authorized user can create sample group."""
+    def test_get_sample_group_manifest_with_token_as_param(self):
+        """Ensure authorized user can get a manifest using the tokan as a param."""
         group = self.organization.create_sample_group(
-            name='GRP_01 IUHDJSFGKJL',
+            name='GRP_01 TUYFNMJWHT',
             is_public=False,
             is_library=True,
         )
         gar = group.create_analysis_result(module_name='module_foobar')
         gar.create_field(name='my_group_field_name', stored_data={})
-        sample = group.create_sample(name='SMPL_01 IUHDJSFGKJL')
+        sample = group.create_sample(name='SMPL_01 TUYFNMJWHT')
+        ar = sample.create_analysis_result(module_name='module_foobar')
+        ar.create_field(name='my_sample_field_name', stored_data={})
+
+        # get the token
+        register_url = '/api/auth/users/'
+        body = {'email': 'foo@bar.biz', 'password': 'bizzbuzzbizzbar'}
+        response = self.client.post(register_url, body, format='json')
+        myuser = PangeaUser.objects.get(email=body['email'])
+        self.organization.users.add(myuser)
+        token_url = reverse('login')
+        response = self.client.post(token_url, body, format='json')
+        token = response.json()['auth_token']
+
+        # check we're not logged in
+        url = reverse('sample-group-manifest', kwargs={'pk': group.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # check not just any old token works
+        url = reverse('sample-group-manifest', kwargs={'pk': group.uuid})
+        url += f'?token=FOOBAR'
+        response = self.client.get(url, format='json')
+        self.assertIn(response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
+
+        url = reverse('sample-group-manifest', kwargs={'pk': group.uuid})
+        url += f'?token={token}'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_unauth_get_sample_group_manifest(self):
+        """Ensure authorized user can create sample group."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 TJFDWOTDSN',
+            is_public=False,
+            is_library=True,
+        )
+        gar = group.create_analysis_result(module_name='module_foobar')
+        gar.create_field(name='my_group_field_name', stored_data={})
+        sample = group.create_sample(name='SMPL_01 TJFDWOTDSN')
         ar = sample.create_analysis_result(module_name='module_foobar')
         ar.create_field(name='my_sample_field_name', stored_data={})
 
@@ -352,6 +392,57 @@ class SampleGroupTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+    def test_get_sample_group_metadata_with_token_as_param(self):
+        """Ensure authorized user can get a manifest using the tokan as a param."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 TYAMWWTDSWNSFH',
+            is_public=False,
+            is_library=True,
+        )
+        group.create_sample(name='SMPL_01 TYAMWWTDSWNSFH', metadata={'a': 1, 'b': 1})
+        group.create_sample(name='SMPL_02 TYAMWWTDSWNSFH', metadata={'a': 2, 'b': 1})
+
+        # get the token
+        register_url = '/api/auth/users/'
+        body = {'email': 'TYAMWWTDSWNSFH@bar.biz', 'password': 'bizzbuzzbizzbar'}
+        response = self.client.post(register_url, body, format='json')
+        myuser = PangeaUser.objects.get(email=body['email'])
+        self.organization.users.add(myuser)
+        token_url = reverse('login')
+        response = self.client.post(token_url, body, format='json')
+        token = response.json()['auth_token']
+
+        # check we're not logged in
+        url = reverse('sample-group-metadata', kwargs={'pk': group.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        # check not just any old token works
+        url = reverse('sample-group-metadata', kwargs={'pk': group.uuid})
+        url += f'?token=FOOBAR'
+        response = self.client.get(url, format='json')
+        self.assertIn(response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN))
+
+        url = reverse('sample-group-metadata', kwargs={'pk': group.uuid})
+        url += f'?token={token}'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_tarball(self):
+        group = self.organization.create_sample_group(
+            name='GRP_01 TFHJADGSDFTGH',
+            is_public=True,
+            is_library=True,
+        )
+        s1 = group.create_sample(name='SMPL_01 TFHJADGSDFTGH')
+        s2 = group.create_sample(name='SMPL_02 TFHJADGSDFTGH')
+        ar1 = s1.create_analysis_result(module_name='foo')
+        ar2 = s2.create_analysis_result(module_name='foo')
+        arf1 = ar1.create_field(name='bar', stored_data={'a': 1, 'b': 1})
+        arf2 = ar2.create_field(name='bar', stored_data={'a': 2, 'b': 1})
+        url = reverse('sample-group-download', kwargs={'pk': group.uuid, 'module_name': 'foo'})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 class SampleTests(APITestCase):
 

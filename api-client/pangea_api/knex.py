@@ -33,6 +33,13 @@ class Knex:
         self.auth = None
         self.headers = {'Accept': 'application/json'}
 
+    def _clean_url(self, url):
+        url = clean_url(url)
+        url = url.replace(self.endpoint_url, '')
+        if url[0] == '/':
+            url = url[1:]
+        return url
+
     def add_auth_token(self, token):
         self.auth = TokenAuth(token)
 
@@ -50,7 +57,7 @@ class Knex:
         return self
 
     def get(self, url):
-        url = clean_url(url)
+        url = self._clean_url(url)
         response = requests.get(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -60,7 +67,7 @@ class Knex:
         return response.json()
 
     def post(self, url, json={}):
-        url = clean_url(url)
+        url = self._clean_url(url)
         response = requests.post(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -71,7 +78,7 @@ class Knex:
         return response.json()
 
     def put(self, url, json={}):
-        url = clean_url(url)
+        url = self._clean_url(url)
         response = requests.put(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -82,7 +89,7 @@ class Knex:
         return response.json()
 
     def delete(self, url):
-        url = clean_url(url)
+        url = self._clean_url(url)
         response = requests.delete(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,

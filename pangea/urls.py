@@ -23,7 +23,7 @@ from drf_yasg import openapi
 
 schema_view = get_schema_view(
    openapi.Info(
-      title="Snippets API",
+      title="Pangea API",
       default_version='v1',
       description="Test description",
       terms_of_service="https://www.google.com/policies/terms/",
@@ -37,9 +37,9 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    url(r'^api/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    url(r'^api/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    url(r'^api/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+    url(r'^doc/swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    url(r'^doc/swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'^doc/redoc/$', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('api/', include('pangea.core.urls')),
     path('api/nested/', include('pangea.core.nested_urls')),
     path('api/auth/', include('djoser.urls')),
@@ -48,4 +48,5 @@ urlpatterns = [
     path('api/contrib/metasub/', include('pangea.contrib.metasub.urls')),
     path('api/contrib/taxasearch/', include('pangea.contrib.taxasearch.urls')),
     path('api/contrib/treeoflife/', include('pangea.contrib.treeoflife.urls')),
+    path('api/contrib/omnisearch/', include('pangea.contrib.omnisearch.urls')),
 ]

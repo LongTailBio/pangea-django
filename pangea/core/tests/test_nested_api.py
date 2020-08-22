@@ -71,7 +71,6 @@ class NestedSampleGroupTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-
 class NestedSampleTests(APITestCase):
 
     @classmethod
@@ -132,6 +131,28 @@ class NestedSampleTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_retrieve_sample_from_non_library(self):
+        """Ensure authorized user can create sample group."""
+        lib = self.organization.create_sample_group(
+            name='Test Library RYJTSDCGEH',
+            is_public=True,
+            is_library=True,
+        )
+        sample = lib.create_sample(name='Test Sample RYJTSDCGEH')
+        grp = self.organization.create_sample_group(
+            name='Test Sample Group RYJTSDCGEH',
+            is_public=True,
+            is_library=True,
+        )
+        grp.add_sample(sample)
+        url = reverse('nested-sample-details', kwargs={
+            'org_pk': self.organization.pk,
+            'grp_pk': grp.name,
+            'sample_pk': 'Test Sample RYJTSDCGEH',
+        })
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class AnalysisResultTests(APITestCase):
 
@@ -142,7 +163,19 @@ class AnalysisResultTests(APITestCase):
         cls.organization.users.add(cls.user)
         cls.sample_group = cls.organization.create_sample_group(name='Test Library', is_library=True)
         cls.sample_library = cls.sample_group.library
-        cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
+        cls.sample = cls.sample_group.create_sample(name='Test Sample')
+
+    def test_retrieve_sample_analysis_result(self):
+        """Ensure we can retrieve analysis result."""
+        self.sample.create_analysis_result(module_name='test_module_KKJSGHFG')
+        url = reverse('nested-sample-ar-details', kwargs={
+            'org_pk': self.organization.pk,
+            'grp_pk': self.sample_group.name,
+            'sample_pk': self.sample.pk,
+            'ar_pk': 'test_module_KKJSGHFG',
+        })
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_create_sample_group_analysis_result(self):
         self.client.force_authenticate(user=self.user)

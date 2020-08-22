@@ -19,6 +19,58 @@ def main():
     pass
 
 
+@main.group('list')
+def cli_list():
+    pass
+
+
+@cli_list.command('samples')
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('-o', '--outfile', default='-', type=click.File('w'))
+@click.argument('org_name')
+@click.argument('grp_name')
+def cli_list_samples(email, password, endpoint, outfile, org_name, grp_name):
+    """Print a list of samples in the specified group."""
+    knex = Knex(endpoint)
+    if email and password:
+        User(knex, email, password).login()
+    org = Organization(knex, org_name).get()
+    grp = org.sample_group(grp_name).get()
+    for sample in grp.get_samples():
+        print(sample, file=outfile)
+
+
+@main.group('create')
+def cli_create():
+    pass
+
+
+@cli_create.command('samples')
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('-s', '--sample-names', default='-', type=click.File('r'))
+@click.option('-o', '--outfile', default='-', type=click.File('w'))
+@click.argument('org_name')
+@click.argument('library_name')
+def cli_create_samples(email, password, endpoint, sample_names, outfile, org_name, library_name):
+    """Create samples in the specified group.
+
+    `sample_names` is a list of samples with one line per sample
+    """
+    knex = Knex(endpoint)
+    if email and password:
+        User(knex, email, password).login()
+    org = Organization(knex, org_name).get()
+    lib = org.sample_group(library_name, is_library=True).get()
+    for sample_name in sample_names:
+        sample_name = sample_name.strip()
+        sample = lib.sample(sample_name).idem()
+        print(sample, file=outfile)
+
+
 @main.group('download')
 def cli_download():
     pass
@@ -36,8 +88,8 @@ def _setup_download(email, password, endpoint, sample_manifest, org_name, grp_na
 
 
 @cli_download.command('metadata')
-@click.option('-e', '--email', default=environ.get('PANGEA_USER', None))
-@click.option('-p', '--password', default=environ.get('PANGEA_PASS', None))
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('-o', '--outfile', default='-', type=click.File('w'))
 @click.option('--sample-manifest', type=click.File('r'),
@@ -61,8 +113,8 @@ def cli_download_sample_results(email, password, endpoint, outfile, sample_manif
 
 
 @cli_download.command('sample-results')
-@click.option('-e', '--email', default=environ.get('PANGEA_USER', None))
-@click.option('-p', '--password', default=environ.get('PANGEA_PASS', None))
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('--module-name')
 @click.option('--field-name')
@@ -87,20 +139,15 @@ def cli_download_sample_results(email, password, endpoint, module_name, field_na
             for field in ar.get_fields(cache=False):
                 if field_name and field.name != field_name:
                     continue
-                ext = field.stored_data.get('uri', 'json').split('.')[-1]
-                if ext in ['gz']:
-                    ext = field.stored_data['uri'].split('.')[-2] + '.'
-                sname = sample.name.replace('.', '-'),
-                mname = ar.module_name.replace('.', '-')
-                fname = field.name.replace('.', '-')
-                filename = join(
-                    target_dir, sample.name, f'{sname}.{mname}.{fname}.{ext}'
-                ).replace('::', '__')
+                filename = join(target_dir, field.get_blob_filename()).replace('::', '__')
                 makedirs(dirname(filename), exist_ok=True)
-                click.echo(f'Downloading {sample} :: {ar} :: {field} to {filename}', err=True)
+                click.echo(f'Downloading BLOB {sample} :: {ar} :: {field} to {filename}', err=True)
+                with open(filename, 'w') as blob_file:
+                    blob_file.write(json.dumps(field.stored_data))
                 try:
+                    filename = join(target_dir, field.get_referenced_filename()).replace('::', '__')
+                    click.echo(f'Downloading FILE {sample} :: {ar} :: {field} to {filename}', err=True)
                     field.download_file(filename=filename)
                 except TypeError:
-                    with open(filename, 'w') as blob_file:
-                        blob_file.write(json.dumps(field.stored_data))
+                    pass
                 click.echo('done.', err=True)

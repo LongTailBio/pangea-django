@@ -16,7 +16,6 @@ import structlog
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -134,6 +133,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
+        # 'pangea.core.param_auth.TokenParamAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
@@ -197,6 +197,10 @@ S3_BUCKET = os.environ.get('S3_BUCKET', None)
 
 STATIC_URL = os.environ.get('STATIC_URL', '/static/')
 STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'static/'))
+
+TAR_DIR = 'tarballs'
+if not os.path.isdir(TAR_DIR):
+    os.mkdir(TAR_DIR)
 
 LOG_DIR = 'logs'
 if not os.path.isdir(LOG_DIR):

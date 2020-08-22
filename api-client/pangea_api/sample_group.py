@@ -2,6 +2,7 @@
 from .remote_object import RemoteObject
 from .sample import Sample
 from .analysis_result import SampleGroupAnalysisResult
+from .utils import paginated_iterator
 
 
 class SampleGroup(RemoteObject):
@@ -79,9 +80,7 @@ class SampleGroup(RemoteObject):
             for sample in self._get_sample_cache:
                 yield sample
             return
-        url = f'sample_groups/{self.uuid}/samples'
-        result = self.knex.get(url)
-        for sample_blob in result['results']:
+        for sample_blob in paginated_iterator(self.knex, f'sample_groups/{self.uuid}/samples'):
             sample = self.sample(sample_blob['name'])
             sample.load_blob(sample_blob)
             # We just fetched from the server so we change the RemoteObject
