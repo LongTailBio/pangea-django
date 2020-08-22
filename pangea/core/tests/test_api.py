@@ -50,15 +50,18 @@ class S3ApiKeyTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.organization = Organization.objects.create(name='Test Organization')
+        cls.bucket = cls.organization.create_s3bucket(
+            endpoint_url='https://sys.foobar.com',
+            name="test_bucket",
+        )
         cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
         cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
         cls.organization.users.add(cls.org_user)
 
     def test_authorized_s3apikey_read(self):
         """Ensure authorized user can read private sample group."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -71,9 +74,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_no_login_s3apikey_read(self):
         """Ensure 403 error is thrown if trying to illicitly read private group."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -83,9 +85,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_unauthorized_s3apikey_read(self):
         """Ensure 403 error is thrown if trying to illicitly read s3apikey."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -96,9 +97,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_authorized_s3apikey_list(self):
         """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -110,9 +110,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_no_login_s3apikey_list(self):
         """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -122,9 +121,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_unauthorized_s3apikey_list(self):
         """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -139,10 +137,9 @@ class S3ApiKeyTests(APITestCase):
 
         url = reverse('s3apikey-create')
         data = {
-            'endpoint_url': 'https://sys.foobar.com',
             'public_key': 'my_public_key',
             'private_key': 'my_private_key',
-            'organization': self.organization.pk,
+            'bucket': self.bucket.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -158,10 +155,9 @@ class S3ApiKeyTests(APITestCase):
     def test_unauth_create_key(self):
         url = reverse('s3apikey-create')
         data = {
-            'endpoint_url': 'https://sys.foobar.com',
             'public_key': 'my_public_key',
             'private_key': 'my_private_key',
-            'organization': self.organization.pk,
+            'bucket': self.bucket.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -170,10 +166,9 @@ class S3ApiKeyTests(APITestCase):
         self.client.force_authenticate(user=self.anon_user)
         url = reverse('s3apikey-create')
         data = {
-            'endpoint_url': 'https://sys.foobar.com',
             'public_key': 'my_public_key',
             'private_key': 'my_private_key',
-            'organization': self.organization.pk,
+            'bucket': self.bucket.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -764,12 +759,16 @@ class AnalysisResultTests(APITestCase):
             }
         )
         self.organization.users.add(self.user)
-        self.organization.create_s3apikey(
-            description='KEY_01',
+        bucket = self.organization.create_s3bucket(
             endpoint_url='https://s3.wasabisys.com',
+            name="pangea.test.bucket",
+        )
+        bucket.create_s3apikey(
+            description='KEY_01',
             public_key=pubkey,
             private_key=privkey,
         )
+        self.sample_group.add_s3_bucket(bucket)
         url = reverse('sample-ar-fields-details', kwargs={'pk': field.uuid})
         self.client.force_authenticate(user=self.user)
         response = self.client.get(url, format='json')

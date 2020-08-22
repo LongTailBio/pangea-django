@@ -99,7 +99,8 @@ class S3ApiKeyCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         """Require organization membership to create sample group."""
-        organization = serializer.validated_data.get('organization')
+        bucket = serializer.validated_data.get('bucket')
+        organization = bucket.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
             logger.warning(

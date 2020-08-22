@@ -17,7 +17,7 @@ from pangea.core.utils import random_replicate_name
 from pangea.core.encrypted_fields import EncryptedTextField
 
 from .sample_group import SampleGroup
-from .s3 import S3ApiKey
+from .s3 import S3Bucket
 
 logger = structlog.get_logger(__name__)
 
@@ -75,10 +75,10 @@ class Organization(AutoCreatedUpdatedMixin):
         sample_group = SampleGroup.factory(organization=self, *args, **kwargs)
         return sample_group
 
-    def create_s3apikey(self, *args, **kwargs):
-        s3apikey = S3ApiKey(organization=self, *args, **kwargs)
-        s3apikey.save()
-        return s3apikey
+    def create_s3bucket(self, *args, **kwargs):
+        s3bucket = S3Bucket(organization=self, *args, **kwargs)
+        s3bucket.save()
+        return s3bucket
 
     @property
     def _core_sample_group_name(self):

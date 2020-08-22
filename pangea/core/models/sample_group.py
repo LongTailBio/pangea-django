@@ -64,6 +64,11 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         sample.save()
         return self
 
+    def add_s3_bucket(self, bucket):
+        self.bucket = bucket
+        self.save()
+        return self
+
     def create_analysis_result(self, *args, **kwargs):
         ar = SampleGroupAnalysisResult.objects.create(sample_group=self, *args, **kwargs)
         return ar

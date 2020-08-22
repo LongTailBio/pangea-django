@@ -40,8 +40,7 @@ class S3ApiKeySerializer(serializers.ModelSerializer):
         model = S3ApiKey
         fields = (
             'uuid', 'description', 'created_at', 'updated_at',
-            'endpoint_url', 'bucket', 'public_key', 'private_key',
-            'organization',
+            'bucket', 'public_key', 'private_key',
         )
         read_only_fields = ('created_at', 'updated_at', 'uuid')
         extra_kwargs = {
@@ -112,37 +111,37 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
 
 
-def presign_ar_field_stored_data_if_appropriate(ret, org):
+def presign_ar_field_stored_data_if_appropriate(ret, grp):
     """Intercept serialization of an analysis result field to add a presigned URL.
 
     At this point we are assuming the user has permission to access this result.
     """
     try:
-        return _presign_ar_field_stored_data_if_appropriate(ret, org)
+        return _presign_ar_field_stored_data_if_appropriate(ret, grp)
     except Exception as e:
         # Gracefully fail here. Presigning fail isn't a reason to fail to respond
         logger.error(
             'presigning_url_failed_during_serialization',
-            org_uuid=org.uuid,
+            grp_uuid=grp.uuid,
             stored_data=ret,
             exception=str(e),
         )
         return ret
 
 
-def _presign_ar_field_stored_data_if_appropriate(ret, org):
+def _presign_ar_field_stored_data_if_appropriate(ret, grp):
     if ret['stored_data'].get('__type__', '').lower() != 's3':
         return ret
-    bucket_name = ret['stored_data']['uri'].split('s3://')[1].split('/')[0]
-    s3key_query = org.s3_api_keys \
-        .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
-        .filter(Q(bucket='*') | Q(bucket=bucket_name))
-    if s3key_query.exists():
-        s3key = s3key_query[0]
-        ret['stored_data']['presigned_url'] = s3key.presign_url(
-            ret['stored_data']['endpoint_url'],
-            ret['stored_data']['uri']
-        )
+    if not grp.bucket:
+        #assert False
+        return ret
+    if not grp.bucket.api_key:
+        assert False
+        return ret
+    ret['stored_data']['presigned_url'] = grp.bucket.api_key.presign_url(
+        ret['stored_data']['endpoint_url'],
+        ret['stored_data']['uri']
+    )
     return ret
 
 
@@ -164,7 +163,7 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return presign_ar_field_stored_data_if_appropriate(
             ret,
-            instance.analysis_result.sample.library.group.organization,
+            instance.analysis_result.sample.library.group,
         )
 
 
@@ -187,5 +186,5 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return presign_ar_field_stored_data_if_appropriate(
             ret,
-            instance.analysis_result.sample_group.organization,
+            instance.analysis_result.sample_group,
         )

@@ -37,7 +37,7 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
     public_key = models.TextField(blank=False, default=None)
     private_key = EncryptedTextField(blank=False, default=None)
     bucket = models.OneToOneField(
-        'S3Bucket', on_delete=models.CASCADE, related_name='api_keys'
+        'S3Bucket', on_delete=models.CASCADE, related_name='api_key'
     )
 
     def save(self, *args, **kwargs):
@@ -97,3 +97,8 @@ class S3Bucket(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, unique=False)
     endpoint_url = models.TextField(blank=False)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=False)
+
+    def create_s3apikey(self, *args, **kwargs):
+        s3apikey = S3ApiKey(bucket=self, *args, **kwargs)
+        s3apikey.save()
+        return s3apikey

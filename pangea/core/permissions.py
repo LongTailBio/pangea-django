@@ -55,7 +55,7 @@ class S3ApiKeyPermission(permissions.BasePermission):
             )
             return False
 
-        has_org_membership = request.user in obj.organization.users.all()
+        has_org_membership = request.user in obj.bucket.organization.users.all()
         if not has_org_membership:
             logger.info(
                 's3_permission_required_organization_membership_not_foundd',
