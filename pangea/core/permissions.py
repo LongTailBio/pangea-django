@@ -68,6 +68,33 @@ class S3ApiKeyPermission(permissions.BasePermission):
         return has_org_membership
 
 
+class S3BucketPermission(permissions.BasePermission):
+    """Require organization membership in order to do anything with s3 Buckets."""
+
+    def has_object_permission(self, request, view, obj):
+        if not bool(request.user and request.user.is_authenticated):
+            logger.info(
+                's3_permission_user_missing_or_not_authenticated',
+                request={
+                    'method': request.method,
+                    'user': request.user,
+                    'user_is_authenticated': request.user.is_authenticated,
+                }
+            )
+            return False
+
+        has_org_membership = request.user in obj.organization.users.all()
+        if not has_org_membership:
+            logger.info(
+                's3_permission_required_organization_membership_not_foundd',
+                request={
+                    'method': request.method,
+                    'user': request.user,
+                    'user_is_authenticated': request.user.is_authenticated,
+                }
+            )
+        return has_org_membership
+
 class SampleGroupPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group."""
 

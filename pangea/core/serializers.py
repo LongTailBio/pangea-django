@@ -7,6 +7,7 @@ from .models import (
     PangeaUser,
     Organization,
     S3ApiKey,
+    S3Bucket,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
@@ -32,6 +33,15 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ('uuid', 'name', 'created_at', 'updated_at', 'core_sample_group_uuid')
         read_only_fields = ('created_at', 'updated_at', 'core_sample_group_uuid')
+
+
+class S3BucketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = S3Bucket
+        fields = (
+            'uuid', 'name', 'endpoint_url', 'organization',
+        )
 
 
 class S3ApiKeySerializer(serializers.ModelSerializer):

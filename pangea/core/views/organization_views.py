@@ -5,21 +5,18 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from ..models import (
     PangeaUser,
     Organization,
-    S3ApiKey,
 )
 from ..permissions import (
     OrganizationPermission,
-    S3ApiKeyPermission,
 )
 from ..serializers import (
     PangeaUserSerializer,
     OrganizationSerializer,
-    S3ApiKeySerializer,
     OrganizationAddUserSerializer,
 )
 
@@ -82,44 +79,3 @@ class OrganizationDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = (OrganizationPermission,)
-
-
-class S3ApiKeyCreateView(generics.ListCreateAPIView):
-    serializer_class = S3ApiKeySerializer
-    permission_classes = (IsAuthenticated, S3ApiKeyPermission)
-
-    def get_queryset(self):
-        perm = S3ApiKeyPermission()
-        s3_ids = {
-            s3.pk
-            for s3 in S3ApiKey.objects.all()
-            if perm.has_object_permission(self.request, self, s3)
-        }
-        return S3ApiKey.objects.filter(pk__in=s3_ids).order_by('created_at')
-
-    def perform_create(self, serializer):
-        """Require organization membership to create sample group."""
-        bucket = serializer.validated_data.get('bucket')
-        organization = bucket.organization
-        membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
-        if not membership_queryset.exists():
-            logger.warning(
-                'attempted_create_s3apikey_without_permission',
-                organization={'uuid': organization.pk, 'name': organization.name},
-            )
-            raise PermissionDenied(_('Organization membership is required to create an s3 api key.'))
-        serializer.save()
-
-
-class S3ApiKeyDetailsView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = S3ApiKeySerializer
-    permission_classes = (S3ApiKeyPermission, IsAuthenticated)
-
-    def get_queryset(self):
-        perm = S3ApiKeyPermission()
-        s3_ids = {
-            s3.pk
-            for s3 in S3ApiKey.objects.all()
-            if perm.has_object_permission(self.request, self, s3)
-        }
-        return S3ApiKey.objects.filter(pk__in=s3_ids).order_by('created_at')
