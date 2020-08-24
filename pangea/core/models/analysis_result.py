@@ -15,6 +15,7 @@ from pangea.core.managers import PangeaUserManager
 from pangea.core.mixins import AutoCreatedUpdatedMixin
 from pangea.core.utils import random_replicate_name
 from pangea.core.encrypted_fields import EncryptedTextField
+from .exceptions import AnalysisResultFieldError
 
 logger = structlog.get_logger(__name__)
 
@@ -134,6 +135,34 @@ class AnalysisResultField(AutoCreatedUpdatedMixin):
     def save(self, *args, **kwargs):
         return super(AnalysisResultField, self).save(*args, **kwargs)
 
+    @property
+    def field_type(self):
+        if not self.stored_data:
+            return 'empty'
+        return self.stored_data.get('__type__', 'blob')
+
+    def as_s3_link(self, filename, overwrite_ok=False):
+        """Set the stored data of this result-field to contain info for a file stored on S3.
+
+        Return this AR-field for convenience
+        """
+        if self.stored_data and not overwrite_ok:
+            raise AnalysisResultFieldError('Creating S3 result would overwrite existing data')
+        self.stored_data = {
+            '__type__': 's3',
+            'uri': self._as_s3_link(filename),
+            'endpoint_url': self.bucket.endpoint_url,
+        }
+        self.save()
+        return self
+
+    def get_presigned_upload_url(self):
+        """Return a presigned URL for file upload for this result."""
+        if self.stored_data.get('__type__', None) != 's3':
+            raise AnalysisResultFieldError(f'AnalysisResultField {self} is not an S3 link')
+        self.stored_data['upload_confirmed'] = False
+        return self.bucket.presign_url(self.stored_data['uri'], stance='upload')
+
 
 class SampleAnalysisResultField(AnalysisResultField):
     """Class representing an analysis result field for a sample."""
@@ -155,6 +184,16 @@ class SampleAnalysisResultField(AnalysisResultField):
         )
         return out
 
+    @property
+    def bucket(self):
+        return self.analysis_result.sample.library.group.bucket
+
+    def _as_s3_link(self, filename):
+        lib_name = self.analysis_result.sample.library.group.name
+        sample_name = self.analysis_result.sample.name
+        uri = f's3://{self.bucket.name}/pangea/{lib_name}/samples/{sample_name}/{filename}'
+        return uri
+
     def __str__(self):
         return f"{self.analysis_result.sample.name} ({self.analysis_result.module_name}: {self.name})"
 
@@ -167,6 +206,10 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
     analysis_result = models.ForeignKey(
         SampleGroupAnalysisResult, on_delete=models.CASCADE, related_name='fields'
     )
+
+    @property
+    def bucket(self):
+        return self.analysis_result.sample_group.bucket
 
     def save(self, *args, **kwargs):
         out = super(SampleGroupAnalysisResultField, self).save(*args, **kwargs)
@@ -181,6 +224,15 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
             }
         )
         return out
+
+    def _as_s3_link(self, filename, bucket):
+        """Set the stored data of this result-field to contain info for a file stored on S3.
+
+        Return this AR-field for convenience
+        """
+        grp_name = self.analysis_result.sample_group.name
+        uri = f's3://{bucket.name}/pangea/{grp_name}/results/{filename}'
+        return uri
 
     def __str__(self):
         return f"{self.analysis_result.sample_group.name} ({self.analysis_result.module_name}: {self.name})"

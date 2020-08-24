@@ -32,4 +32,5 @@ from .analysis_result_views import (
     SampleAnalysisResultFieldDetailsView,
     SampleGroupAnalysisResultFieldCreateView,
     SampleGroupAnalysisResultFieldDetailsView,
+    post_upload_url,
 )

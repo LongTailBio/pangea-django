@@ -64,8 +64,8 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
             aws_secret_access_key=self.private_key.decrypt(),
         )
 
-    def presign_url(self, endpoint_url, s3_url, timeout_hours=24):
-        """Return a presigned read-only version of the url."""
+    def presign_url(self, endpoint_url, s3_url, timeout_hours=24, stance='download'):
+        """Return a presigned version of the url."""
         if endpoint_url != self.bucket.endpoint_url:
             msg = f'Endpoint URL {endpoint_url} does not match that specified for key {self}'
             raise ValueError(msg)
@@ -75,18 +75,28 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
             raise ValueError(msg)
         object_name = s3_url.split(f's3://{bucket_name}/')[1]
         try:
-            response = self.s3.generate_presigned_url(
-                'get_object',
-                Params={'Bucket': bucket_name, 'Key': object_name},
-                ExpiresIn=(timeout_hours * 60 * 60)
-            )
-            return response  # The response contains the presigned URL
-        except ClientError as e:
+            if stance == 'download':
+                response = self.s3.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': bucket_name, 'Key': object_name},
+                    ExpiresIn=(timeout_hours * 60 * 60)
+                )
+                return response  # The response contains the presigned URL
+            elif stance == 'upload':
+                response = self.s3.generate_presigned_post(
+                    bucket_name,
+                    object_name,
+                    ExpiresIn=(timeout_hours * 60 * 60)
+                )
+                return response
+            else:
+                assert False, f'Stance "{stance}" is invlaid. Must be one of: "upload", "download"'
+        except ClientError:
             logger.exception(
                 'create_presigned_url_exception',
                 s3_url=s3_url,
                 endpoint_url=endpoint_url,
-                bucket=bucket,
+                bucket=bucket_name,
                 timeout_hours=timeout_hours,
             )
             return None
@@ -102,3 +112,6 @@ class S3Bucket(AutoCreatedUpdatedMixin):
         s3apikey = S3ApiKey(bucket=self, *args, **kwargs)
         s3apikey.save()
         return s3apikey
+
+    def presign_url(self, s3_url, **kwargs):
+        return self.api_key.presign_url(self.endpoint_url, s3_url, **kwargs)

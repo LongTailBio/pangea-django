@@ -3,6 +3,8 @@ import structlog
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import generics
+from rest_framework.decorators import api_view, authentication_classes
+from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -100,6 +102,25 @@ class SampleAnalysisResultFieldCreateView(PermissionedListCreateAPIView):
             )
             raise PermissionDenied(_('Organization membership is required to create a sample analysis result field.'))
         serializer.save()
+
+
+@api_view(['POST'])
+def post_upload_url(request, pk):
+    """Reply with a sample group manifest."""
+    arf = SampleAnalysisResultField.objects.get(pk=pk)
+    mygrp = arf.analysis_result.sample.library.group
+    if not mygrp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=mygrp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to get upload url.'))
+    if arf.field_type != 's3':
+        arf.as_s3_link(request.data['filename'])
+    blob = arf.get_presigned_upload_url()
+    return Response(blob)
 
 
 class SampleAnalysisResultFieldDetailsView(generics.RetrieveUpdateDestroyAPIView):

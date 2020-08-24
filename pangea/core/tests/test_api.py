@@ -817,6 +817,38 @@ class AnalysisResultTests(APITestCase):
         self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
         self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
 
+    def test_get_upload_url(self):
+        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
+        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
+        if not (pubkey and privkey):
+            return  # Only run this test if the keys are available
+        field = self.sample.create_analysis_result(
+            module_name='test_file',
+        ).create_field(name='file', stored_data={})
+        self.organization.users.add(self.user)
+        bucket = self.organization.create_s3bucket(
+            endpoint_url='https://s3.wasabisys.com',
+            name="pangea.test.bucket",
+        )
+        bucket.create_s3apikey(
+            description='KEY_01',
+            public_key=pubkey,
+            private_key=privkey,
+        )
+        self.sample_group.add_s3_bucket(bucket)
+        url = reverse('sample-ar-fields-get-upload-url', kwargs={'pk': field.uuid})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, {'filename': 'my_test_file.foo'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response.data
+        self.assertEqual(response.data['url'], 'https://s3.wasabisys.com/pangea.test.bucket')
+        self.assertEqual(response.data['fields']['key'], 'pangea/Test Library/samples/Test Sample/my_test_file.foo')
+        for key in ['AWSAccessKeyId', 'policy', 'signature']:
+            self.assertIn(key, response.data['fields'])
+        field.refresh_from_db()
+        self.assertEqual(field.field_type, 's3')
+        self.assertEqual(field.stored_data['uri'], 's3://pangea.test.bucket/pangea/Test Library/samples/Test Sample/my_test_file.foo')
+
     def test_presign_s3_url_in_sample_ar_field(self):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
         privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
