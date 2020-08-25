@@ -1,7 +1,8 @@
 
 import os
 import json
-from os.path import join
+import requests
+from os.path import join, basename
 
 from .remote_object import RemoteObject, RemoteObjectError
 from urllib.request import urlretrieve
@@ -253,6 +254,18 @@ class AnalysisResultField(RemoteObject):
         if cache:
             self._cached_filename = filename
         return filename
+
+    def upload_small_file(self, filepath):
+        url = f'/{self.canon_url()}/{self.uuid}/upload_s3'
+        filename = basename(filepath)
+        response = self.knex.post(url, json={'filename': filename})
+        with open(filepath, 'rb') as f:
+            files = {'file': (filename, f)}
+            requests.post(  # Not a call to pangea so we do not use knex
+                response['url'],
+                data=response['fields'],
+                files=files
+            )
 
     def __del__(self):
         if self._temp_filename and self._cached_filename:
