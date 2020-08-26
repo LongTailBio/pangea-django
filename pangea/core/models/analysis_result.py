@@ -156,12 +156,18 @@ class AnalysisResultField(AutoCreatedUpdatedMixin):
         self.save()
         return self
 
-    def get_presigned_upload_url(self):
+    def get_presigned_upload_url(self, **kwargs):
         """Return a presigned URL for file upload for this result."""
         if self.stored_data.get('__type__', None) != 's3':
             raise AnalysisResultFieldError(f'AnalysisResultField {self} is not an S3 link')
         self.stored_data['upload_confirmed'] = False
-        return self.bucket.presign_url(self.stored_data['uri'], stance='upload')
+        return self.bucket.presign_url(self.stored_data['uri'], **kwargs)
+
+    def get_presigned_completion_url(self, upload_id, parts, **kwargs):
+        """Return a presigned URL for file upload for this result."""
+        if self.stored_data.get('__type__', None) != 's3':
+            raise AnalysisResultFieldError(f'AnalysisResultField {self} is not an S3 link')
+        return self.bucket.presign_completion_url(self.stored_data['uri'], upload_id, parts, **kwargs)
 
 
 class SampleAnalysisResultField(AnalysisResultField):

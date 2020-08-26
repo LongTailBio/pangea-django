@@ -2,11 +2,13 @@
 import os
 import json
 import requests
-from os.path import join, basename
+from os.path import join, basename, getsize
 
 from .remote_object import RemoteObject, RemoteObjectError
 from urllib.request import urlretrieve
 from tempfile import NamedTemporaryFile
+
+from .constants import FIVE_MB
 
 
 class AnalysisResult(RemoteObject):
@@ -266,6 +268,39 @@ class AnalysisResultField(RemoteObject):
                 data=response['fields'],
                 files=files
             )
+
+    def upload_large_file(self, filepath, file_size, chunk_size=FIVE_MB):
+        n_parts = int(file_size / chunk_size) + 1
+        response = self.knex.post(
+            f'/{self.canon_url()}/{self.uuid}/upload_s3',
+            json={
+                'filename': basename(filepath),
+                'n_parts': n_parts,
+                'stance': 'upload-multipart',
+            }
+        )
+        parts = []
+        with open(filepath, 'rb') as f:
+            for num, url in enumerate(response['urls']):
+                file_data = f.read(max_size)
+                http_response = requests.put(url, data=file_data)
+                parts.append({
+                    'ETag': http_response.headers['ETag'],
+                    'PartNumber': num + 1
+                })
+        response = self.knex.post(
+            f'/{self.canon_url()}/{self.uuid}/complete_upload_s3',
+            json={
+                'parts': parts,
+                'upload_id': response['upload_id'],
+            }
+        )
+
+    def upload_file(self, filepath, multipart_thresh=FIVE_MB):
+        file_size = getsize(filepath)
+        if file_size >= FIVE_MB:
+            return upload_large_file(filepath, file_size)
+        return upload_small_file(filepath)
 
     def __del__(self):
         if self._temp_filename and self._cached_filename:

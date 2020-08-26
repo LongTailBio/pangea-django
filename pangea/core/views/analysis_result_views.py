@@ -104,9 +104,7 @@ class SampleAnalysisResultFieldCreateView(PermissionedListCreateAPIView):
         serializer.save()
 
 
-@api_view(['POST'])
-def post_upload_url(request, pk):
-    """Reply with a sample group manifest."""
+def authorize_upload_url(request, pk):
     arf = SampleAnalysisResultField.objects.get(pk=pk)
     mygrp = arf.analysis_result.sample.library.group
     if not mygrp.is_public:
@@ -117,9 +115,27 @@ def post_upload_url(request, pk):
             authorized = False
         if not authorized:
             raise PermissionDenied(_('Insufficient permissions to get upload url.'))
+    return arf
+
+
+@api_view(['POST'])
+def post_upload_url(request, pk):
+    """Reply with a sample group manifest."""
+    arf = authorize_upload_url(request, pk)
     if arf.field_type != 's3':
         arf.as_s3_link(request.data['filename'])
-    blob = arf.get_presigned_upload_url()
+    stance = request.data.get('stance', 'upload')
+    n_parts = request.data.get('n_parts', 1)
+    blob = arf.get_presigned_upload_url(stance=stance, n_parts=n_parts)
+    return Response(blob)
+
+
+@api_view(['POST'])
+def post_complete_multipart_upload_url(request, pk):
+    """Reply with a sample group manifest."""
+    arf = authorize_upload_url(request, pk)
+    upload_id, parts = request.data['upload_id'], request.data['parts']
+    blob = arf.get_presigned_completion_url(upload_id, parts)
     return Response(blob)
 
 

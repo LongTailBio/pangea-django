@@ -15,7 +15,7 @@ from .views import (
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
-    post_upload_url,
+    post_upload_url, post_complete_multipart_upload_url,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
 )
 from .search import SearchList
@@ -46,6 +46,7 @@ urlpatterns = {
     path('sample_ar_fields', SampleAnalysisResultFieldCreateView.as_view(), name="sample-ar-fields-create"),
     path('sample_ar_fields/<uuid:pk>', SampleAnalysisResultFieldDetailsView.as_view(), name="sample-ar-fields-details"),
     path('sample_ar_fields/<uuid:pk>/upload_s3', post_upload_url, name="sample-ar-fields-get-upload-url"),
+    path('sample_ar_fields/<uuid:pk>/complete_upload_s3', post_complete_multipart_upload_url, name="sample-ar-fields-get-upload-complete-url"),
     path('sample_group_ar_fields', SampleGroupAnalysisResultFieldCreateView.as_view(), name="sample-group-ar-fields-create"),
     path('sample_group_ar_fields/<uuid:pk>', SampleGroupAnalysisResultFieldDetailsView.as_view(), name="sample-group-ar-fields-details"),
     path('search', SearchList.as_view(), name="search"),
