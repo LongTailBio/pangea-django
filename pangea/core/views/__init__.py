@@ -32,6 +32,8 @@ from .analysis_result_views import (
     SampleAnalysisResultFieldDetailsView,
     SampleGroupAnalysisResultFieldCreateView,
     SampleGroupAnalysisResultFieldDetailsView,
-    post_upload_url,
-    post_complete_multipart_upload_url,
+    post_sample_ar_upload_url,
+    post_sample_ar_complete_multipart_upload_url,
+    post_sample_group_ar_upload_url,
+    post_sample_group_ar_complete_multipart_upload_url,
 )

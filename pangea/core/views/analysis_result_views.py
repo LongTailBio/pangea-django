@@ -104,7 +104,7 @@ class SampleAnalysisResultFieldCreateView(PermissionedListCreateAPIView):
         serializer.save()
 
 
-def authorize_upload_url(request, pk):
+def authorize_sample_ar_upload_url(request, pk):
     arf = SampleAnalysisResultField.objects.get(pk=pk)
     mygrp = arf.analysis_result.sample.library.group
     if not mygrp.is_public:
@@ -119,9 +119,9 @@ def authorize_upload_url(request, pk):
 
 
 @api_view(['POST'])
-def post_upload_url(request, pk):
+def post_sample_ar_upload_url(request, pk):
     """Reply with a sample group manifest."""
-    arf = authorize_upload_url(request, pk)
+    arf = authorize_sample_ar_upload_url(request, pk)
     if arf.field_type != 's3':
         arf.as_s3_link(request.data['filename'])
     stance = request.data.get('stance', 'upload')
@@ -131,12 +131,48 @@ def post_upload_url(request, pk):
 
 
 @api_view(['POST'])
-def post_complete_multipart_upload_url(request, pk):
+def post_sample_ar_complete_multipart_upload_url(request, pk):
     """Reply with a sample group manifest."""
-    arf = authorize_upload_url(request, pk)
+    arf = authorize_sample_ar_upload_url(request, pk)
     upload_id, parts = request.data['upload_id'], request.data['parts']
     blob = arf.get_presigned_completion_url(upload_id, parts)
     return Response(blob)
+
+
+def authorize_sample_group_ar_upload_url(request, pk):
+    arf = SampleGroupAnalysisResultField.objects.get(pk=pk)
+    mygrp = arf.analysis_result.sample.library.group
+    if not mygrp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=mygrp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to get upload url.'))
+    return arf
+
+
+@api_view(['POST'])
+def post_sample_group_ar_upload_url(request, pk):
+    """Reply with a sample group manifest."""
+    arf = authorize_sample_group_ar_upload_url(request, pk)
+    if arf.field_type != 's3':
+        arf.as_s3_link(request.data['filename'])
+    stance = request.data.get('stance', 'upload')
+    n_parts = request.data.get('n_parts', 1)
+    blob = arf.get_presigned_upload_url(stance=stance, n_parts=n_parts)
+    return Response(blob)
+
+
+@api_view(['POST'])
+def post_sample_group_ar_complete_multipart_upload_url(request, pk):
+    """Reply with a sample group manifest."""
+    arf = authorize_sample_group_ar_upload_url(request, pk)
+    upload_id, parts = request.data['upload_id'], request.data['parts']
+    blob = arf.get_presigned_completion_url(upload_id, parts)
+    return Response(blob)
+
 
 
 class SampleAnalysisResultFieldDetailsView(generics.RetrieveUpdateDestroyAPIView):
