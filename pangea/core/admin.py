@@ -29,7 +29,7 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 @admin.register(S3Bucket)
 class S3BucketAdmin(admin.ModelAdmin):
-    list_display = ('name', 'endpoint_url', 'organization',)
+    list_display = ('name', 'organization', 'endpoint_url',)
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )
@@ -46,9 +46,6 @@ class S3BucketAdmin(admin.ModelAdmin):
 @admin.register(S3ApiKey)
 class S3ApiKeyAdmin(admin.ModelAdmin):
     list_display = ('public_key', 'bucket_name',)
-    list_filter = (
-        ('organization', admin.RelatedOnlyFieldListFilter),
-    )
 
     def lookup_allowed(self, lookup, value):
         return lookup in [
@@ -59,7 +56,7 @@ class S3ApiKeyAdmin(admin.ModelAdmin):
         return obj.bucket.name
 
     def organization_name(self, obj):
-        return obj.organization.name
+        return obj.bucket.organization.name
 
 
 @admin.register(SampleGroup)
