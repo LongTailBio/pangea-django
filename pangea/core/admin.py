@@ -8,6 +8,7 @@ from .models import (
     PangeaUser,
     Organization,
     S3ApiKey,
+    S3Bucket,
     SampleGroup,
     SampleLibrary,
     Sample,
@@ -26,9 +27,9 @@ class OrganizationAdmin(admin.ModelAdmin):
         return obj.users.count()
 
 
-@admin.register(S3ApiKey)
-class S3ApiKeyAdmin(admin.ModelAdmin):
-    list_display = ('public_key', 'bucket',)
+@admin.register(S3Bucket)
+class S3BucketAdmin(admin.ModelAdmin):
+    list_display = ('name', 'endpoint_url', 'organization',)
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )
@@ -37,6 +38,25 @@ class S3ApiKeyAdmin(admin.ModelAdmin):
         return lookup in [
             'organization__uuid__exact',
         ]
+
+    def organization_name(self, obj):
+        return obj.organization.name
+
+
+@admin.register(S3ApiKey)
+class S3ApiKeyAdmin(admin.ModelAdmin):
+    list_display = ('public_key', 'bucket_name',)
+    list_filter = (
+        ('organization', admin.RelatedOnlyFieldListFilter),
+    )
+
+    def lookup_allowed(self, lookup, value):
+        return lookup in [
+            'bucket__uuid__exact',
+        ]
+
+    def bucket_name(self, obj):
+        return obj.bucket.name
 
     def organization_name(self, obj):
         return obj.organization.name
