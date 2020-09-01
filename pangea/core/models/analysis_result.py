@@ -197,7 +197,7 @@ class SampleAnalysisResultField(AnalysisResultField):
     def _as_s3_link(self, filename):
         lib_name = self.analysis_result.sample.library.group.name
         sample_name = self.analysis_result.sample.name
-        uri = f's3://{self.bucket.name}/pangea/{lib_name}/samples/{sample_name}/{filename}'
+        uri = f's3://{self.bucket.name}/pangea/v1/{lib_name}/samples/{sample_name}/{filename}'
         return uri
 
     def __str__(self):
@@ -237,7 +237,7 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
         Return this AR-field for convenience
         """
         grp_name = self.analysis_result.sample_group.name
-        uri = f's3://{bucket.name}/pangea/{grp_name}/results/{filename}'
+        uri = f's3://{bucket.name}/pangea/v1/{grp_name}/results/{filename}'
         return uri
 
     def __str__(self):
