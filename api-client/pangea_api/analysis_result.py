@@ -2,6 +2,7 @@
 import os
 import json
 import requests
+import time
 from os.path import join, basename, getsize
 
 from .remote_object import RemoteObject, RemoteObjectError
@@ -269,7 +270,7 @@ class AnalysisResultField(RemoteObject):
                 files=files
             )
 
-    def upload_large_file(self, filepath, file_size, chunk_size=FIVE_MB):
+    def upload_large_file(self, filepath, file_size, chunk_size=FIVE_MB, max_retries=3):
         n_parts = int(file_size / chunk_size) + 1
         response = self.knex.post(
             f'/{self.canon_url()}/{self.uuid}/upload_s3',
@@ -283,7 +284,17 @@ class AnalysisResultField(RemoteObject):
         with open(filepath, 'rb') as f:
             for num, url in enumerate(response['urls']):
                 file_data = f.read(max_size)
-                http_response = requests.put(url, data=file_data)
+                attempts = 0
+                while attempts < max_retries:
+                    try:
+                        http_response = requests.put(url, data=file_data)
+                        http_response.raise_for_status()
+                        break
+                    except requests.exceptions.HTTPError:
+                        attempts += 1
+                        if attempts == max_retries:
+                            raise
+                        time.sleep(10 ** attempts)  # exponential backoff, (10 ** 2)s default max
                 parts.append({
                     'ETag': http_response.headers['ETag'],
                     'PartNumber': num + 1
@@ -296,10 +307,13 @@ class AnalysisResultField(RemoteObject):
             }
         )
 
-    def upload_file(self, filepath, multipart_thresh=FIVE_MB):
+    def upload_file(self, filepath, multipart_thresh=FIVE_MB, max_retries=3):
         file_size = getsize(filepath)
         if file_size >= FIVE_MB:
-            return upload_large_file(filepath, file_size)
+            return upload_large_file(
+                filepath, file_size,
+                multipart_thresh=multipart_thresh, max_retries=max_retries
+            )
         return upload_small_file(filepath)
 
     def __del__(self):
