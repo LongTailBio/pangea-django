@@ -6,7 +6,7 @@ import setuptools
 setuptools
 setuptools.setup(
     name='pangea_api',
-    version='0.5.3',
+    version='0.6.0',
     author="David C. Danko",
     author_email='dcdanko@gmail.com',
     packages=setuptools.find_packages(),
