@@ -307,14 +307,11 @@ class AnalysisResultField(RemoteObject):
             }
         )
 
-    def upload_file(self, filepath, multipart_thresh=FIVE_MB, max_retries=3):
+    def upload_file(self, filepath, multipart_thresh=FIVE_MB, **kwargs):
         file_size = getsize(filepath)
-        if file_size >= FIVE_MB:
-            return upload_large_file(
-                filepath, file_size,
-                multipart_thresh=multipart_thresh, max_retries=max_retries
-            )
-        return upload_small_file(filepath)
+        if file_size >= multipart_thresh:
+            return self.upload_large_file(filepath, file_size, **kwargs)
+        return self.upload_small_file(filepath)
 
     def __del__(self):
         if self._temp_filename and self._cached_filename:
