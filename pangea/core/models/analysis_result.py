@@ -50,6 +50,7 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
         choices=AnalysisResultStatus.choices,
         default=AnalysisResultStatus.PENDING,
     )
+    metadata = JSONField(default=dict)
 
     class Meta:
         abstract = True

@@ -19,6 +19,7 @@ class AnalysisResult(RemoteObject):
         'updated_at',
         'module_name',
         'replicate',
+        'metadata',
     ]
 
     def _get(self):
@@ -31,7 +32,7 @@ class AnalysisResult(RemoteObject):
 class SampleAnalysisResult(AnalysisResult):
     parent_field = 'sample'
 
-    def __init__(self, knex, sample, module_name, replicate=None):
+    def __init__(self, knex, sample, module_name, replicate=None, metadata={}):
         super().__init__(self)
         self.knex = knex
         self.sample = sample
@@ -39,6 +40,7 @@ class SampleAnalysisResult(AnalysisResult):
         self.module_name = module_name
         self.replicate = replicate
         self._get_field_cache = []
+        self.metadata = metadata
 
     def nested_url(self):
         return self.sample.nested_url() + f'/analysis_results/{self.module_name}'
@@ -93,13 +95,14 @@ class SampleAnalysisResult(AnalysisResult):
 class SampleGroupAnalysisResult(AnalysisResult):
     parent_field = 'grp'
 
-    def __init__(self, knex, grp, module_name, replicate=None):
+    def __init__(self, knex, grp, module_name, replicate=None, metadata={}):
         super().__init__(self)
         self.knex = knex
         self.grp = grp
         self.parent = self.grp
         self.module_name = module_name
         self.replicate = replicate
+        self.metadata = metadata
 
     def nested_url(self):
         return self.grp.nested_url() + f'/analysis_results/{self.module_name}'

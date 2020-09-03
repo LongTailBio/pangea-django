@@ -188,6 +188,17 @@ class TestAnalysisResultModel(TestCase):
         self.assertEqual(ar.sample, smp)
         self.assertTrue(ar.created_at)
 
+    def test_add_ar_with_metadata_to_sample(self):
+        """Ensure sample model is created correctly."""
+        org = Organization.objects.create(name='an_org EWRVB')
+        lib = org.create_sample_group(name='LBRY_01 EWRVB', is_library=True)
+        smp = lib.create_sample(name='SMPL_01 EWRVB', metadata={'subject_group': 1})
+        ar = smp.create_analysis_result(module_name='module_1', metadata={'foo': 'bar'})
+        self.assertTrue(ar.uuid)
+        self.assertEqual(ar.module_name, 'module_1')
+        self.assertEqual(ar.sample, smp)
+        self.assertTrue(ar.created_at)
+
     @skip('TODO')
     def test_add_dependencies_to_ar(self):
         """Ensure sample model is created correctly."""
