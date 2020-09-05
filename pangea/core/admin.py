@@ -7,6 +7,7 @@ from .forms import PangeaUserCreationForm, PangeaUserChangeForm
 from .models import (
     PangeaUser,
     Organization,
+    Project,
     S3ApiKey,
     S3Bucket,
     SampleGroup,
@@ -25,6 +26,14 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     def members(self, obj):
         return obj.users.count()
+
+
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization',)
+    list_filter = (
+        ('organization', admin.RelatedOnlyFieldListFilter),
+    )
 
 
 @admin.register(S3Bucket)
