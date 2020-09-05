@@ -138,7 +138,7 @@ class TestProject(TestCase):
             organization=org,
         )
         self.assertTrue(proj.uuid)
-        self.assertEqual(proj.name, 'SMPL_01 UYDFG')
+        self.assertEqual(proj.name, 'project_01 UYDFG')
         self.assertTrue(proj.created_at)
 
 

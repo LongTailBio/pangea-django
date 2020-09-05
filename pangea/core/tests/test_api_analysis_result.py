@@ -210,12 +210,12 @@ class AnalysisResultTests(APITestCase):
         response, field = self._setup_upload_presign('my_test_file.foo')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['url'], 'https://s3.wasabisys.com/pangea.test.bucket')
-        self.assertEqual(response.data['fields']['key'], 'pangea/Test Library/samples/Test Sample/my_test_file.foo')
+        self.assertEqual(response.data['fields']['key'], 'pangea/v1/Test Library/samples/Test Sample/my_test_file.foo')
         for key in ['AWSAccessKeyId', 'policy', 'signature']:
             self.assertIn(key, response.data['fields'])
         field.refresh_from_db()
         self.assertEqual(field.field_type, 's3')
-        self.assertEqual(field.stored_data['uri'], 's3://pangea.test.bucket/pangea/Test Library/samples/Test Sample/my_test_file.foo')
+        self.assertEqual(field.stored_data['uri'], 's3://pangea.test.bucket/pangea/v1/Test Library/samples/Test Sample/my_test_file.foo')
 
     def test_use_upload_url(self):
         response, field = self._setup_upload_presign(UPLOAD_TEST_FILENAME)
