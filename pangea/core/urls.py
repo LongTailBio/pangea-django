@@ -19,6 +19,8 @@ from .views import (
     post_sample_ar_upload_url, post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url, post_sample_group_ar_complete_multipart_upload_url,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
+    TagCreateView, TagDetailsView,
+    TagTagsView, TagSampleGroupsView, TagSamplesView,
 )
 from .search import SearchList
 
@@ -36,6 +38,12 @@ urlpatterns = {
     path('projects', ProjectCreateView.as_view(), name="project-create"),
     path('projects/<uuid:pk>', ProjectDetailsView.as_view(), name="project-details"),
     path('projects/<uuid:project_pk>/sample_groups', ProjectSampleGroupsView.as_view(), name="project-sample-groups"),
+
+    path('tags', TagCreateView.as_view(), name="tag-create"),
+    path('tags/<uuid:pk>', TagDetailsView.as_view(), name="tag-details"),
+    path('tags/<uuid:tag_pk>/tags', TagTagsView.as_view(), name="tag-tags"),
+    path('tags/<uuid:tag_pk>/sample_groups', TagSampleGroupsView.as_view(), name="tag-sample-groups"),
+    path('tags/<uuid:tag_pk>/samples', TagSamplesView.as_view(), name="tag-samples"),
 
     path('sample_groups', SampleGroupCreateView.as_view(), name="sample-group-create"),
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="sample-group-details"),

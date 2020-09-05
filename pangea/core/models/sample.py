@@ -34,6 +34,10 @@ class Sample(AutoCreatedUpdatedMixin):
     class Meta:
         unique_together = (('name', 'library'),)
 
+    @property
+    def organization(self):
+        return self.library.group.organization
+
     def __str__(self):
         return f"{self.name}"
 

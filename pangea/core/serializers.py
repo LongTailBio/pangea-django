@@ -6,6 +6,7 @@ import structlog
 from .models import (
     PangeaUser,
     Organization,
+    Tag,
     S3ApiKey,
     S3Bucket,
     SampleGroup,
@@ -34,6 +35,25 @@ class OrganizationSerializer(serializers.ModelSerializer):
         model = Organization
         fields = ('uuid', 'name', 'created_at', 'updated_at', 'core_sample_group_uuid')
         read_only_fields = ('created_at', 'updated_at', 'core_sample_group_uuid')
+
+
+class TagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tag
+        fields = ('uuid', 'name', 'created_at', 'updated_at', 'payload')
+
+
+class TagAddTagSerializer(serializers.Serializer):
+    tag_uuid = serializers.UUIDField()
+
+
+class TagAddSampleGroupSerializer(serializers.Serializer):
+    sample_group_uuid = serializers.UUIDField()
+
+
+class TagAddSampleSerializer(serializers.Serializer):
+    sample_uuid = serializers.UUIDField()
 
 
 class S3BucketSerializer(serializers.ModelSerializer):
