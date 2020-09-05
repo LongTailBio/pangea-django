@@ -95,6 +95,23 @@ class S3BucketPermission(permissions.BasePermission):
             )
         return has_org_membership
 
+
+class ProjectPermission(permissions.BasePermission):
+    """Require organization membership in order to write to sample group."""
+
+    def has_object_permission(self, request, view, obj):
+        # Allow all reads if the group is public
+        if request.method in permissions.SAFE_METHODS and obj.is_public:
+            return True
+
+        # Require auth for write operations
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+
+        # Require organization membership to edit/delete
+        return request.user.organization_set.filter(pk=obj.organization.pk).exists()
+
+
 class SampleGroupPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group."""
 

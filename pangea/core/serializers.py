@@ -14,6 +14,7 @@ from .models import (
     SampleGroupAnalysisResult,
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
+    Project,
 )
 
 logger = structlog.get_logger(__name__)
@@ -78,6 +79,24 @@ class SampleGroupSerializer(serializers.ModelSerializer):
 
 class SampleGroupAddSampleSerializer(serializers.Serializer):
     sample_uuid = serializers.UUIDField()
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+
+    organization_obj = OrganizationSerializer(source='organization', read_only=True)
+
+    class Meta:
+        model = Project
+        fields = (
+            'uuid', 'name', 'created_at', 'updated_at',
+            'organization', 'description', 'organization_obj',
+            'sample_groups', 'sub_projects',
+        )
+        read_only_fields = ('created_at', 'updated_at', 'organization_obj')
+
+
+class ProjectAddSampleGroupSerializer(serializers.Serializer):
+    sample_group_uuid = serializers.UUIDField()
 
 
 class SampleSerializer(serializers.ModelSerializer):

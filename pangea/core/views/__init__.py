@@ -9,6 +9,11 @@ from .organization_views import (
     OrganizationUsersView,
     OrganizationDetailsView,
 )
+from .project_views import (
+    ProjectCreateView,
+    ProjectDetailsView,
+    ProjectSampleGroupsView,
+)
 from .sample_group_views import (
     SampleGroupCreateView,
     SampleGroupDetailsView,

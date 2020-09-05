@@ -9,6 +9,7 @@ from pangea.core.encrypted_fields import EncryptedString
 from pangea.core.models import (
     PangeaUser,
     Organization,
+    Project,
     S3ApiKey,
     S3Bucket,
     SampleGroup,
@@ -255,6 +256,7 @@ class S3BucketTests(APITestCase):
         self.assertEqual(retrieved.endpoint_url, 'https://sys.foobar.com')
         self.assertEqual(retrieved.name, 'test_bucket')
 
+
 class OrganizationMembershipTests(APITestCase):
 
     @classmethod
@@ -303,6 +305,78 @@ class OrganizationMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
         self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
+
+
+class ProjectTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
+        cls.organization.users.add(cls.user)
+        cls.grp1 = cls.organization.create_sample_group(name='GRP_01', is_library=True)
+        cls.grp2 = cls.organization.create_sample_group(name='GRP_02', is_public=False)
+
+    def test_public_project_read(self):
+        """Ensure no login is required to read public group."""
+        proj = self.organization.create_project(name='PROJ_01 UYDSGH')
+        proj.add_sample_group(self.grp1)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_project_read(self):
+        """Ensure authorized user can read private sample group."""
+        proj = self.organization.create_project(name='PROJ_01 SRHJTR')
+        proj.add_sample_group(self.grp2)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_project_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        proj = self.organization.create_project(name='PROJ_01 RETG')
+        proj.add_sample_group(self.grp2)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_project_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization IRJHFJSAH')
+        group = other_org.create_sample_group(name='GRP_01 PRIVATE_IRJHFJSAH', is_public=False)
+        proj = other_org.create_project(name='PROJ_01 IRJHFJSAH')
+        proj.add_sample_group(group)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_project(self):
+        """Ensure authorized user can create sample group."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('project-create')
+        data = {'name': 'Test Project', 'organization': self.organization.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Project.objects.get().name, 'Test Project')
+
+    def test_add_group_to_project(self):
+        proj = self.organization.create_project(name='PROJ_01 SRHJTR')
+        url = reverse('project-sample-groups', kwargs={'project_pk': proj.uuid})
+        self.client.force_authenticate(user=self.user)
+
+        data = {'sample_group_uuid': self.grp1.uuid}
+        print(data)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class SampleGroupTests(APITestCase):

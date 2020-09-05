@@ -16,6 +16,7 @@ from ..models import (
     SampleGroupAnalysisResult,
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
+    Project,
 )
 
 
@@ -124,6 +125,21 @@ class TestSampleModel(TestCase):
         duplicate = lib2.create_sample(name='SMPL_01 UIY')
         self.assertEqual(original.name, duplicate.name)
         self.assertNotEqual(original.library, duplicate.library)
+
+
+class TestProject(TestCase):
+    """Test suite for Project model."""
+
+    def test_add_project(self):
+        """Ensure sample model is created correctly."""
+        org = Organization.objects.create(name='an_org UYDFG')
+        proj = Project.objects.create(
+            name='project_01 UYDFG',
+            organization=org,
+        )
+        self.assertTrue(proj.uuid)
+        self.assertEqual(proj.name, 'SMPL_01 UYDFG')
+        self.assertTrue(proj.created_at)
 
 
 class TestSampleGroupModel(TestCase):

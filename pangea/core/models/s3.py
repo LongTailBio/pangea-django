@@ -56,7 +56,7 @@ class S3MultipartUploadUtil:
             MultipartUpload={'Parts': parts},
             UploadId=upload_id
         )
-        print(res)
+        return {'status': 'success', 'upload_id': upload_id}
 
 class S3ApiKey(AutoCreatedUpdatedMixin):
     """Represent an S3 API Key.

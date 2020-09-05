@@ -14,3 +14,4 @@ from .exceptions import (
     ModelError,
     AnalysisResultFieldError,
 )
+from .project import Project
