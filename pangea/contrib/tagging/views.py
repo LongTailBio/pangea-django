@@ -7,23 +7,25 @@ from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from .utils import PermissionedListCreateAPIView
-from ..models import (
+from pangea.core.views.utils import PermissionedListCreateAPIView
+from .models import (
     Tag,
     SampleGroup,
     Sample,
 )
-from ..permissions import (
+from pangea.core.permissions import (
     SampleGroupPermission,
     SamplePermission,
 )
-from ..serializers import (
+from .serializers import (
     TagSerializer,
-    SampleGroupSerializer,
-    SampleSerializer,
     TagAddTagSerializer,
     TagAddSampleGroupSerializer,
     TagAddSampleSerializer,
+)
+from pangea.core.serializers import (
+    SampleGroupSerializer,
+    SampleSerializer,
 )
 
 

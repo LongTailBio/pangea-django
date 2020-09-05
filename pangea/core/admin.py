@@ -16,7 +16,6 @@ from .models import (
     SampleGroupAnalysisResultField,
     SampleAnalysisResult,
     SampleAnalysisResultField,
-    Tag,
 )
 
 
@@ -26,11 +25,6 @@ class OrganizationAdmin(admin.ModelAdmin):
 
     def members(self, obj):
         return obj.users.count()
-
-
-@admin.register(Tag)
-class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'payload',)
 
 
 @admin.register(S3Bucket)

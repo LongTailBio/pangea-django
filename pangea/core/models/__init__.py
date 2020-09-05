@@ -15,4 +15,3 @@ from .exceptions import (
     AnalysisResultFieldError,
 )
 from .project import Project
-from .tag import Tag

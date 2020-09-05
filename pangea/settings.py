@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'pangea.contrib.covid19',
     'pangea.contrib.taxasearch',
     'pangea.contrib.treeoflife',
+    'pangea.contrib.tagging',
     'drf_yasg',
 ]
 

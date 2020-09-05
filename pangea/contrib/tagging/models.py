@@ -15,8 +15,10 @@ from pangea.core.managers import PangeaUserManager
 from pangea.core.mixins import AutoCreatedUpdatedMixin
 from pangea.core.utils import random_replicate_name
 from pangea.core.encrypted_fields import EncryptedTextField
-
-from .analysis_result import SampleAnalysisResult
+from pangea.core.models import (
+    Sample,
+    SampleGroup,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -63,9 +65,9 @@ class TagTagRelationship(GenericTagRelationship):
 
 class SampleGroupTagRelationship(GenericTagRelationship):
     tag = models.ForeignKey('Tag', on_delete=models.CASCADE, related_name='tagged_sample_groups')
-    sample_group = models.ForeignKey('SampleGroup', on_delete=models.CASCADE, related_name='tags')
+    sample_group = models.ForeignKey(SampleGroup, on_delete=models.CASCADE, related_name='tags')
 
 
 class SampleTagRelationship(GenericTagRelationship):
     tag = models.ForeignKey('Tag', on_delete=models.CASCADE, related_name='tagged_samples')
-    sample = models.ForeignKey('Sample', on_delete=models.CASCADE, related_name='tags')
+    sample = models.ForeignKey(Sample, on_delete=models.CASCADE, related_name='tags')
