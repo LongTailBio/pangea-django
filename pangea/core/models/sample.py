@@ -30,6 +30,7 @@ class Sample(AutoCreatedUpdatedMixin):
     )
     sample_groups = models.ManyToManyField('SampleGroup')
     metadata = JSONField(default=dict)
+    description = models.TextField(blank=False, default='')
 
     class Meta:
         unique_together = (('name', 'library'),)

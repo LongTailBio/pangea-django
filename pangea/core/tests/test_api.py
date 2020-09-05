@@ -468,6 +468,25 @@ class SampleGroupTests(APITestCase):
         self.assertEqual(SampleGroup.objects.count(), 1)
         self.assertEqual(SampleGroup.objects.get().name, 'Test Sample Group')
 
+    def test_create_sample_group_with_descriptions(self):
+        """Ensure authorized user can create sample group."""
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('sample-group-create')
+        data = {
+            'name': 'Test Sample Group',
+            'organization': self.organization.pk,
+            'description': 'short description',
+            'long_description': 'long_description',
+            'metadata': {'a': 1, 'b': 'foo'},
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(SampleGroup.objects.count(), 1)
+        self.assertEqual(SampleGroup.objects.get().name, 'Test Sample Group')
+
     def test_get_sample_group_manifest(self):
         """Ensure authorized user can create sample group."""
         group = self.organization.create_sample_group(
@@ -698,6 +717,26 @@ class SampleTests(APITestCase):
         sample_library = self.organization.create_sample_group(name='Test Library', is_library=True)
         url = reverse('sample-create')
         data = {'name': 'Test Sample', 'library': sample_library.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Sample.objects.count(), 1)
+        self.assertEqual(Sample.objects.get().name, 'Test Sample')
+        self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
+
+    def test_create_sample_with_description(self):
+        """Ensure authorized user can create sample group."""
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+
+        sample_library = self.organization.create_sample_group(name='Test Library', is_library=True)
+        url = reverse('sample-create')
+        data = {
+            'name': 'Test Sample',
+            'library': sample_library.pk,
+            'description': 'a sample',
+            'metadata': {'A': 1, 'B': 'foo'}
+        }
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

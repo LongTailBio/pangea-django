@@ -131,6 +131,23 @@ class AnalysisResultTests(APITestCase):
         self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
         self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
 
+    def test_create_sample_analysis_result_with_description(self):
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('sample-ars-create')
+        data = {
+            'module_name': 'taxa',
+            'sample': self.sample.pk,
+            'description': 'short description',
+            'metadata': {'a': 1, 'b': 'foo'},
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(SampleAnalysisResult.objects.count(), 1)
+        self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
+        self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
+
     def _setup_upload_presign(self, filename, stance=None, n_parts=1):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
         privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)

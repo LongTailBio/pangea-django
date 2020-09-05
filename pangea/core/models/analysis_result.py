@@ -51,6 +51,7 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
         default=AnalysisResultStatus.PENDING,
     )
     metadata = JSONField(default=dict)
+    description = models.TextField(blank=False, default='')
 
     class Meta:
         abstract = True

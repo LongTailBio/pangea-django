@@ -73,6 +73,7 @@ class SampleGroupSerializer(serializers.ModelSerializer):
             'uuid', 'name', 'created_at', 'updated_at',
             'organization', 'description', 'is_library',
             'is_public', 'theme', 'organization_obj',
+            'long_description'
         )
         read_only_fields = ('created_at', 'updated_at', 'organization_obj')
 
@@ -107,7 +108,7 @@ class SampleSerializer(serializers.ModelSerializer):
         model = Sample
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
-            'library', 'metadata', 'library_obj',
+            'library', 'metadata', 'library_obj', 'description'
         )
         read_only_fields = ('created_at', 'updated_at', 'library_obj')
 
@@ -121,7 +122,7 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
-            'sample_obj'
+            'sample_obj', 'description', 'metadata',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_obj')
 
@@ -135,7 +136,7 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
-            'sample_group_obj',
+            'sample_group_obj', 'description', 'metadata',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
 
