@@ -11,6 +11,7 @@ class RemoteObjectOverwriteError(RemoteObjectError):
 
 
 class RemoteObject:
+    optional_remote_fields = []
 
     def __init__(self, *args, **kwargs):
         self._already_fetched = False
@@ -33,7 +34,9 @@ class RemoteObject:
             try:
                 new = blob[field]
             except KeyError:
-                raise KeyError(f'Key {field} is missing for object {self} (type {type(self)}) in blob: {blob}')
+                if field not in self.optional_remote_fields:
+                    raise KeyError(f'Key {field} is missing for object {self} (type {type(self)}) in blob: {blob}')
+                new = None
             if current and current != new:
                 is_overwrite = True
                 if isinstance(current, dict) and isinstance(new, dict):

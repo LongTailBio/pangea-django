@@ -56,17 +56,22 @@ class Knex:
         self.add_auth_token(response.json()['auth_token'])
         return self
 
-    def get(self, url):
+    def _handle_response(self, response, json_response=True):
+        response.raise_for_status()
+        if json_response:
+            return response.json()
+        return response
+
+    def get(self, url, **kwargs):
         url = self._clean_url(url)
         response = requests.get(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
             auth=self.auth,
         )
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response, **kwargs)
 
-    def post(self, url, json={}):
+    def post(self, url, json={}, **kwargs):
         url = self._clean_url(url)
         response = requests.post(
             f'{self.endpoint_url}/{url}',
@@ -74,10 +79,9 @@ class Knex:
             auth=self.auth,
             json=json
         )
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response, **kwargs)
 
-    def put(self, url, json={}):
+    def put(self, url, json={}, **kwargs):
         url = self._clean_url(url)
         response = requests.put(
             f'{self.endpoint_url}/{url}',
@@ -85,15 +89,13 @@ class Knex:
             auth=self.auth,
             json=json
         )
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response, **kwargs)
 
-    def delete(self, url):
+    def delete(self, url, **kwargs):
         url = self._clean_url(url)
         response = requests.delete(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
             auth=self.auth,
         )
-        response.raise_for_status()
-        return response.json()
+        return self._handle_response(response, **kwargs)

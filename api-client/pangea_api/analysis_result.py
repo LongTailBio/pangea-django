@@ -21,6 +21,7 @@ class AnalysisResult(RemoteObject):
         'replicate',
         'metadata',
     ]
+    optional_remote_fields = ['metadata']
 
     def _get(self):
         """Fetch the result from the server."""
@@ -272,8 +273,9 @@ class AnalysisResultField(RemoteObject):
                 data=response['fields'],
                 files=files
             )
+        return self
 
-    def upload_large_file(self, filepath, file_size, chunk_size=FIVE_MB, max_retries=3):
+    def upload_large_file(self, filepath, file_size, chunk_size=FIVE_MB, max_retries=3, logger=lambda x: x):
         n_parts = int(file_size / chunk_size) + 1
         response = self.knex.post(
             f'/{self.canon_url()}/{self.uuid}/upload_s3',
@@ -283,10 +285,11 @@ class AnalysisResultField(RemoteObject):
                 'stance': 'upload-multipart',
             }
         )
-        parts = []
+        parts, urls, upload_id = [], response['urls'], response['upload_id']
+        logger(f'[INFO] Starting upload for "{filepath}"')
         with open(filepath, 'rb') as f:
-            for num, url in enumerate(response['urls']):
-                file_data = f.read(max_size)
+            for num, url in enumerate(urls):
+                file_data = f.read(chunk_size)
                 attempts = 0
                 while attempts < max_retries:
                     try:
@@ -294,6 +297,7 @@ class AnalysisResultField(RemoteObject):
                         http_response.raise_for_status()
                         break
                     except requests.exceptions.HTTPError:
+                        logger(f'[WARN] Upload for part {num + 1} failed. Attempt {attempts + 1}')
                         attempts += 1
                         if attempts == max_retries:
                             raise
@@ -302,13 +306,17 @@ class AnalysisResultField(RemoteObject):
                     'ETag': http_response.headers['ETag'],
                     'PartNumber': num + 1
                 })
+                logger(f'[INFO] Uploaded part {num + 1} of {len(urls)} for "{filepath}"')
         response = self.knex.post(
             f'/{self.canon_url()}/{self.uuid}/complete_upload_s3',
             json={
                 'parts': parts,
-                'upload_id': response['upload_id'],
-            }
+                'upload_id': upload_id,
+            },
+            json_response=False,
         )
+        logger(f'[INFO] Finished Upload for "{filepath}"')
+        return self
 
     def upload_file(self, filepath, multipart_thresh=FIVE_MB, **kwargs):
         file_size = getsize(filepath)

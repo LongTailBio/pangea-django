@@ -151,3 +151,56 @@ def cli_download_sample_results(email, password, endpoint, module_name, field_na
                 except TypeError:
                     pass
                 click.echo('done.', err=True)
+
+
+@main.group('upload')
+def cli_upload():
+    pass
+
+
+@cli_upload.command('reads')
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('-m', '--module-name', default='raw::raw_reads')
+@click.option('-1', '--ext-1', default='.R1.fastq.gz')
+@click.option('-2', '--ext-2', default='.R2.fastq.gz')
+@click.option('-o', '--outfile', default='-', type=click.File('w'))
+@click.argument('org_name')
+@click.argument('library_name')
+@click.argument('file_list', type=click.File('r'))
+def cli_upload_reads(email, password, endpoint, module_name,
+                     ext_1, ext_2, outfile, org_name, library_name, file_list):
+    """Create samples in the specified group.
+
+    `sample_names` is a list of samples with one line per sample
+    """
+    if not email or not password:
+        click.echo('[WARNING] email or password not set.', err=True)
+    knex = Knex(endpoint)
+    if email and password:
+        User(knex, email, password).login()
+    org = Organization(knex, org_name).get()
+    lib = org.sample_group(library_name).get()
+
+    samples = {}
+    for filepath in (l.strip() for l in file_list):
+        if ext_1 in filepath:
+            sname = filepath.split(ext_1)[0]
+            key = 'read_1'
+        if ext_2 in filepath:
+            sname = filepath.split(ext_2)[0]
+            key = 'read_2'
+        sname = sname.split('/')[-1]
+        if sname not in samples:
+            samples[sname] = {}
+        samples[sname][key] = filepath
+
+    for sname, reads in samples.items():
+        if len(reads) != 2:
+            raise ValueError(f'Sample {sname} has wrong number of reads: {reads}')
+        sample = lib.sample(sname).idem()
+        ar = sample.analysis_result(module_name)
+        r1 = ar.field('read_1').idem().upload_file(reads['read_1'], logger=lambda x: click.echo(x, err=True))
+        r2 = ar.field('read_2').idem().upload_file(reads['read_2'], logger=lambda x: click.echo(x, err=True))
+        print(sample, ar, r1, r2, file=outfile)
