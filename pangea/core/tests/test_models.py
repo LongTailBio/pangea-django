@@ -17,6 +17,7 @@ from ..models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
     Project,
+    Tag,
 )
 
 
@@ -84,6 +85,74 @@ class TestS3ApiKeyModel(TestCase):
         self.assertIn('AWSAccessKeyId=', url)
         self.assertIn('Signature=', url)
         self.assertIn('Expires=', url)
+
+
+class TestTags(TestCase):
+    """Test suite for Sample model."""
+
+    def test_add_tag(self):
+        tag = Tag.objects.create(name='mytag YUDFS')
+
+        self.assertTrue(tag.uuid)
+        self.assertEqual(tag.name, 'mytag YUDFS')
+        self.assertTrue(tag.created_at)
+
+    def test_add_tag_with_payload(self):
+        tag = Tag.objects.create(name='mytag YJTUYDS', payload='FOO')
+
+        self.assertTrue(tag.uuid)
+        self.assertEqual(tag.name, 'mytag YJTUYDS')
+        self.assertEqual(tag.payload, 'FOO')
+        self.assertTrue(tag.created_at)
+
+    def test_relate_tag_pair(self):
+        tag1 = Tag.objects.create(name='tag1 TFDKSG')
+        tag2 = Tag.objects.create(name='tag2 TFDKSG')
+        tag2.add_related_tag(tag1)
+        self.assertEqual(tag2.related_tags.get().other_tag, tag1)
+
+    def test_relate_tag_triple(self):
+        tag1 = Tag.objects.create(name='tag1 HJFJUS')
+        tag2 = Tag.objects.create(name='tag2 HJFJUS')
+        tag3 = Tag.objects.create(name='tag3 HJFJUS')
+        tag2.add_related_tag(tag1)
+        tag3.add_related_tag(tag2)
+        tag1.add_related_tag(tag3)
+        self.assertEqual(tag2.related_tags.get().other_tag, tag1)
+        self.assertEqual(tag3.related_tags.get().other_tag, tag2)
+        self.assertEqual(tag1.related_tags.get().other_tag, tag3)
+
+    def test_tag_sample_group(self):
+        """Ensure we can tag a sample group."""
+        org = Organization.objects.create(name='org ADUJABF')
+        grp = org.create_sample_group(name='GRP ADUJABF')
+        tag = Tag.objects.create(name='tag ADUJABF')
+        tag.tag_sample_group(grp)
+        self.assertEqual(grp.tags.get().tag, tag)
+        self.assertEqual(tag.tagged_sample_groups.get().sample_group, grp)
+
+    def test_tag_sample(self):
+        """Ensure we can tag a sample group."""
+        org = Organization.objects.create(name='org AUHFVJKELF')
+        lib = org.create_sample_group(name='LBRY_01 AUHFVJKELF', is_library=True)
+        sample = lib.create_sample(name='SMPL_01 AUHFVJKELF')
+        tag = Tag.objects.create(name='tag AUHFVJKELF')
+        tag.tag_sample(sample)
+        self.assertEqual(sample.tags.get().tag, tag)
+        self.assertEqual(tag.tagged_samples.get().sample, sample)
+
+    def test_tag_sample_and_group(self):
+        """Ensure we can tag a sample group."""
+        org = Organization.objects.create(name='org AUHFVJKELF')
+        lib = org.create_sample_group(name='LBRY_01 AUHFVJKELF', is_library=True)
+        sample = lib.create_sample(name='SMPL_01 AUHFVJKELF')
+        tag = Tag.objects.create(name='tag AUHFVJKELF')
+        tag.tag_sample(sample)
+        tag.tag_sample_group(lib)
+        self.assertEqual(sample.tags.get().tag, tag)
+        self.assertEqual(tag.tagged_samples.get().sample, sample)
+        self.assertEqual(lib.tags.get().tag, tag)
+        self.assertEqual(tag.tagged_sample_groups.get().sample_group, lib)
 
 
 class TestSampleModel(TestCase):
