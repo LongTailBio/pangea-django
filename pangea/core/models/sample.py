@@ -29,8 +29,8 @@ class Sample(AutoCreatedUpdatedMixin):
         'SampleLibrary', on_delete=models.CASCADE, related_name='owned_samples'
     )
     sample_groups = models.ManyToManyField('SampleGroup')
-    metadata = JSONField(default=dict)
-    description = models.TextField(blank=False, default='')
+    metadata = JSONField(blank=True, default=dict)
+    description = models.TextField(blank=True, default='')
 
     class Meta:
         unique_together = (('name', 'library'),)

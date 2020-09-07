@@ -28,8 +28,8 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, unique=True)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     description = models.TextField(blank=False, default='')
-    long_description = models.TextField(blank=False, default='')
-    metadata = JSONField(default=dict)
+    long_description = models.TextField(blank=True, default='')
+    metadata = JSONField(blank=True, default=dict)
 
     is_public = models.BooleanField(blank=False, default=True)
     is_library = models.BooleanField(blank=False, default=False)

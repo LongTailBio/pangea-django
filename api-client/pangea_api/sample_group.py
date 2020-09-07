@@ -13,6 +13,9 @@ class SampleGroup(RemoteObject):
         'name',
         'is_library',
         'is_public',
+        'metadata',
+        'long_description',
+        'description',
     ]
     parent_field = 'org'
 

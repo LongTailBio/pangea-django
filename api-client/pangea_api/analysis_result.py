@@ -20,8 +20,8 @@ class AnalysisResult(RemoteObject):
         'module_name',
         'replicate',
         'metadata',
+        'description',
     ]
-    optional_remote_fields = ['metadata']
 
     def _get(self):
         """Fetch the result from the server."""

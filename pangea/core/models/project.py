@@ -28,8 +28,8 @@ class Project(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, unique=True)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     description = models.TextField(blank=False, default='')
-    sample_groups = models.ManyToManyField('SampleGroup', null=True)
-    sub_projects = models.ManyToManyField('Project', related_name='super_projects', null=True)
+    sample_groups = models.ManyToManyField('SampleGroup', null=True, blank=True)
+    sub_projects = models.ManyToManyField('Project', related_name='super_projects', null=True, blank=True)
 
     @property
     def is_public(self):

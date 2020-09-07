@@ -11,6 +11,7 @@ class Sample(RemoteObject):
         'name',
         'metadata',
         'library',
+        'description',
     ]
     parent_field = 'lib'
 
