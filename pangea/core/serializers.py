@@ -159,19 +159,19 @@ def presign_ar_field_stored_data_if_appropriate(ret, grp):
         return ret
 
 
-def _presign_ar_field_stored_data_if_appropriate(ret, grp):
+def _presign_ar_field_stored_data_if_appropriate(ret, org):
     if ret['stored_data'].get('__type__', '').lower() != 's3':
         return ret
-    if not grp.bucket:
-        #assert False
-        return ret
-    if not grp.bucket.api_key:
-        assert False
-        return ret
-    ret['stored_data']['presigned_url'] = grp.bucket.api_key.presign_url(
-        ret['stored_data']['endpoint_url'],
-        ret['stored_data']['uri']
-    )
+    bucket_name = ret['stored_data']['uri'].split('s3://')[1].split('/')[0]
+    s3bucket_query = org.s3bucket_set \
+        .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
+        .filter(Q(name=bucket_name))
+    if s3bucket_query.exists():
+        s3key = s3bucket_query[0].api_key
+        ret['stored_data']['presigned_url'] = s3key.presign_url(
+            ret['stored_data']['endpoint_url'],
+            ret['stored_data']['uri']
+        )
     return ret
 
 
@@ -193,7 +193,7 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return presign_ar_field_stored_data_if_appropriate(
             ret,
-            instance.analysis_result.sample.library.group,
+            instance.analysis_result.sample.organization,
         )
 
 
@@ -216,5 +216,5 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return presign_ar_field_stored_data_if_appropriate(
             ret,
-            instance.analysis_result.sample_group,
+            instance.analysis_result.sample_group.organization,
         )

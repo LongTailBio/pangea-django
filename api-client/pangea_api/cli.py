@@ -204,3 +204,36 @@ def cli_upload_reads(email, password, endpoint, module_name,
         r1 = ar.field('read_1').idem().upload_file(reads['read_1'], logger=lambda x: click.echo(x, err=True))
         r2 = ar.field('read_2').idem().upload_file(reads['read_2'], logger=lambda x: click.echo(x, err=True))
         print(sample, ar, r1, r2, file=outfile)
+
+
+@cli_upload.command('metadata')
+@click.option('--create/--no-create', default=False)
+@click.option('--overwrite/--no-overwrite', default=False)
+@click.option('--index-col', default=0)
+@click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('-e', '--email', envvar='PANGEA_USER')
+@click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.argument('org_name')
+@click.argument('lib_name')
+@click.argument('table', type=click.File('r'))
+def cli_metadata(create, overwrite, endpoint, index_col, email, password, org_name, lib_name, table):
+    knex = Knex(endpoint)
+    User(knex, email, password).login()
+    tbl = pd.read_csv(table, index_col=index_col)
+    tbl.index = tbl.index.to_series().map(str)
+    org = Organization(knex, org_name).get()
+    lib = org.sample_group(lib_name).get()
+    for sample_name, row in tbl.iterrows():
+        sample = lib.sample(sample_name)
+        if create:
+            sample = sample.idem()
+        else:
+            try:
+                sample = sample.get()
+            except Exception as e:
+                click.echo(f'Sample "{sample.name}" not found.', err=True)
+                continue
+        if overwrite or (not sample.metadata):
+            sample.metadata = json.loads(json.dumps(row.dropna().to_dict()))
+            sample.idem()
+        click.echo(sample)

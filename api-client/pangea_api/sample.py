@@ -52,8 +52,8 @@ class Sample(RemoteObject):
         blob = self.knex.post(url, json=data)
         self.load_blob(blob)
 
-    def analysis_result(self, module_name, replicate=None):
-        return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
+    def analysis_result(self, module_name, replicate=None, metadata=None):
+        return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate, metadata=metadata)
 
     def get_analysis_results(self, cache=True):
         """Yield sample analysis results fetched from the server."""
