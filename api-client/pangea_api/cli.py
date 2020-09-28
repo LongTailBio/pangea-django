@@ -115,17 +115,21 @@ def cli_download_sample_results(email, password, endpoint, outfile, sample_manif
 @cli_download.command('sample-results')
 @click.option('-e', '--email', envvar='PANGEA_USER')
 @click.option('-p', '--password', envvar='PANGEA_PASS')
+@click.option('-o', '--outfile', default='-', type=click.File('w'))
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('--module-name')
 @click.option('--field-name')
 @click.option('--target-dir', default='.')
 @click.option('--sample-manifest', default=None, type=click.File('r'),
               help='List of sample names to download from')
+@click.option('--download/--urls-only', default=True, help='Download files or just print urls')
 @click.argument('org_name')
 @click.argument('grp_name')
 @click.argument('sample_names', nargs=-1)
-def cli_download_sample_results(email, password, endpoint, module_name, field_name, target_dir,
-                                sample_manifest, org_name, grp_name, sample_names):
+def cli_download_sample_results(email, password, outfile, endpoint,
+                                module_name, field_name, target_dir,
+                                sample_manifest, download,
+                                org_name, grp_name, sample_names):
     """Download Sample Analysis Results for a set of samples."""
     grp, sample_names = _setup_download(
         email, password, endpoint, sample_manifest, org_name, grp_name, sample_names
@@ -138,6 +142,12 @@ def cli_download_sample_results(email, password, endpoint, module_name, field_na
                 continue
             for field in ar.get_fields(cache=False):
                 if field_name and field.name != field_name:
+                    continue
+                if not download:  # download urls to a file, not actual files.
+                    try:
+                        print(field.get_download_url(), field.get_referenced_filename(), file=outfile)
+                    except TypeError:
+                        pass
                     continue
                 filename = join(target_dir, field.get_blob_filename()).replace('::', '__')
                 makedirs(dirname(filename), exist_ok=True)

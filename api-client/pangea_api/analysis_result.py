@@ -221,6 +221,23 @@ class AnalysisResultField(RemoteObject):
         blob = self.knex.post(f'{self.canon_url()}?format=json', json=data)
         self.load_blob(blob)
 
+    def get_download_url(self):
+        """Return a URL that can be used to download the file for this result."""
+        blob_type = self.stored_data.get('__type__', '').lower()
+        if blob_type not in ['s3', 'sra']:
+            raise TypeError('Cannot fetch a file for a BLOB type result field.')
+        if blob_type == 's3':
+            try:
+                url = self.stored_data['presigned_url']
+            except KeyError:
+                url = self.stored_data['uri']
+            if url.startswith('s3://'):
+                url = self.stored_data['endpoint_url'] + '/' + url[5:]
+            return url
+        elif blob_type == 'sra':
+            url = self.stored_data['url']
+            return url
+
     def download_file(self, filename=None, cache=True):
         """Return a local filepath to the file this result points to."""
         blob_type = self.stored_data.get('__type__', '').lower()
