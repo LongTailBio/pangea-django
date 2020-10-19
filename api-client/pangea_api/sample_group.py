@@ -32,7 +32,7 @@ class SampleGroup(RemoteObject):
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
 
-    def _save(self):
+    def _save_group_obj(self):
         data = {
             field: getattr(self, field)
             for field in self.remote_fields if hasattr(self, field)
@@ -41,11 +41,16 @@ class SampleGroup(RemoteObject):
         url = f'sample_groups/{self.uuid}'
         self.knex.put(url, json=data)
 
+    def _save_sample_list(self):
         for sample in self._sample_cache:
             sample.idem()
             url = f'sample_groups/{self.uuid}/samples'
             self.knex.post(url, json={'sample_uuid': sample.uuid})
         self._sample_cache = []
+
+    def _save(self):
+        self._save_group_obj()
+        self._save_sample_list()
 
     def _get(self):
         """Fetch the result from the server."""

@@ -3,6 +3,7 @@ import os
 import json
 import requests
 import time
+import logging
 from os.path import join, basename, getsize
 
 from .remote_object import RemoteObject, RemoteObjectError
@@ -10,6 +11,9 @@ from urllib.request import urlretrieve
 from tempfile import NamedTemporaryFile
 
 from .constants import FIVE_MB
+
+logger = logging.getLogger(__name__)  # Same name as calling module
+logger.addHandler(logging.NullHandler())  # No output unless configured by calling program
 
 
 class AnalysisResult(RemoteObject):
@@ -26,6 +30,7 @@ class AnalysisResult(RemoteObject):
     def _get(self):
         """Fetch the result from the server."""
         self.parent.idem()
+        logger.info(f'Getting AnalysisResult.')
         blob = self.knex.get(self.nested_url())
         self.load_blob(blob)
 
@@ -53,6 +58,8 @@ class SampleAnalysisResult(AnalysisResult):
         }
         data['sample'] = self.sample.uuid
         url = f'sample_ars/{self.uuid}'
+        d = {'data': data, 'url': url, 'sample_ar': self}
+        logger.info(f'Saving SampleAnalysisResult. {d}')
         self.knex.put(url, json=data)
 
     def _create(self):
@@ -63,10 +70,14 @@ class SampleAnalysisResult(AnalysisResult):
         }
         if self.replicate:
             data['replicate'] = self.replicate
+        d = {'data': data, 'sample_ar': self}
+        logger.info(f'Creating SampleAnalysisResult. {d}')
         blob = self.knex.post(f'sample_ars?format=json', json=data)
         self.load_blob(blob)
 
     def field(self, field_name, data={}):
+        d = {'data': data, 'field_name': field_name, 'sample_ar': self}
+        logger.info(f'Creating SampleAnalysisResultField for SampleAnalysisResult. {d}')
         return SampleAnalysisResultField(self.knex, self, field_name, data=data)
 
     def get_fields(self, cache=True):
@@ -76,6 +87,7 @@ class SampleAnalysisResult(AnalysisResult):
                 yield field
             return
         url = f'sample_ar_fields?analysis_result_id={self.uuid}'
+        logger.info(f'Fetching SampleAnalysisResultFields. {self}')
         result = self.knex.get(url)
         for result_blob in result['results']:
             result = self.field(result_blob['name'])
