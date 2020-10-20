@@ -55,8 +55,13 @@ class SampleGroup(RemoteObject):
     def _get(self):
         """Fetch the result from the server."""
         self.org.idem()
-        blob = self.knex.get(self.nested_url())
-        self.load_blob(blob)
+        blob = self.get_cached_blob()
+        if not blob:
+            blob = self.knex.get(self.nested_url())
+            self.load_blob(blob)
+            self.cache_blob(blob)
+        else:
+            self.load_blob(blob)
 
     def _create(self):
         self.org.idem()

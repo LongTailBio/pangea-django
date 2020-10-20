@@ -1,5 +1,9 @@
 
+import os
 import logging
+import json
+from time import time
+from glob import glob
 from requests.exceptions import HTTPError
 
 logger = logging.getLogger(__name__)  # Same name as calling module
@@ -15,6 +19,7 @@ class RemoteObjectOverwriteError(RemoteObjectError):
 
 
 class RemoteObject:
+    CACHED_BLOB_TIME = 60 * 15  # 15 minutes in seconds
     optional_remote_fields = []
 
     def __init__(self, *args, **kwargs):
@@ -22,6 +27,7 @@ class RemoteObject:
         self._modified = False
         self._deleted = False
         self.blob = None
+        self.uuid = None
 
     def __setattr__(self, key, val):
         if hasattr(self, 'deleted') and self._deleted:
@@ -31,6 +37,43 @@ class RemoteObject:
         if key in self.remote_fields or key == self.parent_field:
             logger.info(f'Setting RemoteObject modified. key "{key}"')
             super(RemoteObject, self).__setattr__('_modified', True)
+
+    def get_cached_blob_filepath(self):
+        if not self.uuid:
+            return None, False
+        path_base = f'.pangea_api_cache/pangea_api_cache__{self.uuid}'
+        os.makedirs(os.path.dirname(path_base), exist_ok=True)
+        paths = sorted(glob(f'{path_base}__*.json'))
+        if paths:
+            return paths[-1], True
+        timestamp = int(time())
+        blob_filepath = f'{path_base}__{timestamp}.json'
+        return blob_filepath, False
+
+    def get_cached_blob(self):
+        logger.info(f'Getting cached blob. {self}')
+        blob_filepath, path_exists = self.get_cached_blob_filepath()
+        if not path_exists:  # cache not found
+            logger.info(f'No cached blob found. {self}')
+            return None
+        timestamp = int(blob_filepath.split('__')[-1].split('.json')[0])
+        elapsed_time = int(time()) - timestamp
+        if elapsed_time > self.CACHED_BLOB_TIME:  # cache is stale
+            logger.info(f'Found stale cached blob. {self}')
+            os.remove(blob_filepath)
+            return None
+        logger.info(f'Found good cached blob. {self}')
+        blob = json.loads(open(blob_filepath).read())
+        return blob
+
+    def cache_blob(self, blob):
+        logger.info(f'Caching blob. {blob}')
+        blob_filepath, path_exists = self.get_cached_blob_filepath()
+        if path_exists:  # save a new cache if an old one exists
+            os.remove(blob_filepath)
+            return self.cache_blob(blob)
+        with open(blob_filepath, 'w') as f:
+            f.write(json.dumps(blob))
 
     def load_blob(self, blob):
         logger.info(f'Loading blob. {blob}')
@@ -105,6 +148,10 @@ class RemoteObject:
             raise RemoteObjectError(msg)
         if self._modified:
             logger.info(f'Saving RemoteBlob. {self}')
+            blob_filepath, path_exists = self.get_cached_blob_filepath()
+            if path_exists:
+                logger.info(f'Clearing cached blob. {blob_filepath}')
+                os.remove(blob_filepath)
             self._save()
             self._modified = False
         else:
