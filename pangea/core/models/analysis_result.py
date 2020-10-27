@@ -233,13 +233,13 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
         )
         return out
 
-    def _as_s3_link(self, filename, bucket):
+    def _as_s3_link(self, filename):
         """Set the stored data of this result-field to contain info for a file stored on S3.
 
         Return this AR-field for convenience
         """
         grp_name = self.analysis_result.sample_group.name
-        uri = f's3://{bucket.name}/pangea/v1/{grp_name}/results/{filename}'
+        uri = f's3://{self.bucket.name}/pangea/v1/{grp_name}/results/{filename}'
         return uri
 
     def __str__(self):

@@ -148,6 +148,33 @@ class AnalysisResultTests(APITestCase):
         self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
         self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
 
+    def _setup_group_upload_presign(self, filename, stance=None, n_parts=1):
+        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
+        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
+        if not (pubkey and privkey):
+            return  # Only run this test if the keys are available
+        field = self.sample_group.create_analysis_result(
+            module_name='test_file',
+        ).create_field(name='file', stored_data={})
+        self.organization.users.add(self.user)
+        bucket = self.organization.create_s3bucket(
+            endpoint_url='https://s3.wasabisys.com',
+            name="pangea.test.bucket",
+        )
+        bucket.create_s3apikey(
+            description='KEY_01',
+            public_key=pubkey,
+            private_key=privkey,
+        )
+        self.sample_group.add_s3_bucket(bucket)
+        url = reverse('sample-group-ar-fields-get-upload-url', kwargs={'pk': field.uuid})
+        self.client.force_authenticate(user=self.user)
+        blob = {'filename': filename, 'n_parts': n_parts}
+        if stance:
+            blob['stance'] = stance
+        response = self.client.post(url, blob, format='json')
+        return response, field
+
     def _setup_upload_presign(self, filename, stance=None, n_parts=1):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
         privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
@@ -217,6 +244,17 @@ class AnalysisResultTests(APITestCase):
         self.assertEqual(field.field_type, 's3')
         self.assertEqual(field.stored_data['uri'], 's3://pangea.test.bucket/pangea/v1/Test Library/samples/Test Sample/my_test_file.foo')
 
+    def test_get_group_upload_url(self):
+        response, field = self._setup_group_upload_presign('my_test_file.foo')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['url'], 'https://s3.wasabisys.com/pangea.test.bucket')
+        self.assertEqual(response.data['fields']['key'], 'pangea/v1/Test Library/results/my_test_file.foo')
+        for key in ['AWSAccessKeyId', 'policy', 'signature']:
+            self.assertIn(key, response.data['fields'])
+        field.refresh_from_db()
+        self.assertEqual(field.field_type, 's3')
+        self.assertEqual(field.stored_data['uri'], 's3://pangea.test.bucket/pangea/v1/Test Library/results/my_test_file.foo')
+
     def test_use_upload_url(self):
         response, field = self._setup_upload_presign(UPLOAD_TEST_FILENAME)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -227,6 +265,19 @@ class AnalysisResultTests(APITestCase):
             files = {'file': (response.data['fields']['key'], f)}
             http_response = requests.post(response.data['url'], data=response.data['fields'], files=files)
         self.assertEqual(http_response.status_code, status.HTTP_204_NO_CONTENT)
+
+
+    def test_use_group_upload_url(self):
+        response, field = self._setup_group_upload_presign(UPLOAD_TEST_FILENAME)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        with open(UPLOAD_TEST_FILEPATH, 'w') as f:
+            f.write(datetime.datetime.now().isoformat())
+        with open(UPLOAD_TEST_FILEPATH, 'rb') as f:
+            files = {'file': (response.data['fields']['key'], f)}
+            http_response = requests.post(response.data['url'], data=response.data['fields'], files=files)
+        self.assertEqual(http_response.status_code, status.HTTP_204_NO_CONTENT)
+
 
     def test_presign_s3_url_in_sample_ar_field(self):
         pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)

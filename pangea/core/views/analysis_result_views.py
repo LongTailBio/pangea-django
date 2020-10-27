@@ -141,7 +141,7 @@ def post_sample_ar_complete_multipart_upload_url(request, pk):
 
 def authorize_sample_group_ar_upload_url(request, pk):
     arf = SampleGroupAnalysisResultField.objects.get(pk=pk)
-    mygrp = arf.analysis_result.sample.library.group
+    mygrp = arf.analysis_result.sample_group
     if not mygrp.is_public:
         try:
             membership_queryset = request.user.organization_set.filter(pk=mygrp.organization.pk)
