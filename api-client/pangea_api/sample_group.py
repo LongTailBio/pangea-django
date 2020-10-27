@@ -96,6 +96,7 @@ class SampleGroup(RemoteObject):
         for sample_blob in paginated_iterator(self.knex, f'sample_groups/{self.uuid}/samples'):
             sample = self.sample(sample_blob['name'])
             sample.load_blob(sample_blob)
+            sample.cache_blob(sample_blob)
             # We just fetched from the server so we change the RemoteObject
             # meta properties to reflect that
             sample._already_fetched = True
@@ -141,3 +142,6 @@ class SampleGroup(RemoteObject):
 
     def __repr__(self):
         return f'<Pangea::SampleGroup {self.name} {self.uuid} />'
+
+    def pre_hash(self):
+        return 'SG' + self.name + self.org.pre_hash()

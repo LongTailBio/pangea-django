@@ -1,6 +1,11 @@
-
+import os
 import requests
 import logging
+import json
+from time import time
+from glob import glob
+
+from .file_system_cache import FileSystemCache
 
 DEFAULT_ENDPOINT = 'https://pangea.gimmebio.com'
 
@@ -38,6 +43,7 @@ class Knex:
         self.endpoint_url += '/api'
         self.auth = None
         self.headers = {'Accept': 'application/json'}
+        self.cache = FileSystemCache()
 
     def _logging_info(self, **kwargs):
         base = {'endpoint_url': self.endpoint_url, 'headers': self.headers}
@@ -57,17 +63,21 @@ class Knex:
     def login(self, username, password):
         d = self._logging_info(email=username, password='*' * len(password))
         logger.info(f'Sending log in request. {d}')
-        response = requests.post(
-            f'{self.endpoint_url}/auth/token/login',
-            headers=self.headers,
-            json={
-                'email': username,
-                'password': password,
-            }
-        )
-        response.raise_for_status()
-        logger.info(f'Received log in response. {response.json()}')
-        self.add_auth_token(response.json()['auth_token'])
+        blob = self.cache.get_cached_blob(username)
+        if not blob:
+            response = requests.post(
+                f'{self.endpoint_url}/auth/token/login',
+                headers=self.headers,
+                json={
+                    'email': username,
+                    'password': password,
+                }
+            )
+            response.raise_for_status()
+            logger.info(f'Received log in response. {response.json()}')
+            blob = response.json()
+            self.cache.cache_blob(username, blob)
+        self.add_auth_token(blob['auth_token'])
         return self
 
     def _handle_response(self, response, json_response=True):

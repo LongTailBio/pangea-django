@@ -5,6 +5,7 @@ import json
 from time import time
 from glob import glob
 from requests.exceptions import HTTPError
+from .file_system_cache import FileSystemCache
 
 logger = logging.getLogger(__name__)  # Same name as calling module
 logger.addHandler(logging.NullHandler())  # No output unless configured by calling program
@@ -19,7 +20,6 @@ class RemoteObjectOverwriteError(RemoteObjectError):
 
 
 class RemoteObject:
-    CACHED_BLOB_TIME = 60 * 15  # 15 minutes in seconds
     optional_remote_fields = []
 
     def __init__(self, *args, **kwargs):
@@ -28,6 +28,7 @@ class RemoteObject:
         self._deleted = False
         self.blob = None
         self.uuid = None
+        self.cache = FileSystemCache()
 
     def __setattr__(self, key, val):
         if hasattr(self, 'deleted') and self._deleted:
@@ -35,48 +36,17 @@ class RemoteObject:
             raise RemoteObjectError('This object has been deleted.')
         super(RemoteObject, self).__setattr__(key, val)
         if key in self.remote_fields or key == self.parent_field:
-            logger.info(f'Setting RemoteObject modified. key "{key}"')
+            logger.debug(f'Setting RemoteObject modified. key "{key}"')
             super(RemoteObject, self).__setattr__('_modified', True)
 
-    def get_cached_blob_filepath(self):
-        if not self.uuid:
-            return None, False
-        path_base = f'.pangea_api_cache/pangea_api_cache__{self.uuid}'
-        os.makedirs(os.path.dirname(path_base), exist_ok=True)
-        paths = sorted(glob(f'{path_base}__*.json'))
-        if paths:
-            return paths[-1], True
-        timestamp = int(time())
-        blob_filepath = f'{path_base}__{timestamp}.json'
-        return blob_filepath, False
-
     def get_cached_blob(self):
-        logger.info(f'Getting cached blob. {self}')
-        blob_filepath, path_exists = self.get_cached_blob_filepath()
-        if not path_exists:  # cache not found
-            logger.info(f'No cached blob found. {self}')
-            return None
-        timestamp = int(blob_filepath.split('__')[-1].split('.json')[0])
-        elapsed_time = int(time()) - timestamp
-        if elapsed_time > self.CACHED_BLOB_TIME:  # cache is stale
-            logger.info(f'Found stale cached blob. {self}')
-            os.remove(blob_filepath)
-            return None
-        logger.info(f'Found good cached blob. {self}')
-        blob = json.loads(open(blob_filepath).read())
-        return blob
+        return self.cache.get_cached_blob(self)
 
     def cache_blob(self, blob):
-        logger.info(f'Caching blob. {blob}')
-        blob_filepath, path_exists = self.get_cached_blob_filepath()
-        if path_exists:  # save a new cache if an old one exists
-            os.remove(blob_filepath)
-            return self.cache_blob(blob)
-        with open(blob_filepath, 'w') as f:
-            f.write(json.dumps(blob))
+        return self.cache.cache_blob(self, blob)
 
     def load_blob(self, blob):
-        logger.info(f'Loading blob. {blob}')
+        logger.debug(f'Loading blob. {blob}')
         if self._deleted:
             logger.error(f'Cannot load blob, RemoteObject has been deleted. {self}')
             raise RemoteObjectError('This object has been deleted.')
@@ -114,12 +84,12 @@ class RemoteObject:
             logger.error(f'Cannot GET blob, RemoteObject has been deleted. {self}')
             raise RemoteObjectError('This object has been deleted.')
         if not self._already_fetched:
-            logger.info(f'Fetching RemoteBlob. {self}')
+            logger.debug(f'Fetching RemoteBlob. {self}')
             self._get()
             self._already_fetched = True
             self._modified = False
         else:
-            logger.info(f'RemoteObject has already been fetched. {self}')
+            logger.debug(f'RemoteObject has already been fetched. {self}')
         return self
 
     def create(self):
@@ -128,12 +98,12 @@ class RemoteObject:
             logger.error(f'Cannot create blob, RemoteObject has been deleted. {self}')
             raise RemoteObjectError('This object has been deleted.')
         if not self._already_fetched:
-            logger.info(f'Creating RemoteBlob. {self}')
+            logger.debug(f'Creating RemoteBlob. {self}')
             self._create()
             self._already_fetched = True
             self._modified = False
         else:
-            logger.info(f'RemoteObject has already been fetched. {self}')
+            logger.debug(f'RemoteObject has already been fetched. {self}')
         return self
 
     def save(self):
@@ -147,15 +117,12 @@ class RemoteObject:
             msg = 'Attempting to SAVE an object which has not been fetched is disallowed.'
             raise RemoteObjectError(msg)
         if self._modified:
-            logger.info(f'Saving RemoteBlob. {self}')
-            blob_filepath, path_exists = self.get_cached_blob_filepath()
-            if path_exists:
-                logger.info(f'Clearing cached blob. {blob_filepath}')
-                os.remove(blob_filepath)
+            logger.debug(f'Saving RemoteBlob. {self}')
+            self.cache.clear_blob(self)
             self._save()
             self._modified = False
         else:
-            logger.info(f'RemoteBlob has not been modified. Nothing to save. {self}')
+            logger.debug(f'RemoteBlob has not been modified. Nothing to save. {self}')
 
     def idem(self):
         """Make the state of this object match the server."""
@@ -171,7 +138,7 @@ class RemoteObject:
         return self
 
     def delete(self):
-        logger.info(f'Deleting RemoteBlob. {self}')
+        logger.debug(f'Deleting RemoteBlob. {self}')
         self.knex.delete(self.nested_url())
         self._already_fetched = False
         self._deleted = True

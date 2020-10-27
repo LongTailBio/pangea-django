@@ -57,3 +57,6 @@ class Organization(RemoteObject):
             result._already_fetched = True
             result._modified = False
             yield result
+
+    def pre_hash(self):
+        return 'ORG' + self.name

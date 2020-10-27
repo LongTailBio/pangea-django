@@ -39,6 +39,11 @@ class AnalysisResult(RemoteObject):
         else:
             self.load_blob(blob)
 
+    def pre_hash(self):
+        key = self.module_name + self.parent.pre_hash()
+        key += self.replicate if self.replicate else ''
+        return key
+
 
 class SampleAnalysisResult(AnalysisResult):
     parent_field = 'sample'
@@ -361,6 +366,9 @@ class AnalysisResultField(RemoteObject):
     def __del__(self):
         if self._temp_filename and self._cached_filename:
             os.remove(self._cached_filename)
+
+    def pre_hash(self):
+        return self.name + self.parent.pre_hash()
 
 
 class SampleAnalysisResultField(AnalysisResultField):

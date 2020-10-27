@@ -93,3 +93,6 @@ class Sample(RemoteObject):
 
     def __repr__(self):
         return f'<Pangea::Sample {self.name} {self.uuid} />'
+
+    def pre_hash(self):
+        return 'SAMPLE' + self.name + self.lib.pre_hash()
