@@ -73,7 +73,7 @@ def scatter(taxa, samples, cat_name, cat_val):
     return pts.to_dict('records'), pvals
 
 
-def process(samples):
+def process(samples, max_taxa=0):
     metadata_categories = categories_from_metadata(samples)
     out = {}
     for module, field, tool in TOOLS:
@@ -84,6 +84,9 @@ def process(samples):
             },
             orient='index'
         ).fillna(0))
+        if max_taxa and taxa_matrix.shape[1] > max_taxa:
+            taxa = taxa_matrix.mean().sort_values(ascending=False).index.to_list()[:max_taxa]
+            taxa_matrix = taxa_matrix[taxa]
         tool_tbl = {'tool_categories': {}}
         for cat_name, cat_vals in metadata_categories.items():
             cat_tbl = {}
@@ -116,6 +119,7 @@ def sample_has_modules(sample):
 class VolcanoModule(Module):
     """TopTaxa AnalysisModule."""
     MIN_SIZE = 12
+    MAX_TAXA = 100
 
     @classmethod
     def _name(cls):
@@ -128,7 +132,7 @@ class VolcanoModule(Module):
             sample for sample in grp.get_samples()
             if sample_has_modules(sample)
         ]
-        volcano, cats = process(samples)
+        volcano, cats = process(samples, cls.MAX_TAXA)
         if not volcano:
             raise VolcanoError('No differentiable group found')
         data = {

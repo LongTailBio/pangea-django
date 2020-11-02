@@ -30,7 +30,7 @@ from .parse_utils import (
     run_pca,
 )
 
-TOOLS = [KRAKENUNIQ_NAMES, MICROBECENSUS_NAMES]
+TOOLS = [KRAKENUNIQ_NAMES] #, MICROBECENSUS_NAMES]
 
 
 def taxa_axes(samples):
@@ -56,13 +56,13 @@ def taxa_axes(samples):
 
 def make_axes(samples):
     out = taxa_axes(samples)
-    out['Ave. Genome Size'] = {'vals': pd.Series({
-        sample.name: parse_generic(
-            sample_module_field(sample, MICROBECENSUS_NAMES[0], MICROBECENSUS_NAMES[1]),
-            parse_mc_file,
-        )['average_genome_size']
-        for sample in samples
-    }).to_dict()}
+    # out['Ave. Genome Size'] = {'vals': pd.Series({
+    #     sample.name: parse_generic(
+    #         sample_module_field(sample, MICROBECENSUS_NAMES[0], MICROBECENSUS_NAMES[1]),
+    #         parse_mc_file,
+    #     )['average_genome_size']
+    #     for sample in samples
+    # }).to_dict()}
     return out
 
 

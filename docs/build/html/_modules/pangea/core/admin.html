@@ -1,0 +1,352 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.admin &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.core.admin</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">django.contrib</span> <span class="k">import</span> <span class="n">admin</span>
+<span class="kn">from</span> <span class="nn">django.contrib.auth.admin</span> <span class="k">import</span> <span class="n">UserAdmin</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="k">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+
+<span class="kn">from</span> <span class="nn">.forms</span> <span class="k">import</span> <span class="n">PangeaUserCreationForm</span><span class="p">,</span> <span class="n">PangeaUserChangeForm</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">PangeaUser</span><span class="p">,</span>
+    <span class="n">Organization</span><span class="p">,</span>
+    <span class="n">Project</span><span class="p">,</span>
+    <span class="n">S3ApiKey</span><span class="p">,</span>
+    <span class="n">S3Bucket</span><span class="p">,</span>
+    <span class="n">SampleGroup</span><span class="p">,</span>
+    <span class="n">SampleLibrary</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResultField</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResultField</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="OrganizationAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.OrganizationAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Organization</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">OrganizationAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;members&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="OrganizationAdmin.members"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.OrganizationAdmin.members">[docs]</a>    <span class="k">def</span> <span class="nf">members</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">count</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="ProjectAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.ProjectAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Project</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">ProjectAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;organization&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="S3BucketAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3BucketAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">S3Bucket</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">S3BucketAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="s1">&#39;endpoint_url&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="S3BucketAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3BucketAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;organization__uuid__exact&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="S3BucketAdmin.organization_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3BucketAdmin.organization_name">[docs]</a>    <span class="k">def</span> <span class="nf">organization_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="S3ApiKeyAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3ApiKeyAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">S3ApiKey</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">S3ApiKeyAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;public_key&#39;</span><span class="p">,</span> <span class="s1">&#39;bucket_name&#39;</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="S3ApiKeyAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3ApiKeyAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;bucket__uuid__exact&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="S3ApiKeyAdmin.bucket_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3ApiKeyAdmin.bucket_name">[docs]</a>    <span class="k">def</span> <span class="nf">bucket_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">bucket</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="S3ApiKeyAdmin.organization_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.S3ApiKeyAdmin.organization_name">[docs]</a>    <span class="k">def</span> <span class="nf">organization_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">bucket</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SampleGroup</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleGroupAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_name&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;organization__uuid__exact&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleGroupAdmin.organization_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAdmin.organization_name">[docs]</a>    <span class="k">def</span> <span class="nf">organization_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="SampleLibraryAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleLibraryAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SampleLibrary</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleLibraryAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_name&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;group__organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleLibraryAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleLibraryAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;group__organization__uuid__exact&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleLibraryAdmin.organization_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleLibraryAdmin.organization_name">[docs]</a>    <span class="k">def</span> <span class="nf">organization_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="SampleLibraryAdmin.name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleLibraryAdmin.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{obj.group.name}</span><span class="s1"> (library)&#39;</span></div></div>
+
+
+<div class="viewcode-block" id="SampleAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">Sample</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;library_name&#39;</span><span class="p">,</span><span class="s1">&#39;member_of_groups&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;library__group__organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;library__group__organization__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;library__group__exact&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleAdmin.library_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAdmin.library_name">[docs]</a>    <span class="k">def</span> <span class="nf">library_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="SampleAdmin.member_of_groups"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAdmin.member_of_groups">[docs]</a>    <span class="k">def</span> <span class="nf">member_of_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">group</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">sample_groups</span><span class="o">.</span><span class="n">only</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)])</span></div></div>
+
+
+<div class="viewcode-block" id="SampleAnalysisResultAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleAnalysisResultAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;module_name&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;sample__library__group__organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;sample__library__group&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="s1">&#39;module_name&#39;</span><span class="p">,</span>
+        <span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleAnalysisResultAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;sample__library__group__organization__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample__library__group__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;module_name&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleAnalysisResultAdmin.sample_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultAdmin.sample_name">[docs]</a>    <span class="k">def</span> <span class="nf">sample_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="FieldNameListFilter"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.FieldNameListFilter">[docs]</a><span class="k">class</span> <span class="nc">FieldNameListFilter</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">AllValuesFieldListFilter</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">model_admin</span><span class="p">,</span> <span class="n">field_path</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">model_admin</span><span class="p">,</span> <span class="n">field_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s1">&#39;field name&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultFieldAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SampleAnalysisResultField</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleAnalysisResultFieldAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sample_name&#39;</span><span class="p">,</span> <span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="s1">&#39;field_name&#39;</span><span class="p">)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;analysis_result__sample__library__group__organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;analysis_result__sample__library__group&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="s1">&#39;analysis_result__module_name&#39;</span><span class="p">,</span>
+        <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">FieldNameListFilter</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;analysis_result__sample&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultFieldAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;analysis_result__sample__library__group__organization__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result__sample__library__group__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result__sample__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result__module_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldAdmin.sample_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultFieldAdmin.sample_name">[docs]</a>    <span class="k">def</span> <span class="nf">sample_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldAdmin.module_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultFieldAdmin.module_name">[docs]</a>    <span class="k">def</span> <span class="nf">module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">module_name</span></div>
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldAdmin.field_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleAnalysisResultFieldAdmin.field_name">[docs]</a>    <span class="k">def</span> <span class="nf">field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SampleGroupAnalysisResult</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleGroupAnalysisResultAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sample_group_name&#39;</span><span class="p">,</span> <span class="s1">&#39;module_name&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;sample_group__organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;sample_group&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="s1">&#39;module_name&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;sample_group__organization__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_group__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;module_name&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultAdmin.sample_group_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultAdmin.sample_group_name">[docs]</a>    <span class="k">def</span> <span class="nf">sample_group_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultFieldAdmin">[docs]</a><span class="nd">@admin</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">SampleGroupAnalysisResultField</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">SampleGroupAnalysisResultFieldAdmin</span><span class="p">(</span><span class="n">admin</span><span class="o">.</span><span class="n">ModelAdmin</span><span class="p">):</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;sample_group_name&#39;</span><span class="p">,</span> <span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="s1">&#39;field_name&#39;</span><span class="p">)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="s1">&#39;analysis_result__sample_group__organization&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;analysis_result__sample_group&#39;</span><span class="p">,</span> <span class="n">admin</span><span class="o">.</span><span class="n">RelatedOnlyFieldListFilter</span><span class="p">),</span>
+        <span class="s1">&#39;analysis_result__module_name&#39;</span><span class="p">,</span>
+        <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">FieldNameListFilter</span><span class="p">),</span>
+    <span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldAdmin.lookup_allowed"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultFieldAdmin.lookup_allowed">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_allowed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lookup</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">lookup</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s1">&#39;analysis_result__sample_group__organization__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result__sample_group__uuid__exact&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result__module_name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+        <span class="p">]</span></div>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldAdmin.sample_group_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultFieldAdmin.sample_group_name">[docs]</a>    <span class="k">def</span> <span class="nf">sample_group_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldAdmin.module_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultFieldAdmin.module_name">[docs]</a>    <span class="k">def</span> <span class="nf">module_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">module_name</span></div>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldAdmin.field_name"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.SampleGroupAnalysisResultFieldAdmin.field_name">[docs]</a>    <span class="k">def</span> <span class="nf">field_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">name</span></div></div>
+
+
+<div class="viewcode-block" id="PangeaUserAdmin"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.admin.PangeaUserAdmin">[docs]</a><span class="k">class</span> <span class="nc">PangeaUserAdmin</span><span class="p">(</span><span class="n">UserAdmin</span><span class="p">):</span>
+    <span class="n">add_form</span> <span class="o">=</span> <span class="n">PangeaUserCreationForm</span>
+    <span class="n">form</span> <span class="o">=</span> <span class="n">PangeaUserChangeForm</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">PangeaUser</span>
+    <span class="n">list_display</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span> <span class="s1">&#39;is_active&#39;</span><span class="p">,)</span>
+    <span class="n">list_filter</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span> <span class="s1">&#39;is_active&#39;</span><span class="p">,)</span>
+    <span class="n">fieldsets</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;password&#39;</span><span class="p">)}),</span>
+        <span class="p">(</span><span class="s1">&#39;Permissions&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;is_staff&#39;</span><span class="p">,</span> <span class="s1">&#39;is_active&#39;</span><span class="p">)}),</span>
+    <span class="p">)</span>
+    <span class="n">add_fieldsets</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;classes&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;wide&#39;</span><span class="p">,),</span>
+            <span class="s1">&#39;fields&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;password1&#39;</span><span class="p">,</span> <span class="s1">&#39;password2&#39;</span><span class="p">,</span> <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span> <span class="s1">&#39;is_active&#39;</span><span class="p">)}</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">search_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,)</span>
+    <span class="n">ordering</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,)</span></div>
+
+
+<span class="n">admin</span><span class="o">.</span><span class="n">site</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">PangeaUser</span><span class="p">,</span> <span class="n">PangeaUserAdmin</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

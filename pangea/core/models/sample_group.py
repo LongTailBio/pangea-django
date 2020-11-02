@@ -28,9 +28,13 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     name = models.TextField(blank=False, unique=True)
     organization = models.ForeignKey('Organization', on_delete=models.CASCADE)
     description = models.TextField(blank=False, default='')
+    long_description = models.TextField(blank=True, default='')
+    metadata = JSONField(blank=True, default=dict)
+
     is_public = models.BooleanField(blank=False, default=True)
     is_library = models.BooleanField(blank=False, default=False)
     theme = models.TextField(blank=True)
+    bucket = models.ForeignKey('S3Bucket', on_delete=models.SET_NULL, null=True)
 
     def save(self, *args, **kwargs):
         out = super(SampleGroup, self).save(*args, **kwargs)
@@ -61,6 +65,11 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         sample.sample_groups.add(self)
         self.save()
         sample.save()
+        return self
+
+    def add_s3_bucket(self, bucket):
+        self.bucket = bucket
+        self.save()
         return self
 
     def create_analysis_result(self, *args, **kwargs):

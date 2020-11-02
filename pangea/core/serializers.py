@@ -7,12 +7,14 @@ from .models import (
     PangeaUser,
     Organization,
     S3ApiKey,
+    S3Bucket,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
     SampleGroupAnalysisResult,
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
+    Project,
 )
 
 logger = structlog.get_logger(__name__)
@@ -34,14 +36,22 @@ class OrganizationSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at', 'core_sample_group_uuid')
 
 
+class S3BucketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = S3Bucket
+        fields = (
+            'uuid', 'name', 'endpoint_url', 'organization',
+        )
+
+
 class S3ApiKeySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = S3ApiKey
         fields = (
             'uuid', 'description', 'created_at', 'updated_at',
-            'endpoint_url', 'bucket', 'public_key', 'private_key',
-            'organization',
+            'bucket', 'public_key', 'private_key',
         )
         read_only_fields = ('created_at', 'updated_at', 'uuid')
         extra_kwargs = {
@@ -63,12 +73,31 @@ class SampleGroupSerializer(serializers.ModelSerializer):
             'uuid', 'name', 'created_at', 'updated_at',
             'organization', 'description', 'is_library',
             'is_public', 'theme', 'organization_obj',
+            'long_description', 'metadata',
         )
         read_only_fields = ('created_at', 'updated_at', 'organization_obj')
 
 
 class SampleGroupAddSampleSerializer(serializers.Serializer):
     sample_uuid = serializers.UUIDField()
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+
+    organization_obj = OrganizationSerializer(source='organization', read_only=True)
+
+    class Meta:
+        model = Project
+        fields = (
+            'uuid', 'name', 'created_at', 'updated_at',
+            'organization', 'description', 'organization_obj',
+            'sample_groups', 'sub_projects',
+        )
+        read_only_fields = ('created_at', 'updated_at', 'organization_obj')
+
+
+class ProjectAddSampleGroupSerializer(serializers.Serializer):
+    sample_group_uuid = serializers.UUIDField()
 
 
 class SampleSerializer(serializers.ModelSerializer):
@@ -79,7 +108,7 @@ class SampleSerializer(serializers.ModelSerializer):
         model = Sample
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
-            'library', 'metadata', 'library_obj',
+            'library', 'metadata', 'library_obj', 'description'
         )
         read_only_fields = ('created_at', 'updated_at', 'library_obj')
 
@@ -93,7 +122,7 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
-            'sample_obj'
+            'sample_obj', 'description', 'metadata',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_obj')
 
@@ -107,23 +136,23 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
-            'sample_group_obj',
+            'sample_group_obj', 'description', 'metadata',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
 
 
-def presign_ar_field_stored_data_if_appropriate(ret, org):
+def presign_ar_field_stored_data_if_appropriate(ret, grp):
     """Intercept serialization of an analysis result field to add a presigned URL.
 
     At this point we are assuming the user has permission to access this result.
     """
     try:
-        return _presign_ar_field_stored_data_if_appropriate(ret, org)
+        return _presign_ar_field_stored_data_if_appropriate(ret, grp)
     except Exception as e:
         # Gracefully fail here. Presigning fail isn't a reason to fail to respond
         logger.error(
             'presigning_url_failed_during_serialization',
-            org_uuid=org.uuid,
+            grp_uuid=grp.uuid,
             stored_data=ret,
             exception=str(e),
         )
@@ -134,11 +163,11 @@ def _presign_ar_field_stored_data_if_appropriate(ret, org):
     if ret['stored_data'].get('__type__', '').lower() != 's3':
         return ret
     bucket_name = ret['stored_data']['uri'].split('s3://')[1].split('/')[0]
-    s3key_query = org.s3_api_keys \
+    s3bucket_query = org.s3bucket_set \
         .filter(endpoint_url=ret['stored_data']['endpoint_url']) \
-        .filter(Q(bucket='*') | Q(bucket=bucket_name))
-    if s3key_query.exists():
-        s3key = s3key_query[0]
+        .filter(Q(name=bucket_name))
+    if s3bucket_query.exists():
+        s3key = s3bucket_query[0].api_key
         ret['stored_data']['presigned_url'] = s3key.presign_url(
             ret['stored_data']['endpoint_url'],
             ret['stored_data']['uri']
@@ -164,7 +193,7 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
         ret = super().to_representation(instance)
         return presign_ar_field_stored_data_if_appropriate(
             ret,
-            instance.analysis_result.sample.library.group.organization,
+            instance.analysis_result.sample.organization,
         )
 
 

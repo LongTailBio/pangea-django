@@ -27,7 +27,7 @@ def parse_generic(report: SampleAnalysisResultField, parser):
     return out
 
 
-def parse_taxa_report(report: SampleAnalysisResultField) -> dict:
+def parse_taxa_report(report: SampleAnalysisResultField, proportions=True) -> dict:
     """Return a dict of taxa_name to relative abundance."""
     local_path = report.download_file()
     out, abundance_sum = {}, 0
@@ -45,7 +45,8 @@ def parse_taxa_report(report: SampleAnalysisResultField) -> dict:
                     continue
                 out[tkns[1]] = float(tkns[3])
                 abundance_sum += float(tkns[3])
-    out = {k: v / abundance_sum for k, v in out.items()}
+    if proportions:
+        out = {k: v / abundance_sum for k, v in out.items()}
     return out
 
 

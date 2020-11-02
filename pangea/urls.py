@@ -49,4 +49,5 @@ urlpatterns = [
     path('api/contrib/taxasearch/', include('pangea.contrib.taxasearch.urls')),
     path('api/contrib/treeoflife/', include('pangea.contrib.treeoflife.urls')),
     path('api/contrib/omnisearch/', include('pangea.contrib.omnisearch.urls')),
+    path('api/contrib/tags/', include('pangea.contrib.tagging.urls')),
 ]

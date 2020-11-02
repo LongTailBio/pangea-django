@@ -7,14 +7,16 @@ from .forms import PangeaUserCreationForm, PangeaUserChangeForm
 from .models import (
     PangeaUser,
     Organization,
+    Project,
     S3ApiKey,
+    S3Bucket,
     SampleGroup,
     SampleLibrary,
     Sample,
     SampleGroupAnalysisResult,
     SampleGroupAnalysisResultField,
     SampleAnalysisResult,
-    SampleAnalysisResultField
+    SampleAnalysisResultField,
 )
 
 
@@ -26,9 +28,17 @@ class OrganizationAdmin(admin.ModelAdmin):
         return obj.users.count()
 
 
-@admin.register(S3ApiKey)
-class S3ApiKeyAdmin(admin.ModelAdmin):
-    list_display = ('public_key', 'bucket', 'endpoint_url',)
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization',)
+    list_filter = (
+        ('organization', admin.RelatedOnlyFieldListFilter),
+    )
+
+
+@admin.register(S3Bucket)
+class S3BucketAdmin(admin.ModelAdmin):
+    list_display = ('name', 'organization', 'endpoint_url',)
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )
@@ -40,6 +50,22 @@ class S3ApiKeyAdmin(admin.ModelAdmin):
 
     def organization_name(self, obj):
         return obj.organization.name
+
+
+@admin.register(S3ApiKey)
+class S3ApiKeyAdmin(admin.ModelAdmin):
+    list_display = ('public_key', 'bucket_name',)
+
+    def lookup_allowed(self, lookup, value):
+        return lookup in [
+            'bucket__uuid__exact',
+        ]
+
+    def bucket_name(self, obj):
+        return obj.bucket.name
+
+    def organization_name(self, obj):
+        return obj.bucket.organization.name
 
 
 @admin.register(SampleGroup)

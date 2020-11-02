@@ -1,0 +1,10 @@
+pangea.contrib.taxasearch.migrations package
+============================================
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.taxasearch.migrations
+    :members:
+    :undoc-members:
+    :show-inheritance:

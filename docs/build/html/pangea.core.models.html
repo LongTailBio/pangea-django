@@ -1,0 +1,1681 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.models package &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pangea-core-models-package">
+<h1>pangea.core.models package<a class="headerlink" href="#pangea-core-models-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pangea.core.models.analysis_result">
+<span id="pangea-core-models-analysis-result-module"></span><h2>pangea.core.models.analysis_result module<a class="headerlink" href="#module-pangea.core.models.analysis_result" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.AnalysisResult">
+<em class="property">class </em><code class="descclassname">pangea.core.models.analysis_result.</code><code class="descname">AnalysisResult</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>Represent a single field of a single result in the database.</p>
+<dl class="docutils">
+<dt>Example:</dt>
+<dd>KrakenUniq produces a table of read-classifications and a report.
+These are stored separately as two separate AnalysisResults.
+Both ARs have the same <cite>module_name</cite> (e.g. KrakenUniq)
+Both ARs have the same owner (e.g. sample-123)
+Both ARs have different a <cite>field_name</cite> (e.g. report or read_class).</dd>
+</dl>
+<p><cite>owner_uuid</cite> should reference a group or sample. Whether it is a group
+or sample is determined by <cite>owned_by_group</cite>. This is only enforced in
+code. The reverse (sample-&gt;AR or group-&gt;AR) is enforced in SQL.
+AR Fields carry a status marker. In principle all fields of an ARs always
+have the same status.</p>
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus">
+<em class="property">class </em><code class="descname">AnalysisResultStatus</code><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResult.AnalysisResultStatus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.models.enums.TextChoices</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.ERROR">
+<code class="descname">ERROR</code><em class="property"> = 'error'</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.PENDING">
+<code class="descname">PENDING</code><em class="property"> = 'pending'</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.PENDING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.SUCCESS">
+<code class="descname">SUCCESS</code><em class="property"> = 'success'</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.SUCCESS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.WORKING">
+<code class="descname">WORKING</code><em class="property"> = 'working'</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.AnalysisResultStatus.WORKING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResult.Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.Meta.abstract">
+<code class="descname">abstract</code><em class="property"> = False</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.Meta.abstract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.description">
+<code class="descname">description</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.get_status_display">
+<code class="descname">get_status_display</code><span class="sig-paren">(</span><em>*</em>, <em>field=&lt;django.db.models.fields.TextField: status&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.get_status_display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.module_name">
+<code class="descname">module_name</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.module_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.replicate">
+<code class="descname">replicate</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.replicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResult.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.status">
+<code class="descname">status</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.status" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResult.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResult.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField">
+<em class="property">class </em><code class="descclassname">pangea.core.models.analysis_result.</code><code class="descname">AnalysisResultField</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResultField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>Class representing a single field of a single result in the database.</p>
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.Meta">
+<em class="property">class </em><code class="descname">Meta</code><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResultField.Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.Meta.abstract">
+<code class="descname">abstract</code><em class="property"> = False</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.Meta.abstract" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.Meta.unique_together">
+<code class="descname">unique_together</code><em class="property"> = (('analysis_result', 'name'),)</em><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.Meta.unique_together" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.as_s3_link">
+<code class="descname">as_s3_link</code><span class="sig-paren">(</span><em>filename</em>, <em>overwrite_ok=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResultField.as_s3_link"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.as_s3_link" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the stored data of this result-field to contain info for a file stored on S3.</p>
+<p>Return this AR-field for convenience</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.field_type">
+<code class="descname">field_type</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.field_type" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.get_presigned_completion_url">
+<code class="descname">get_presigned_completion_url</code><span class="sig-paren">(</span><em>upload_id</em>, <em>parts</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResultField.get_presigned_completion_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.get_presigned_completion_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a presigned URL for file upload for this result.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.get_presigned_upload_url">
+<code class="descname">get_presigned_upload_url</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResultField.get_presigned_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.get_presigned_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a presigned URL for file upload for this result.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.name">
+<code class="descname">name</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#AnalysisResultField.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.stored_data">
+<code class="descname">stored_data</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.stored_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.AnalysisResultField.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.analysis_result.AnalysisResultField.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult">
+<em class="property">class </em><code class="descclassname">pangea.core.models.analysis_result.</code><code class="descname">SampleAnalysisResult</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleAnalysisResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.models.analysis_result.AnalysisResult" title="pangea.core.models.analysis_result.AnalysisResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.models.analysis_result.AnalysisResult</span></code></a></p>
+<p>Class representing a single field of a sample analysis result.</p>
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.create_field">
+<code class="descname">create_field</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleAnalysisResult.create_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.create_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.fields">
+<code class="descname">fields</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.get_status_display">
+<code class="descname">get_status_display</code><span class="sig-paren">(</span><em>*</em>, <em>field=&lt;django.db.models.fields.TextField: status&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.get_status_display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.sample">
+<code class="descname">sample</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.sample_id">
+<code class="descname">sample_id</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.sample_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResult.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleAnalysisResult.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResult.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField">
+<em class="property">class </em><code class="descclassname">pangea.core.models.analysis_result.</code><code class="descname">SampleAnalysisResultField</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleAnalysisResultField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.models.analysis_result.AnalysisResultField" title="pangea.core.models.analysis_result.AnalysisResultField"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.models.analysis_result.AnalysisResultField</span></code></a></p>
+<p>Class representing an analysis result field for a sample.</p>
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.analysis_result">
+<code class="descname">analysis_result</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.analysis_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.analysis_result_id">
+<code class="descname">analysis_result_id</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.analysis_result_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.bucket">
+<code class="descname">bucket</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleAnalysisResultField.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleAnalysisResultField.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleAnalysisResultField.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult">
+<em class="property">class </em><code class="descclassname">pangea.core.models.analysis_result.</code><code class="descname">SampleGroupAnalysisResult</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleGroupAnalysisResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.models.analysis_result.AnalysisResult" title="pangea.core.models.analysis_result.AnalysisResult"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.models.analysis_result.AnalysisResult</span></code></a></p>
+<p>Class representing a single field of a sample group analysis result.</p>
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.create_field">
+<code class="descname">create_field</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleGroupAnalysisResult.create_field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.create_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.fields">
+<code class="descname">fields</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.get_status_display">
+<code class="descname">get_status_display</code><span class="sig-paren">(</span><em>*</em>, <em>field=&lt;django.db.models.fields.TextField: status&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.get_status_display" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.sample_group">
+<code class="descname">sample_group</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.sample_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.sample_group_id">
+<code class="descname">sample_group_id</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.sample_group_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResult.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleGroupAnalysisResult.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResult.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField">
+<em class="property">class </em><code class="descclassname">pangea.core.models.analysis_result.</code><code class="descname">SampleGroupAnalysisResultField</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleGroupAnalysisResultField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.models.analysis_result.AnalysisResultField" title="pangea.core.models.analysis_result.AnalysisResultField"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.models.analysis_result.AnalysisResultField</span></code></a></p>
+<p>Class representing an analysis result field for a sample group.</p>
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.analysis_result">
+<code class="descname">analysis_result</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.analysis_result" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.analysis_result_id">
+<code class="descname">analysis_result_id</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.analysis_result_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.bucket">
+<code class="descname">bucket</code><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.analysis_result.SampleGroupAnalysisResultField.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/analysis_result.html#SampleGroupAnalysisResultField.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.analysis_result.SampleGroupAnalysisResultField.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models.exceptions">
+<span id="pangea-core-models-exceptions-module"></span><h2>pangea.core.models.exceptions module<a class="headerlink" href="#module-pangea.core.models.exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="pangea.core.models.exceptions.AnalysisResultFieldError">
+<em class="property">exception </em><code class="descclassname">pangea.core.models.exceptions.</code><code class="descname">AnalysisResultFieldError</code><a class="reference internal" href="_modules/pangea/core/models/exceptions.html#AnalysisResultFieldError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.exceptions.AnalysisResultFieldError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.models.exceptions.ModelError" title="pangea.core.models.exceptions.ModelError"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.models.exceptions.ModelError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.exceptions.ModelError">
+<em class="property">exception </em><code class="descclassname">pangea.core.models.exceptions.</code><code class="descname">ModelError</code><a class="reference internal" href="_modules/pangea/core/models/exceptions.html#ModelError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.exceptions.ModelError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models.organization">
+<span id="pangea-core-models-organization-module"></span><h2>pangea.core.models.organization module<a class="headerlink" href="#module-pangea.core.models.organization" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.models.organization.Organization">
+<em class="property">class </em><code class="descclassname">pangea.core.models.organization.</code><code class="descname">Organization</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/organization.html#Organization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.organization.Organization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>This class represents the organization model.</p>
+<dl class="exception">
+<dt id="pangea.core.models.organization.Organization.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.organization.Organization.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.organization.Organization.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.organization.Organization.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.core_sample_group">
+<code class="descname">core_sample_group</code><a class="headerlink" href="#pangea.core.models.organization.Organization.core_sample_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.core_sample_group_uuid">
+<code class="descname">core_sample_group_uuid</code><a class="headerlink" href="#pangea.core.models.organization.Organization.core_sample_group_uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.organization.Organization.create_project">
+<code class="descname">create_project</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/organization.html#Organization.create_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.organization.Organization.create_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.organization.Organization.create_s3bucket">
+<code class="descname">create_s3bucket</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/organization.html#Organization.create_s3bucket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.organization.Organization.create_s3bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.organization.Organization.create_sample_group">
+<code class="descname">create_sample_group</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/organization.html#Organization.create_sample_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.organization.Organization.create_sample_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.name">
+<code class="descname">name</code><a class="headerlink" href="#pangea.core.models.organization.Organization.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.organization.Organization.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.project_set">
+<code class="descname">project_set</code><a class="headerlink" href="#pangea.core.models.organization.Organization.project_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.s3bucket_set">
+<code class="descname">s3bucket_set</code><a class="headerlink" href="#pangea.core.models.organization.Organization.s3bucket_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.samplegroup_set">
+<code class="descname">samplegroup_set</code><a class="headerlink" href="#pangea.core.models.organization.Organization.samplegroup_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.organization.Organization.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/organization.html#Organization.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.organization.Organization.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.users">
+<code class="descname">users</code><a class="headerlink" href="#pangea.core.models.organization.Organization.users" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.Organization.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.organization.Organization.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.organization.PangeaUser">
+<em class="property">class </em><code class="descclassname">pangea.core.models.organization.</code><code class="descname">PangeaUser</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/organization.html#PangeaUser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.organization.PangeaUser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.contrib.auth.models.AbstractUser</span></code></p>
+<p>Custom Pangea user type.</p>
+<dl class="exception">
+<dt id="pangea.core.models.organization.PangeaUser.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.organization.PangeaUser.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.REQUIRED_FIELDS">
+<code class="descname">REQUIRED_FIELDS</code><em class="property"> = []</em><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.REQUIRED_FIELDS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.USERNAME_FIELD">
+<code class="descname">USERNAME_FIELD</code><em class="property"> = 'email'</em><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.USERNAME_FIELD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.auth_token">
+<code class="descname">auth_token</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.auth_token" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the reverse side of a one-to-one
+relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Restaurant</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">place</span> <span class="o">=</span> <span class="n">OneToOneField</span><span class="p">(</span><span class="n">Place</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;restaurant&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Place.restaurant</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseOneToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.organization.PangeaUser.get_next_by_date_joined">
+<code class="descname">get_next_by_date_joined</code><span class="sig-paren">(</span><em>*</em>, <em>field=&lt;django.db.models.fields.DateTimeField: date_joined&gt;</em>, <em>is_next=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.get_next_by_date_joined" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.organization.PangeaUser.get_previous_by_date_joined">
+<code class="descname">get_previous_by_date_joined</code><span class="sig-paren">(</span><em>*</em>, <em>field=&lt;django.db.models.fields.DateTimeField: date_joined&gt;</em>, <em>is_next=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.get_previous_by_date_joined" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.groups">
+<code class="descname">groups</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.id">
+<code class="descname">id</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.id" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.logentry_set">
+<code class="descname">logentry_set</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.logentry_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.objects">
+<code class="descname">objects</code><em class="property"> = &lt;pangea.core.managers.PangeaUserManager object&gt;</em><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.organization_set">
+<code class="descname">organization_set</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.organization_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.personal_org">
+<code class="descname">personal_org</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.personal_org" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.personal_org_uuid">
+<code class="descname">personal_org_uuid</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.personal_org_uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.saved_sample_groups">
+<code class="descname">saved_sample_groups</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.saved_sample_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.user_permissions">
+<code class="descname">user_permissions</code><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.user_permissions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.organization.PangeaUser.username">
+<code class="descname">username</code><em class="property"> = None</em><a class="headerlink" href="#pangea.core.models.organization.PangeaUser.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models.project">
+<span id="pangea-core-models-project-module"></span><h2>pangea.core.models.project module<a class="headerlink" href="#module-pangea.core.models.project" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.models.project.Project">
+<em class="property">class </em><code class="descclassname">pangea.core.models.project.</code><code class="descname">Project</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/project.html#Project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.project.Project" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>This class represents the project model.</p>
+<dl class="exception">
+<dt id="pangea.core.models.project.Project.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.project.Project.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.project.Project.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.project.Project.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.project.Project.add_sample_group">
+<code class="descname">add_sample_group</code><span class="sig-paren">(</span><em>sample_group</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/project.html#Project.add_sample_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.project.Project.add_sample_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.project.Project.add_sub_project">
+<code class="descname">add_sub_project</code><span class="sig-paren">(</span><em>sub_project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/project.html#Project.add_sub_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.project.Project.add_sub_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.project.Project.add_super_project">
+<code class="descname">add_super_project</code><span class="sig-paren">(</span><em>super_project</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/project.html#Project.add_super_project"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.project.Project.add_super_project" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.description">
+<code class="descname">description</code><a class="headerlink" href="#pangea.core.models.project.Project.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pangea.core.models.project.Project.factory">
+<em class="property">classmethod </em><code class="descname">factory</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/project.html#Project.factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.project.Project.factory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.is_public">
+<code class="descname">is_public</code><a class="headerlink" href="#pangea.core.models.project.Project.is_public" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.name">
+<code class="descname">name</code><a class="headerlink" href="#pangea.core.models.project.Project.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.project.Project.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.organization">
+<code class="descname">organization</code><a class="headerlink" href="#pangea.core.models.project.Project.organization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.organization_id">
+<code class="descname">organization_id</code><a class="headerlink" href="#pangea.core.models.project.Project.organization_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.sample_groups">
+<code class="descname">sample_groups</code><a class="headerlink" href="#pangea.core.models.project.Project.sample_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.sub_projects">
+<code class="descname">sub_projects</code><a class="headerlink" href="#pangea.core.models.project.Project.sub_projects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.super_projects">
+<code class="descname">super_projects</code><a class="headerlink" href="#pangea.core.models.project.Project.super_projects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.project.Project.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.project.Project.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models.s3">
+<span id="pangea-core-models-s3-module"></span><h2>pangea.core.models.s3 module<a class="headerlink" href="#module-pangea.core.models.s3" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.models.s3.S3ApiKey">
+<em class="property">class </em><code class="descclassname">pangea.core.models.s3.</code><code class="descname">S3ApiKey</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3ApiKey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>Represent an S3 API Key.</p>
+<p>At present S3 API keys will be used by an organization to generate
+short lived presigned URLs to download objects from S3. They will
+not be used to upload data at this point.</p>
+<p>Each API key must be assigned to a particular endpoint url.
+Each API key can be assigned to a particular bucket or ‘*’
+for all buckets.</p>
+<p>S3ApiKey.private_key should never need to be sent to the client.</p>
+<dl class="exception">
+<dt id="pangea.core.models.s3.S3ApiKey.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.s3.S3ApiKey.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.bucket">
+<code class="descname">bucket</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.bucket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a one-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Restaurant</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">place</span> <span class="o">=</span> <span class="n">OneToOneField</span><span class="p">(</span><span class="n">Place</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;restaurant&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Restaurant.place</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardOneToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.bucket_id">
+<code class="descname">bucket_id</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.bucket_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.description">
+<code class="descname">description</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3ApiKey.presign_completion_url">
+<code class="descname">presign_completion_url</code><span class="sig-paren">(</span><em>endpoint_url</em>, <em>s3_url</em>, <em>upload_id</em>, <em>parts</em>, <em>timeout_hours=24</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3ApiKey.presign_completion_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.presign_completion_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a presigned version of the url.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3ApiKey.presign_url">
+<code class="descname">presign_url</code><span class="sig-paren">(</span><em>endpoint_url</em>, <em>s3_url</em>, <em>timeout_hours=24</em>, <em>stance='download'</em>, <em>n_parts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3ApiKey.presign_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.presign_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a presigned version of the url.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.private_key">
+<code class="descname">private_key</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.private_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.public_key">
+<code class="descname">public_key</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.public_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.s3">
+<code class="descname">s3</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.s3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3ApiKey.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3ApiKey.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3ApiKey.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.s3.S3ApiKey.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.s3.S3Bucket">
+<em class="property">class </em><code class="descclassname">pangea.core.models.s3.</code><code class="descname">S3Bucket</code><span class="sig-paren">(</span><em>created_at</em>, <em>updated_at</em>, <em>uuid</em>, <em>name</em>, <em>endpoint_url</em>, <em>organization</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3Bucket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3Bucket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<dl class="exception">
+<dt id="pangea.core.models.s3.S3Bucket.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.s3.S3Bucket.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.api_key">
+<code class="descname">api_key</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.api_key" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the reverse side of a one-to-one
+relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Restaurant</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">place</span> <span class="o">=</span> <span class="n">OneToOneField</span><span class="p">(</span><span class="n">Place</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;restaurant&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Place.restaurant</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseOneToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3Bucket.create_s3apikey">
+<code class="descname">create_s3apikey</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3Bucket.create_s3apikey"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.create_s3apikey" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.endpoint_url">
+<code class="descname">endpoint_url</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.endpoint_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.name">
+<code class="descname">name</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.organization">
+<code class="descname">organization</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.organization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.organization_id">
+<code class="descname">organization_id</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.organization_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3Bucket.presign_completion_url">
+<code class="descname">presign_completion_url</code><span class="sig-paren">(</span><em>s3_url</em>, <em>upload_id</em>, <em>parts</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3Bucket.presign_completion_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.presign_completion_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3Bucket.presign_url">
+<code class="descname">presign_url</code><span class="sig-paren">(</span><em>s3_url</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3Bucket.presign_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.presign_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.samplegroup_set">
+<code class="descname">samplegroup_set</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.samplegroup_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.s3.S3Bucket.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.s3.S3Bucket.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.s3.S3MultipartUploadUtil">
+<em class="property">class </em><code class="descclassname">pangea.core.models.s3.</code><code class="descname">S3MultipartUploadUtil</code><span class="sig-paren">(</span><em>api_key</em>, <em>s3_file_key</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3MultipartUploadUtil"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3MultipartUploadUtil" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>AWS S3 Multipart Upload Util</p>
+<dl class="method">
+<dt id="pangea.core.models.s3.S3MultipartUploadUtil.create_complete_url">
+<code class="descname">create_complete_url</code><span class="sig-paren">(</span><em>upload_id</em>, <em>parts</em>, <em>timeout_hours=24</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3MultipartUploadUtil.create_complete_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3MultipartUploadUtil.create_complete_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.s3.S3MultipartUploadUtil.create_presigned_url">
+<code class="descname">create_presigned_url</code><span class="sig-paren">(</span><em>part_no=None</em>, <em>timeout_hours=24</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/s3.html#S3MultipartUploadUtil.create_presigned_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.s3.S3MultipartUploadUtil.create_presigned_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models.sample">
+<span id="pangea-core-models-sample-module"></span><h2>pangea.core.models.sample module<a class="headerlink" href="#module-pangea.core.models.sample" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.models.sample.Sample">
+<em class="property">class </em><code class="descclassname">pangea.core.models.sample.</code><code class="descname">Sample</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample.html#Sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample.Sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>This class represents the sample model.</p>
+<dl class="exception">
+<dt id="pangea.core.models.sample.Sample.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.sample.Sample.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.sample.Sample.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.sample.Sample.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.analysis_result_set">
+<code class="descname">analysis_result_set</code><a class="headerlink" href="#pangea.core.models.sample.Sample.analysis_result_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample.Sample.create_analysis_result">
+<code class="descname">create_analysis_result</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample.html#Sample.create_analysis_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample.Sample.create_analysis_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.description">
+<code class="descname">description</code><a class="headerlink" href="#pangea.core.models.sample.Sample.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.library">
+<code class="descname">library</code><a class="headerlink" href="#pangea.core.models.sample.Sample.library" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.library_id">
+<code class="descname">library_id</code><a class="headerlink" href="#pangea.core.models.sample.Sample.library_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#pangea.core.models.sample.Sample.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.name">
+<code class="descname">name</code><a class="headerlink" href="#pangea.core.models.sample.Sample.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.sample.Sample.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.organization">
+<code class="descname">organization</code><a class="headerlink" href="#pangea.core.models.sample.Sample.organization" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.sample_groups">
+<code class="descname">sample_groups</code><a class="headerlink" href="#pangea.core.models.sample.Sample.sample_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.tags">
+<code class="descname">tags</code><a class="headerlink" href="#pangea.core.models.sample.Sample.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample.Sample.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.sample.Sample.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models.sample_group">
+<span id="pangea-core-models-sample-group-module"></span><h2>pangea.core.models.sample_group module<a class="headerlink" href="#module-pangea.core.models.sample_group" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.models.sample_group.SampleGroup">
+<em class="property">class </em><code class="descclassname">pangea.core.models.sample_group.</code><code class="descname">SampleGroup</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<p>This class represents the sample group model.</p>
+<dl class="exception">
+<dt id="pangea.core.models.sample_group.SampleGroup.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.sample_group.SampleGroup.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample_group.SampleGroup.add_s3_bucket">
+<code class="descname">add_s3_bucket</code><span class="sig-paren">(</span><em>bucket</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup.add_s3_bucket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.add_s3_bucket" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample_group.SampleGroup.add_sample">
+<code class="descname">add_sample</code><span class="sig-paren">(</span><em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup.add_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.add_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.analysis_result_set">
+<code class="descname">analysis_result_set</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.analysis_result_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.bucket">
+<code class="descname">bucket</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.bucket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.bucket_id">
+<code class="descname">bucket_id</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.bucket_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample_group.SampleGroup.create_analysis_result">
+<code class="descname">create_analysis_result</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup.create_analysis_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.create_analysis_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample_group.SampleGroup.create_sample">
+<code class="descname">create_sample</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup.create_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.create_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.description">
+<code class="descname">description</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="pangea.core.models.sample_group.SampleGroup.factory">
+<em class="property">classmethod </em><code class="descname">factory</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup.factory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.factory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.is_library">
+<code class="descname">is_library</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.is_library" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.is_public">
+<code class="descname">is_public</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.is_public" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.library">
+<code class="descname">library</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.library" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the reverse side of a one-to-one
+relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Restaurant</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">place</span> <span class="o">=</span> <span class="n">OneToOneField</span><span class="p">(</span><span class="n">Place</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;restaurant&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Place.restaurant</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseOneToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.long_description">
+<code class="descname">long_description</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.long_description" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.metadata">
+<code class="descname">metadata</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.name">
+<code class="descname">name</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.organization">
+<code class="descname">organization</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.organization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a many-to-one or
+one-to-one (via ForwardOneToOneDescriptor subclass) relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Child.parent</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardManyToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.organization_id">
+<code class="descname">organization_id</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.organization_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.pangeauser_set">
+<code class="descname">pangeauser_set</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.pangeauser_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.project_set">
+<code class="descname">project_set</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.project_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.sample_set">
+<code class="descname">sample_set</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.sample_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the forward and reverse sides of
+a many-to-many relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Pizza</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">toppings</span> <span class="o">=</span> <span class="n">ManyToManyField</span><span class="p">(</span><span class="n">Topping</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;pizzas&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Pizza.toppings</span></code> and <code class="docutils literal notranslate"><span class="pre">Topping.pizzas</span></code> are <code class="docutils literal notranslate"><span class="pre">ManyToManyDescriptor</span></code>
+instances.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample_group.SampleGroup.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleGroup.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current instance. Override this in a subclass if you want to
+control the saving process.</p>
+<p>The ‘force_insert’ and ‘force_update’ parameters can be used to insist
+that the “save” must be an SQL insert or update (or equivalent for
+non-SQL backends), respectively. Normally, they should not be set.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.tags">
+<code class="descname">tags</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.theme">
+<code class="descname">theme</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.theme" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleGroup.uuid">
+<code class="descname">uuid</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleGroup.uuid" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a deferred-loading field. When the value is read from this
+object the first time, the query is executed.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.models.sample_group.SampleLibrary">
+<em class="property">class </em><code class="descclassname">pangea.core.models.sample_group.</code><code class="descname">SampleLibrary</code><span class="sig-paren">(</span><em>created_at</em>, <em>updated_at</em>, <em>group</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleLibrary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="pangea.core.html#pangea.core.mixins.AutoCreatedUpdatedMixin" title="pangea.core.mixins.AutoCreatedUpdatedMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.mixins.AutoCreatedUpdatedMixin</span></code></a></p>
+<dl class="exception">
+<dt id="pangea.core.models.sample_group.SampleLibrary.DoesNotExist">
+<em class="property">exception </em><code class="descname">DoesNotExist</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.DoesNotExist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.ObjectDoesNotExist</span></code></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="pangea.core.models.sample_group.SampleLibrary.MultipleObjectsReturned">
+<em class="property">exception </em><code class="descname">MultipleObjectsReturned</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.MultipleObjectsReturned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.core.exceptions.MultipleObjectsReturned</span></code></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.models.sample_group.SampleLibrary.create_sample">
+<code class="descname">create_sample</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/models/sample_group.html#SampleLibrary.create_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.create_sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleLibrary.group">
+<code class="descname">group</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related object on the forward side of a one-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Restaurant</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">place</span> <span class="o">=</span> <span class="n">OneToOneField</span><span class="p">(</span><span class="n">Place</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;restaurant&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Restaurant.place</span></code> is a <code class="docutils literal notranslate"><span class="pre">ForwardOneToOneDescriptor</span></code> instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleLibrary.group_id">
+<code class="descname">group_id</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.group_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleLibrary.objects">
+<code class="descname">objects</code><em class="property"> = &lt;django.db.models.manager.Manager object&gt;</em><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.objects" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.models.sample_group.SampleLibrary.owned_samples">
+<code class="descname">owned_samples</code><a class="headerlink" href="#pangea.core.models.sample_group.SampleLibrary.owned_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Accessor to the related objects manager on the reverse side of a
+many-to-one relation.</p>
+<p>In the example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Child</span><span class="p">(</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">parent</span> <span class="o">=</span> <span class="n">ForeignKey</span><span class="p">(</span><span class="n">Parent</span><span class="p">,</span> <span class="n">related_name</span><span class="o">=</span><span class="s1">&#39;children&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Parent.children</span></code> is a <code class="docutils literal notranslate"><span class="pre">ReverseManyToOneDescriptor</span></code> instance.</p>
+<p>Most of the implementation is delegated to a dynamically defined manager
+class built by <code class="docutils literal notranslate"><span class="pre">create_forward_many_to_many_manager()</span></code> defined below.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.models">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pangea.core.models" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/pangea.core.models.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

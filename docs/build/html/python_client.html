@@ -1,0 +1,546 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Python API Client &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="License for Pangea" href="license.html" />
+    <link rel="prev" title="Architecture" href="architecture.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="python-api-client">
+<h1>Python API Client<a class="headerlink" href="#python-api-client" title="Permalink to this headline">¶</a></h1>
+<p>Pangea includes a python API client to interact with the RESTful API.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The API client provides an object oriented interface to the RESTful API. Objects (Sample-Groups, Samples, Results, etc..) can be created, fetched, updated and destroyed by manipulating python objects and calling special <code class="docutils literal notranslate"><span class="pre">get</span></code>, <code class="docutils literal notranslate"><span class="pre">save</span></code>, and <code class="docutils literal notranslate"><span class="pre">delete</span></code> methods. The API client can be used to upload and download data from S3 without additional authentication.</p>
+</div>
+<div class="section" id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="remote-connection-and-caching">
+<h3>Remote Connection and Caching<a class="headerlink" href="#remote-connection-and-caching" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="pangea_api.remote_object.RemoteObject">
+<em class="property">class </em><code class="descclassname">pangea_api.remote_object.</code><code class="descname">RemoteObject</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.cache_blob">
+<code class="descname">cache_blob</code><span class="sig-paren">(</span><em>blob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.cache_blob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.cache_blob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.create">
+<code class="descname">create</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create this object on the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.get">
+<code class="descname">get</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch the object from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.get_cached_blob">
+<code class="descname">get_cached_blob</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.get_cached_blob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.get_cached_blob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.idem">
+<code class="descname">idem</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.idem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.idem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the state of this object match the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.load_blob">
+<code class="descname">load_blob</code><span class="sig-paren">(</span><em>blob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.load_blob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.load_blob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.remote_object.RemoteObject.optional_remote_fields">
+<code class="descname">optional_remote_fields</code><em class="property"> = []</em><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.optional_remote_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.remote_object.RemoteObject.save">
+<code class="descname">save</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/remote_object.html#RemoteObject.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.remote_object.RemoteObject.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assuming the object exists on the server make the server-side object
+match the state of this object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.Knex">
+<em class="property">class </em><code class="descclassname">pangea_api.</code><code class="descname">Knex</code><span class="sig-paren">(</span><em>endpoint_url='https://pangea.gimmebio.com'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.Knex.add_auth_token">
+<code class="descname">add_auth_token</code><span class="sig-paren">(</span><em>token</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex.add_auth_token"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex.add_auth_token" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Knex.delete">
+<code class="descname">delete</code><span class="sig-paren">(</span><em>url</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Knex.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>url</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Knex.login">
+<code class="descname">login</code><span class="sig-paren">(</span><em>username</em>, <em>password</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex.login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex.login" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Knex.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>url</em>, <em>json={}</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Knex.put">
+<code class="descname">put</code><span class="sig-paren">(</span><em>url</em>, <em>json={}</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/knex.html#Knex.put"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Knex.put" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.file_system_cache.FileSystemCache">
+<em class="property">class </em><code class="descclassname">pangea_api.file_system_cache.</code><code class="descname">FileSystemCache</code><span class="sig-paren">(</span><em>timeout=10800</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/file_system_cache.html#FileSystemCache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.file_system_cache.FileSystemCache" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.file_system_cache.FileSystemCache.cache_blob">
+<code class="descname">cache_blob</code><span class="sig-paren">(</span><em>obj</em>, <em>blob</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/file_system_cache.html#FileSystemCache.cache_blob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.file_system_cache.FileSystemCache.cache_blob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.file_system_cache.FileSystemCache.clear_blob">
+<code class="descname">clear_blob</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/file_system_cache.html#FileSystemCache.clear_blob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.file_system_cache.FileSystemCache.clear_blob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.file_system_cache.FileSystemCache.get_cached_blob">
+<code class="descname">get_cached_blob</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/file_system_cache.html#FileSystemCache.get_cached_blob"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.file_system_cache.FileSystemCache.get_cached_blob" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.file_system_cache.FileSystemCache.get_cached_blob_filepath">
+<code class="descname">get_cached_blob_filepath</code><span class="sig-paren">(</span><em>obj</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/file_system_cache.html#FileSystemCache.get_cached_blob_filepath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.file_system_cache.FileSystemCache.get_cached_blob_filepath" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="objects">
+<h3>Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
+<dl class="class">
+<dt id="pangea_api.Organization">
+<em class="property">class </em><code class="descclassname">pangea_api.</code><code class="descname">Organization</code><span class="sig-paren">(</span><em>knex</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/organization.html#Organization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Organization" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.Organization.get_sample_groups">
+<code class="descname">get_sample_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/organization.html#Organization.get_sample_groups"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Organization.get_sample_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield samplegroups fetched from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Organization.nested_url">
+<code class="descname">nested_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/organization.html#Organization.nested_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Organization.nested_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.Organization.parent_field">
+<code class="descname">parent_field</code><em class="property"> = None</em><a class="headerlink" href="#pangea_api.Organization.parent_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Organization.pre_hash">
+<code class="descname">pre_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/organization.html#Organization.pre_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Organization.pre_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.Organization.remote_fields">
+<code class="descname">remote_fields</code><em class="property"> = ['uuid', 'created_at', 'updated_at', 'name']</em><a class="headerlink" href="#pangea_api.Organization.remote_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Organization.sample_group">
+<code class="descname">sample_group</code><span class="sig-paren">(</span><em>group_name</em>, <em>is_library=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/organization.html#Organization.sample_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Organization.sample_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.User">
+<em class="property">class </em><code class="descclassname">pangea_api.</code><code class="descname">User</code><span class="sig-paren">(</span><em>knex</em>, <em>email</em>, <em>password</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/user.html#User"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.User" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.User.login">
+<code class="descname">login</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/user.html#User.login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.User.login" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.User.register">
+<code class="descname">register</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/user.html#User.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.User.register" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.User.username">
+<code class="descname">username</code><a class="headerlink" href="#pangea_api.User.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.SampleGroup">
+<em class="property">class </em><code class="descclassname">pangea_api.</code><code class="descname">SampleGroup</code><span class="sig-paren">(</span><em>knex</em>, <em>org</em>, <em>name</em>, <em>is_library=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.SampleGroup.add_sample">
+<code class="descname">add_sample</code><span class="sig-paren">(</span><em>sample</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.add_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.add_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return this group and add a sample to this group.</p>
+<p>Do not contact server until <cite>.save()</cite> is called on this group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.analysis_result">
+<code class="descname">analysis_result</code><span class="sig-paren">(</span><em>module_name</em>, <em>replicate=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.analysis_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.analysis_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.get_analysis_results">
+<code class="descname">get_analysis_results</code><span class="sig-paren">(</span><em>cache=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.get_analysis_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.get_analysis_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield group analysis results fetched from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.get_manifest">
+<code class="descname">get_manifest</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.get_manifest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.get_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a manifest for this group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.get_samples">
+<code class="descname">get_samples</code><span class="sig-paren">(</span><em>cache=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.get_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield samples fetched from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.nested_url">
+<code class="descname">nested_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.nested_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.nested_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.SampleGroup.parent_field">
+<code class="descname">parent_field</code><em class="property"> = 'org'</em><a class="headerlink" href="#pangea_api.SampleGroup.parent_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.pre_hash">
+<code class="descname">pre_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.pre_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.pre_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.SampleGroup.remote_fields">
+<code class="descname">remote_fields</code><em class="property"> = ['uuid', 'created_at', 'updated_at', 'name', 'is_library', 'is_public', 'metadata', 'long_description', 'description']</em><a class="headerlink" href="#pangea_api.SampleGroup.remote_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.SampleGroup.sample">
+<code class="descname">sample</code><span class="sig-paren">(</span><em>sample_name</em>, <em>metadata={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample_group.html#SampleGroup.sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.SampleGroup.sample" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.Sample">
+<em class="property">class </em><code class="descclassname">pangea_api.</code><code class="descname">Sample</code><span class="sig-paren">(</span><em>knex</em>, <em>lib</em>, <em>name</em>, <em>metadata={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample.html#Sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Sample" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.Sample.analysis_result">
+<code class="descname">analysis_result</code><span class="sig-paren">(</span><em>module_name</em>, <em>replicate=None</em>, <em>metadata=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample.html#Sample.analysis_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Sample.analysis_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Sample.get_analysis_results">
+<code class="descname">get_analysis_results</code><span class="sig-paren">(</span><em>cache=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample.html#Sample.get_analysis_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Sample.get_analysis_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Yield sample analysis results fetched from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Sample.get_manifest">
+<code class="descname">get_manifest</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample.html#Sample.get_manifest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Sample.get_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a manifest for this sample.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Sample.nested_url">
+<code class="descname">nested_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample.html#Sample.nested_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Sample.nested_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.Sample.parent_field">
+<code class="descname">parent_field</code><em class="property"> = 'lib'</em><a class="headerlink" href="#pangea_api.Sample.parent_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.Sample.pre_hash">
+<code class="descname">pre_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/sample.html#Sample.pre_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.Sample.pre_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.Sample.remote_fields">
+<code class="descname">remote_fields</code><em class="property"> = ['uuid', 'created_at', 'updated_at', 'name', 'metadata', 'library', 'description']</em><a class="headerlink" href="#pangea_api.Sample.remote_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.analysis_result.AnalysisResult">
+<em class="property">class </em><code class="descclassname">pangea_api.analysis_result.</code><code class="descname">AnalysisResult</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResult" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResult.pre_hash">
+<code class="descname">pre_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResult.pre_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResult.pre_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.analysis_result.AnalysisResult.remote_fields">
+<code class="descname">remote_fields</code><em class="property"> = ['uuid', 'created_at', 'updated_at', 'module_name', 'replicate', 'metadata', 'description']</em><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResult.remote_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.analysis_result.SampleAnalysisResult">
+<em class="property">class </em><code class="descclassname">pangea_api.analysis_result.</code><code class="descname">SampleAnalysisResult</code><span class="sig-paren">(</span><em>knex</em>, <em>sample</em>, <em>module_name</em>, <em>replicate=None</em>, <em>metadata={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleAnalysisResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResult" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.analysis_result.SampleAnalysisResult.field">
+<code class="descname">field</code><span class="sig-paren">(</span><em>field_name</em>, <em>data={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleAnalysisResult.field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResult.field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.SampleAnalysisResult.get_fields">
+<code class="descname">get_fields</code><span class="sig-paren">(</span><em>cache=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleAnalysisResult.get_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResult.get_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of ar-fields fetched from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.SampleAnalysisResult.nested_url">
+<code class="descname">nested_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleAnalysisResult.nested_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResult.nested_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.analysis_result.SampleAnalysisResult.parent_field">
+<code class="descname">parent_field</code><em class="property"> = 'sample'</em><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResult.parent_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResult">
+<em class="property">class </em><code class="descclassname">pangea_api.analysis_result.</code><code class="descname">SampleGroupAnalysisResult</code><span class="sig-paren">(</span><em>knex</em>, <em>grp</em>, <em>module_name</em>, <em>replicate=None</em>, <em>metadata={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleGroupAnalysisResult"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResult" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResult.field">
+<code class="descname">field</code><span class="sig-paren">(</span><em>field_name</em>, <em>data={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleGroupAnalysisResult.field"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResult.field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResult.get_fields">
+<code class="descname">get_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleGroupAnalysisResult.get_fields"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResult.get_fields" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of ar-fields fetched from the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResult.nested_url">
+<code class="descname">nested_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleGroupAnalysisResult.nested_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResult.nested_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResult.parent_field">
+<code class="descname">parent_field</code><em class="property"> = 'grp'</em><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResult.parent_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.analysis_result.AnalysisResultField">
+<em class="property">class </em><code class="descclassname">pangea_api.analysis_result.</code><code class="descname">AnalysisResultField</code><span class="sig-paren">(</span><em>knex</em>, <em>parent</em>, <em>field_name</em>, <em>data={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.download_file">
+<code class="descname">download_file</code><span class="sig-paren">(</span><em>filename=None</em>, <em>cache=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.download_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.download_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a local filepath to the file this result points to.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.get_blob_filename">
+<code class="descname">get_blob_filename</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.get_blob_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.get_blob_filename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.get_download_url">
+<code class="descname">get_download_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.get_download_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.get_download_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a URL that can be used to download the file for this result.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.get_referenced_filename">
+<code class="descname">get_referenced_filename</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.get_referenced_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.get_referenced_filename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.nested_url">
+<code class="descname">nested_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.nested_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.nested_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.analysis_result.AnalysisResultField.parent_field">
+<code class="descname">parent_field</code><em class="property"> = 'parent'</em><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.parent_field" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.pre_hash">
+<code class="descname">pre_hash</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.pre_hash"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.pre_hash" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea_api.analysis_result.AnalysisResultField.remote_fields">
+<code class="descname">remote_fields</code><em class="property"> = ['uuid', 'created_at', 'updated_at', 'name', 'stored_data']</em><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.remote_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.upload_file">
+<code class="descname">upload_file</code><span class="sig-paren">(</span><em>filepath</em>, <em>multipart_thresh=10311680</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.upload_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.upload_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.upload_large_file">
+<code class="descname">upload_large_file</code><span class="sig-paren">(</span><em>filepath</em>, <em>file_size</em>, <em>chunk_size=10311680</em>, <em>max_retries=3</em>, <em>logger=&lt;function AnalysisResultField.&lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.upload_large_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.upload_large_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea_api.analysis_result.AnalysisResultField.upload_small_file">
+<code class="descname">upload_small_file</code><span class="sig-paren">(</span><em>filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#AnalysisResultField.upload_small_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.AnalysisResultField.upload_small_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.analysis_result.SampleAnalysisResultField">
+<em class="property">class </em><code class="descclassname">pangea_api.analysis_result.</code><code class="descname">SampleAnalysisResultField</code><span class="sig-paren">(</span><em>knex</em>, <em>parent</em>, <em>field_name</em>, <em>data={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleAnalysisResultField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResultField" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.analysis_result.SampleAnalysisResultField.canon_url">
+<code class="descname">canon_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleAnalysisResultField.canon_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleAnalysisResultField.canon_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResultField">
+<em class="property">class </em><code class="descclassname">pangea_api.analysis_result.</code><code class="descname">SampleGroupAnalysisResultField</code><span class="sig-paren">(</span><em>knex</em>, <em>parent</em>, <em>field_name</em>, <em>data={}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleGroupAnalysisResultField"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResultField" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pangea_api.analysis_result.SampleGroupAnalysisResultField.canon_url">
+<code class="descname">canon_url</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea_api/analysis_result.html#SampleGroupAnalysisResultField.canon_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea_api.analysis_result.SampleGroupAnalysisResultField.canon_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Python API Client</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#api-documentation">API Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="architecture.html" title="previous chapter">Architecture</a></li>
+      <li>Next: <a href="license.html" title="next chapter">License for Pangea</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/python_client.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

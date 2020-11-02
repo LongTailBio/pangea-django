@@ -3,7 +3,7 @@ import pandas as pd
 from pandas.api.types import is_string_dtype
 from pandas.api.types import is_numeric_dtype
 from sklearn.cluster import dbscan
-from .modules.constants import KRAKENUNIQ_NAMES
+from .modules.constants import KRAKEN2_NAMES
 from .modules.parse_utils import (
     proportions,
     run_pca,
@@ -14,7 +14,7 @@ from .data_utils import sample_module_field
 
 def sample_has_modules(sample):
     has_all = True
-    for module_name, field, _ in [KRAKENUNIQ_NAMES]:
+    for module_name, field, _ in [KRAKEN2_NAMES]:
         try:
             sample_module_field(sample, module_name, field)
         except KeyError:
@@ -49,7 +49,7 @@ def add_taxa_auto_metadata(samples, logger):
     taxa_matrix = proportions(pd.DataFrame.from_dict(
         {
             sample.name: parse_taxa_report(
-                sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1])
+                sample_module_field(sample, KRAKEN2_NAMES[0], KRAKEN2_NAMES[1])
             )
             for sample in samples
         },

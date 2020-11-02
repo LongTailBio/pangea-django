@@ -1,0 +1,349 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.contrib.metasub.views &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.contrib.metasub.views</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">structlog</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="k">import</span> <span class="n">connection</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="k">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="k">import</span> <span class="n">ObjectDoesNotExist</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework.decorators</span> <span class="k">import</span> <span class="n">api_view</span>
+<span class="kn">from</span> <span class="nn">rest_framework.response</span> <span class="k">import</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">rest_framework.exceptions</span> <span class="k">import</span> <span class="n">ValidationError</span>
+
+<span class="kn">from</span> <span class="nn">pangea.core.utils</span> <span class="k">import</span> <span class="n">str2bool</span>
+<span class="kn">from</span> <span class="nn">pangea.core.models</span> <span class="k">import</span> <span class="n">Sample</span><span class="p">,</span> <span class="n">SampleAnalysisResultField</span>
+<span class="kn">from</span> <span class="nn">pangea.contrib.treeoflife.taxa_tree</span> <span class="k">import</span> <span class="n">TaxaTree</span>
+
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="k">import</span> <span class="n">METASUB_LIBRARY_UUID</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="fuzzy_taxa_search"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.fuzzy_taxa_search">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_taxa_search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;%</span><span class="si">{query}</span><span class="s1">%&#39;</span>
+    <span class="n">metasub_uuid</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;{METASUB_LIBRARY_UUID()}&#39;</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">            -- Use text-based search to restrict the search space</span>
+<span class="s1">            with clearcut as (</span>
+<span class="s1">                select analysis_result_id, stored_data</span>
+<span class="s1">                from core_sampleanalysisresultfield</span>
+<span class="s1">                where name = &#39;relative_abundance&#39;</span>
+<span class="s1">                    and stored_data::text ilike </span><span class="si">%s</span><span class="s1"></span>
+<span class="s1">            ),</span>
+<span class="s1">            -- Search on actual taxa results</span>
+<span class="s1">            filtered_taxa as (</span>
+<span class="s1">                select</span>
+<span class="s1">                    clearcut.analysis_result_id,</span>
+<span class="s1">                    taxa.*</span>
+<span class="s1">                from</span>
+<span class="s1">                    clearcut,</span>
+<span class="s1">                    jsonb_each_text(clearcut.stored_data) as taxa</span>
+<span class="s1">                where</span>
+<span class="s1">                    taxa.key ilike </span><span class="si">%s</span><span class="s1"></span>
+<span class="s1">            )</span>
+<span class="s1">            -- Pull in Sample records</span>
+<span class="s1">            select</span>
+<span class="s1">                filtered_taxa.key as taxa,</span>
+<span class="s1">                json_agg((select x from (</span>
+<span class="s1">                    select</span>
+<span class="s1">                        filtered_taxa.value::float as relative_abundance,</span>
+<span class="s1">                        core_sample.uuid as sample_uuid,</span>
+<span class="s1">                        core_sample.name as sample_name,</span>
+<span class="s1">                        core_sample.library_id as sample_library_uuid,</span>
+<span class="s1">                        core_sample.metadata as sample_metadata</span>
+<span class="s1">                    where</span>
+<span class="s1">                        core_sample.library_id = </span><span class="si">%s</span><span class="s1"></span>
+<span class="s1">                    order by</span>
+<span class="s1">                        core_sample.library_id</span>
+<span class="s1">                ) as x)) as samples</span>
+<span class="s1">            from</span>
+<span class="s1">                core_sample</span>
+<span class="s1">                join core_sampleanalysisresult</span>
+<span class="s1">                    on core_sampleanalysisresult.sample_id = core_sample.uuid</span>
+<span class="s1">                join filtered_taxa</span>
+<span class="s1">                    on filtered_taxa.analysis_result_id = core_sampleanalysisresult.uuid</span>
+<span class="s1">            group by</span>
+<span class="s1">                filtered_taxa.key</span>
+<span class="s1">            order by</span>
+<span class="s1">                filtered_taxa.key</span>
+<span class="s1">            &#39;&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">query</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">metasub_uuid</span><span class="p">])</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()}</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_taxa_search_samples"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.fuzzy_taxa_search_samples">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">fuzzy_taxa_search_samples</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return samples with taxa results that fuzzy match the query.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;query&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;metasub_taxasearch__no_query_param&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Must provide URL-encoded `query` query parameter.&#39;</span><span class="p">))</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">fuzzy_taxa_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;metasub__responding_to_sample_query&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">results</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_taxa_search_cities"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.fuzzy_taxa_search_cities">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">fuzzy_taxa_search_cities</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return samples with taxa results aggregated by city.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;query&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;metasub_taxasearch__no_query_param&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Must provide URL-encoded `query` query parameter.&#39;</span><span class="p">))</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">fuzzy_taxa_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">city_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">taxa_name</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">city_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+            <span class="n">city</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;sample_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;city&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">city</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">city_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">]:</span>
+                <span class="n">city_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">][</span><span class="n">city</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;all_relative_abundances&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;city_name&#39;</span><span class="p">:</span> <span class="n">city</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">city_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">][</span><span class="n">city</span><span class="p">][</span><span class="s1">&#39;latitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;sample_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;city_latitude&#39;</span><span class="p">]</span>
+                    <span class="n">city_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">][</span><span class="n">city</span><span class="p">][</span><span class="s1">&#39;longitude&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="s1">&#39;sample_metadata&#39;</span><span class="p">][</span><span class="s1">&#39;city_longitude&#39;</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+            <span class="n">city_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">][</span><span class="n">city</span><span class="p">][</span><span class="s1">&#39;all_relative_abundances&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;relative_abundance&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">taxa_name</span><span class="p">,</span> <span class="n">city</span> <span class="ow">in</span> <span class="n">city_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">city_name</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">city</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">rels</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;all_relative_abundances&#39;</span><span class="p">]</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;max_relative_abundance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;mean_relative_abundance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;metasub__responding_to_city_query&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">city_results</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="normalize_surface"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.normalize_surface">[docs]</a><span class="k">def</span> <span class="nf">normalize_surface</span><span class="p">(</span><span class="n">el</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">el</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">el</span>
+    <span class="n">el</span> <span class="o">=</span> <span class="s1">&#39;_&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;ground&#39;</span><span class="p">:</span> <span class="s1">&#39;floor&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;palm_left&#39;</span><span class="p">:</span> <span class="s1">&#39;human_hand&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;vert_pole&#39;</span><span class="p">:</span> <span class="s1">&#39;pole&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;palm_right&#39;</span><span class="p">:</span> <span class="s1">&#39;human_hand&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;pedestrian_crossing_button&#39;</span><span class="p">:</span> <span class="s1">&#39;button&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;wooden bench&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;gargabe_can&#39;</span><span class="p">:</span> <span class="s1">&#39;garbage&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;horiz_pole&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;stairwell railing&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;bike kiosk&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;bench1&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;kiosk2&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;kiosk1&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ticket_machine&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;escalator_handrail&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;bench2&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;lift_buttons&#39;</span><span class="p">:</span> <span class="s1">&#39;button&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;overhead_handrail&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;poll&#39;</span><span class="p">:</span> <span class="s1">&#39;pole&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;garbage_can&#39;</span><span class="p">:</span> <span class="s1">&#39;garbage&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;bench&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;door_handle;door_handle&#39;</span><span class="p">:</span> <span class="s1">&#39;door_knob&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;glass&#39;</span><span class="p">:</span> <span class="s1">&#39;window&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ceiling_rail&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;seat_rail&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ticket_hall;ticket_machine&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;bench;platform&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;platform;bench&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ticket_machine;ticket_hall&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;wooden_bench&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;stairwell_railing&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;trolley_handle&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;turnstile_or_alternatives;turnstile_or_alternatives&#39;</span><span class="p">:</span> <span class="s1">&#39;turnstile&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ticket_kiosks;ticket_kiosks&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ticket_machine;ticket_machine&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;station_eletronic_kiosk&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;station_railing&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;station_seat&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;center_seat&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;negative_control_(air)&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ceiling_rail;ceiling_rail&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rail&#39;</span><span class="p">:</span> <span class="s1">&#39;railing&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;seat_near_door&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;ticketing_machine;ticketing_machine_&#39;</span><span class="p">:</span> <span class="s1">&#39;kiosk&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;jetway_1_seats_waiting_area&#39;</span><span class="p">:</span> <span class="s1">&#39;seat&#39;</span><span class="p">,</span>
+    <span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">el</span><span class="p">,</span> <span class="n">el</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_taxa_search_materials"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.fuzzy_taxa_search_materials">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">fuzzy_taxa_search_materials</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return samples with taxa results aggregated by materials.&quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;query&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;metasub_taxasearch__no_query_param&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Must provide URL-encoded `query` query parameter.&#39;</span><span class="p">))</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">fuzzy_taxa_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">material_results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">taxa_name</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">material_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">vals</span><span class="p">:</span>
+            <span class="n">material</span> <span class="o">=</span> <span class="n">normalize_surface</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;sample_metadata&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;surface&#39;</span><span class="p">,</span> <span class="s1">&#39;Other&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">material</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">material_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">]:</span>
+                <span class="n">material_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">][</span><span class="n">material</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;all_relative_abundances&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                    <span class="s1">&#39;material_name&#39;</span><span class="p">:</span> <span class="n">material</span><span class="p">,</span>
+                <span class="p">}</span>
+            <span class="n">material_results</span><span class="p">[</span><span class="n">taxa_name</span><span class="p">][</span><span class="n">material</span><span class="p">][</span><span class="s1">&#39;all_relative_abundances&#39;</span><span class="p">]</span> \
+                <span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="s1">&#39;relative_abundance&#39;</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">taxa_name</span><span class="p">,</span> <span class="n">material</span> <span class="ow">in</span> <span class="n">material_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">material_name</span><span class="p">,</span> <span class="n">vals</span> <span class="ow">in</span> <span class="n">material</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">rels</span> <span class="o">=</span> <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;all_relative_abundances&#39;</span><span class="p">]</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;max_relative_abundance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span>
+            <span class="n">vals</span><span class="p">[</span><span class="s1">&#39;mean_relative_abundance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">rels</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;metasub__responding_to_city_query&#39;</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s1">&#39;results&#39;</span><span class="p">:</span> <span class="n">material_results</span><span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="sample_taxonomy_sunburst"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.sample_taxonomy_sunburst">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">sample_taxonomy_sunburst</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reply with the taxonomy of a sample prepped for a Plotly sunburst plot.&quot;&quot;&quot;</span>
+    <span class="n">min_abundance</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">request</span><span class="o">.</span><span class="n">query_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;min_abundance&#39;</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">))</span>
+    <span class="n">sample</span> <span class="o">=</span> <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">library_id</span><span class="o">=</span><span class="n">METASUB_LIBRARY_UUID</span><span class="p">())</span> \
+        <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>  <span class="c1"># this clause ensures the sample is actually a MetaSUB sample</span>
+    <span class="n">taxa</span> <span class="o">=</span> <span class="n">SampleAnalysisResultField</span><span class="o">.</span><span class="n">objects</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">analysis_result__module_name</span><span class="o">=</span><span class="s1">&#39;krakenuniq_taxonomy&#39;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;relative_abundance&#39;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">analysis_result__sample__uuid</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span><span class="o">.</span> \
+        <span class="n">stored_data</span>
+    <span class="n">taxa</span> <span class="o">=</span> <span class="p">{</span><span class="n">taxon</span><span class="p">:</span> <span class="n">val</span> <span class="k">for</span> <span class="n">taxon</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">taxa</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">val</span> <span class="o">&gt;=</span> <span class="n">min_abundance</span><span class="p">}</span>
+    <span class="n">taxa_list</span><span class="p">,</span> <span class="n">parent_list</span> <span class="o">=</span> <span class="n">TaxaTree</span><span class="o">.</span><span class="n">get_taxon_parent_lists</span><span class="p">(</span><span class="n">taxa</span><span class="p">)</span>
+    <span class="n">abundances</span> <span class="o">=</span> <span class="p">[</span><span class="n">taxa</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">taxon</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">taxon</span> <span class="ow">in</span> <span class="n">taxa_list</span><span class="p">]</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;metasub__responding_to_sample_taxonomy_sunburst_query&#39;</span><span class="p">,</span> <span class="n">sample_uuid</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+        <span class="s1">&#39;taxa&#39;</span><span class="p">:</span> <span class="n">taxa_list</span><span class="p">,</span>
+        <span class="s1">&#39;parents&#39;</span><span class="p">:</span> <span class="n">parent_list</span><span class="p">,</span>
+        <span class="s1">&#39;abundances&#39;</span><span class="p">:</span> <span class="n">abundances</span><span class="p">,</span>
+    <span class="p">})</span></div>
+
+
+<div class="viewcode-block" id="all_taxa"><a class="viewcode-back" href="../../../../pangea.contrib.metasub.html#pangea.contrib.metasub.views.all_taxa">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">all_taxa</span><span class="p">(</span><span class="n">request</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reply with a list of all taxa names in MetaSUB.&quot;&quot;&quot;</span>
+    <span class="n">taxa_relative_abundance</span> <span class="o">=</span> <span class="n">SampleAnalysisResultField</span><span class="o">.</span><span class="n">objects</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">analysis_result__module_name</span><span class="o">=</span><span class="s1">&#39;krakenuniq_taxonomy&#39;</span><span class="p">)</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;relative_abundance&#39;</span><span class="p">)</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">library_id</span><span class="o">=</span><span class="n">METASUB_LIBRARY_UUID</span><span class="p">())</span>
+    <span class="n">taxa_list</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result_field</span> <span class="o">=</span> <span class="n">taxa_relative_abundance</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">analysis_result__sample__uuid</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">taxon</span> <span class="ow">in</span> <span class="n">result_field</span><span class="o">.</span><span class="n">stored_data</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">taxa_list</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">taxon</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">Response</span><span class="p">({</span>
+        <span class="s1">&#39;taxa&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="n">taxa_list</span><span class="p">),</span>
+    <span class="p">})</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

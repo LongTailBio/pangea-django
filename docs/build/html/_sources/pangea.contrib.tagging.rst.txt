@@ -1,0 +1,77 @@
+pangea.contrib.tagging package
+==============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pangea.contrib.tagging.migrations
+
+Submodules
+----------
+
+pangea.contrib.tagging.admin module
+-----------------------------------
+
+.. automodule:: pangea.contrib.tagging.admin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.tagging.apps module
+----------------------------------
+
+.. automodule:: pangea.contrib.tagging.apps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.tagging.models module
+------------------------------------
+
+.. automodule:: pangea.contrib.tagging.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.tagging.serializers module
+-----------------------------------------
+
+.. automodule:: pangea.contrib.tagging.serializers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.tagging.tests module
+-----------------------------------
+
+.. automodule:: pangea.contrib.tagging.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.tagging.urls module
+----------------------------------
+
+.. automodule:: pangea.contrib.tagging.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.tagging.views module
+-----------------------------------
+
+.. automodule:: pangea.contrib.tagging.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.tagging
+    :members:
+    :undoc-members:
+    :show-inheritance:

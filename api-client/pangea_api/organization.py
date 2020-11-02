@@ -30,8 +30,13 @@ class Organization(RemoteObject):
 
     def _get(self):
         """Fetch the result from the server."""
-        blob = self.knex.get(self.nested_url())
-        self.load_blob(blob)
+        blob = self.get_cached_blob()
+        if not blob:
+            blob = self.knex.get(self.nested_url())
+            self.load_blob(blob)
+            self.cache_blob(blob)
+        else:
+            self.load_blob(blob)
 
     def _create(self):
         blob = self.knex.post(f'organizations', json={'name': self.name})
@@ -52,3 +57,6 @@ class Organization(RemoteObject):
             result._already_fetched = True
             result._modified = False
             yield result
+
+    def pre_hash(self):
+        return 'ORG' + self.name

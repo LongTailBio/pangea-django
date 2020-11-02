@@ -9,12 +9,14 @@ from ..models import (
     PangeaUser,
     Organization,
     S3ApiKey,
+    S3Bucket,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
     SampleGroupAnalysisResult,
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
+    Project,
 )
 
 
@@ -34,10 +36,14 @@ class TestS3ApiKeyModel(TestCase):
 
     def test_encrypt_on_save(self):
         org = Organization.objects.create(name='Test Organization')
-        key = S3ApiKey(
+        bucket = S3Bucket.objects.create(
             organization=org,
+            name='test_bucket',
+            endpoint_url='https://sys.foobar.com',                        
+        )
+        key = S3ApiKey(
+            bucket=bucket,
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -55,10 +61,14 @@ class TestS3ApiKeyModel(TestCase):
         if not (pubkey and privkey):
             return  # Only run this test if the keys are available
         org = Organization.objects.create(name='Test Organization')
-        key = S3ApiKey(
+        bucket = S3Bucket.objects.create(
             organization=org,
-            description='KEY_01',
+            name='pangea.test.bucket',
             endpoint_url='https://s3.wasabisys.com',
+        )
+        key = S3ApiKey(
+            bucket=bucket,
+            description='KEY_01',
             public_key=pubkey,
             private_key=privkey,
         )
@@ -115,6 +125,21 @@ class TestSampleModel(TestCase):
         duplicate = lib2.create_sample(name='SMPL_01 UIY')
         self.assertEqual(original.name, duplicate.name)
         self.assertNotEqual(original.library, duplicate.library)
+
+
+class TestProject(TestCase):
+    """Test suite for Project model."""
+
+    def test_add_project(self):
+        """Ensure sample model is created correctly."""
+        org = Organization.objects.create(name='an_org UYDFG')
+        proj = Project.objects.create(
+            name='project_01 UYDFG',
+            organization=org,
+        )
+        self.assertTrue(proj.uuid)
+        self.assertEqual(proj.name, 'project_01 UYDFG')
+        self.assertTrue(proj.created_at)
 
 
 class TestSampleGroupModel(TestCase):
@@ -174,6 +199,17 @@ class TestAnalysisResultModel(TestCase):
         lib = org.create_sample_group(name='LBRY_01 EWRVB', is_library=True)
         smp = lib.create_sample(name='SMPL_01 EWRVB', metadata={'subject_group': 1})
         ar = smp.create_analysis_result(module_name='module_1')
+        self.assertTrue(ar.uuid)
+        self.assertEqual(ar.module_name, 'module_1')
+        self.assertEqual(ar.sample, smp)
+        self.assertTrue(ar.created_at)
+
+    def test_add_ar_with_metadata_to_sample(self):
+        """Ensure sample model is created correctly."""
+        org = Organization.objects.create(name='an_org EWRVB')
+        lib = org.create_sample_group(name='LBRY_01 EWRVB', is_library=True)
+        smp = lib.create_sample(name='SMPL_01 EWRVB', metadata={'subject_group': 1})
+        ar = smp.create_analysis_result(module_name='module_1', metadata={'foo': 'bar'})
         self.assertTrue(ar.uuid)
         self.assertEqual(ar.module_name, 'module_1')
         self.assertEqual(ar.sample, smp)

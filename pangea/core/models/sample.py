@@ -29,10 +29,15 @@ class Sample(AutoCreatedUpdatedMixin):
         'SampleLibrary', on_delete=models.CASCADE, related_name='owned_samples'
     )
     sample_groups = models.ManyToManyField('SampleGroup')
-    metadata = JSONField(default=dict)
+    metadata = JSONField(blank=True, default=dict)
+    description = models.TextField(blank=True, default='')
 
     class Meta:
         unique_together = (('name', 'library'),)
+
+    @property
+    def organization(self):
+        return self.library.group.organization
 
     def __str__(self):
         return f"{self.name}"

@@ -1,4 +1,6 @@
 import os
+import datetime
+import requests
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -7,12 +9,19 @@ from pangea.core.encrypted_fields import EncryptedString
 from pangea.core.models import (
     PangeaUser,
     Organization,
+    Project,
     S3ApiKey,
+    S3Bucket,
     SampleGroup,
     SampleLibrary,
     Sample,
     SampleGroupAnalysisResult,
     SampleAnalysisResult,
+)
+
+from .constants import (
+    UPLOAD_TEST_FILENAME,
+    UPLOAD_TEST_FILEPATH,
 )
 
 
@@ -50,15 +59,18 @@ class S3ApiKeyTests(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.organization = Organization.objects.create(name='Test Organization')
+        cls.bucket = cls.organization.create_s3bucket(
+            endpoint_url='https://sys.foobar.com',
+            name="test_bucket",
+        )
         cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
         cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
         cls.organization.users.add(cls.org_user)
 
     def test_authorized_s3apikey_read(self):
         """Ensure authorized user can read private sample group."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -71,9 +83,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_no_login_s3apikey_read(self):
         """Ensure 403 error is thrown if trying to illicitly read private group."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -83,9 +94,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_unauthorized_s3apikey_read(self):
         """Ensure 403 error is thrown if trying to illicitly read s3apikey."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -96,9 +106,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_authorized_s3apikey_list(self):
         """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -110,9 +119,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_no_login_s3apikey_list(self):
         """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -122,9 +130,8 @@ class S3ApiKeyTests(APITestCase):
 
     def test_unauthorized_s3apikey_list(self):
         """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.organization.create_s3apikey(
+        s3apikey = self.bucket.create_s3apikey(
             description='KEY_01',
-            endpoint_url='https://sys.foobar.com',
             public_key='my_public_key',
             private_key='my_private_key',
         )
@@ -139,10 +146,9 @@ class S3ApiKeyTests(APITestCase):
 
         url = reverse('s3apikey-create')
         data = {
-            'endpoint_url': 'https://sys.foobar.com',
             'public_key': 'my_public_key',
             'private_key': 'my_private_key',
-            'organization': self.organization.pk,
+            'bucket': self.bucket.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -158,10 +164,9 @@ class S3ApiKeyTests(APITestCase):
     def test_unauth_create_key(self):
         url = reverse('s3apikey-create')
         data = {
-            'endpoint_url': 'https://sys.foobar.com',
             'public_key': 'my_public_key',
             'private_key': 'my_private_key',
-            'organization': self.organization.pk,
+            'bucket': self.bucket.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -170,13 +175,86 @@ class S3ApiKeyTests(APITestCase):
         self.client.force_authenticate(user=self.anon_user)
         url = reverse('s3apikey-create')
         data = {
-            'endpoint_url': 'https://sys.foobar.com',
             'public_key': 'my_public_key',
             'private_key': 'my_private_key',
-            'organization': self.organization.pk,
+            'bucket': self.bucket.pk,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class S3BucketTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+
+    def test_authorized_s3bucket_read(self):
+        """Ensure authorized user can read private bucket."""
+        bucket = self.organization.create_s3bucket(
+            endpoint_url='https://sys.foobar.com',
+            name="test_bucket",
+        )
+        url = reverse('s3bucket-details', kwargs={'pk': bucket.uuid})
+        self.client.force_authenticate(user=self.org_user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('endpoint_url', response.data)
+        self.assertIn('name', response.data)
+
+    def test_authorized_s3bucket_list(self):
+        """Ensure 403 error is thrown if trying to illicitly read api keys."""
+        bucket = self.organization.create_s3bucket(
+            endpoint_url='https://sys.foobar.com',
+            name="test_bucket",
+        )
+        url = reverse('s3bucket-create')
+        self.client.force_authenticate(user=self.org_user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(len(response.data) >= 1)
+
+    def test_no_login_s3bucket_list(self):
+        """Ensure 403 error is thrown if trying to illicitly read api keys."""
+        bucket = self.organization.create_s3bucket(
+            endpoint_url='https://sys.foobar.com',
+            name="test_bucket",
+        )
+        url = reverse('s3bucket-create')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_s3bucket_list(self):
+        """Ensure 403 error is thrown if trying to illicitly read api keys."""
+        bucket = self.organization.create_s3bucket(
+            endpoint_url='https://sys.foobar.com',
+            name="test_bucket",
+        )
+        url = reverse('s3bucket-create')
+        self.client.force_authenticate(user=self.anon_user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
+
+    def test_create_bucket(self):
+        self.client.force_authenticate(user=self.org_user)
+        url = reverse('s3bucket-create')
+        data = {
+            'endpoint_url': 'https://sys.foobar.com',
+            'name': "test_bucket",
+            'organization': self.organization.pk,
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(S3Bucket.objects.count(), 1)
+        self.assertEqual(S3Bucket.objects.get().endpoint_url, 'https://sys.foobar.com')
+        # Test the private-key's value by accessing the model directly
+        retrieved = S3Bucket.objects.get(pk=response.data['uuid'])
+        self.assertEqual(retrieved.endpoint_url, 'https://sys.foobar.com')
+        self.assertEqual(retrieved.name, 'test_bucket')
 
 
 class OrganizationMembershipTests(APITestCase):
@@ -227,6 +305,77 @@ class OrganizationMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
         self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
+
+
+class ProjectTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
+        cls.organization.users.add(cls.user)
+        cls.grp1 = cls.organization.create_sample_group(name='GRP_01', is_library=True)
+        cls.grp2 = cls.organization.create_sample_group(name='GRP_02', is_public=False)
+
+    def test_public_project_read(self):
+        """Ensure no login is required to read public group."""
+        proj = self.organization.create_project(name='PROJ_01 UYDSGH')
+        proj.add_sample_group(self.grp1)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_authorized_project_read(self):
+        """Ensure authorized user can read private sample group."""
+        proj = self.organization.create_project(name='PROJ_01 SRHJTR')
+        proj.add_sample_group(self.grp2)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_login_project_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        proj = self.organization.create_project(name='PROJ_01 RETG')
+        proj.add_sample_group(self.grp2)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_unauthorized_project_read(self):
+        """Ensure 403 error is thrown if trying to illicitly read private group."""
+        other_org = Organization.objects.create(name='Test Organization IRJHFJSAH')
+        group = other_org.create_sample_group(name='GRP_01 PRIVATE_IRJHFJSAH', is_public=False)
+        proj = other_org.create_project(name='PROJ_01 IRJHFJSAH')
+        proj.add_sample_group(group)
+        url = reverse('project-details', kwargs={'pk': proj.uuid})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_create_project(self):
+        """Ensure authorized user can create sample group."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('project-create')
+        data = {'name': 'Test Project', 'organization': self.organization.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Project.objects.get().name, 'Test Project')
+
+    def test_add_group_to_project(self):
+        proj = self.organization.create_project(name='PROJ_01 SRHJTR')
+        url = reverse('project-sample-groups', kwargs={'project_pk': proj.uuid})
+        self.client.force_authenticate(user=self.user)
+
+        data = {'sample_group_uuid': self.grp1.uuid}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class SampleGroupTests(APITestCase):
@@ -313,6 +462,25 @@ class SampleGroupTests(APITestCase):
 
         url = reverse('sample-group-create')
         data = {'name': 'Test Sample Group', 'organization': self.organization.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(SampleGroup.objects.count(), 1)
+        self.assertEqual(SampleGroup.objects.get().name, 'Test Sample Group')
+
+    def test_create_sample_group_with_descriptions(self):
+        """Ensure authorized user can create sample group."""
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('sample-group-create')
+        data = {
+            'name': 'Test Sample Group',
+            'organization': self.organization.pk,
+            'description': 'short description',
+            'long_description': 'long_description',
+            'metadata': {'a': 1, 'b': 'foo'},
+        }
         response = self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -556,6 +724,26 @@ class SampleTests(APITestCase):
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
         self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
 
+    def test_create_sample_with_description(self):
+        """Ensure authorized user can create sample group."""
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+
+        sample_library = self.organization.create_sample_group(name='Test Library', is_library=True)
+        url = reverse('sample-create')
+        data = {
+            'name': 'Test Sample',
+            'library': sample_library.pk,
+            'description': 'a sample',
+            'metadata': {'A': 1, 'B': 'foo'}
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Sample.objects.count(), 1)
+        self.assertEqual(Sample.objects.get().name, 'Test Sample')
+        self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
+
     def test_get_sample_manifest(self):
         """Ensure authorized user can create sample group."""
         group = self.organization.create_sample_group(
@@ -638,171 +826,3 @@ class SampleGroupMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertIn('Test Sample', [sample['name'] for sample in response.data['results']])
-
-
-class AnalysisResultTests(APITestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.organization = Organization.objects.create(name='Test Organization')
-        cls.user = PangeaUser.objects.create(email='user@domain.com',password='Foobar22')
-        cls.organization.users.add(cls.user)
-        cls.sample_group = cls.organization.create_sample_group(name='Test Library', is_library=True)
-        cls.sample_library = cls.sample_group.library
-        cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
-
-    def test_public_sample_analysis_result_read(self):
-        """Ensure no login is required to read public group."""
-        group = self.organization.create_sample_group(name='GRP_01 PUBLIC_YUDB', is_library=True)
-        sample = group.create_sample(name='SMPL_01 YUDB')
-        ar = sample.create_analysis_result(module_name='module_foobar')
-        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_authorized_sample_analysis_result_read(self):
-        """Ensure authorized user can read private sample group."""
-        group = self.organization.create_sample_group(
-            name='GRP_01 PRIVATE_TYVNV',
-            is_public=False,
-            is_library=True,
-        )
-        sample = group.create_sample(name='SMPL_01 YUDB')
-        ar = sample.create_analysis_result(module_name='module_foobar')
-        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
-        self.organization.users.add(self.user)
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_no_login_sample_analysis_result_read(self):
-        """Ensure 403 error is thrown if trying to illicitly read private group."""
-        group = self.organization.create_sample_group(
-            name='GRP_01 PRIVATE_UHHKJ',
-            is_public=False,
-            is_library=True,
-        )
-        sample = group.create_sample(name='SMPL_01 UHHKJ')
-        ar = sample.create_analysis_result(module_name='module_foobar')
-        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_unauthorized_sample_analysis_result_read(self):
-        """Ensure 403 error is thrown if trying to illicitly read private group."""
-        other_org = Organization.objects.create(name='Test Organization JHGJHGH')
-        group = other_org.create_sample_group(
-            name='GRP_01 PRIVATE_JHGJHGH',
-            is_public=False,
-            is_library=True,
-        )
-        sample = group.create_sample(name='SMPL_01 JHGJHGH')
-        ar = sample.create_analysis_result(module_name='module_foobar')
-        url = reverse('sample-ars-details', kwargs={'pk': ar.uuid})
-        self.organization.users.add(self.user)
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_no_login_sample_analysis_result_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read private group."""
-        pub_group = self.organization.create_sample_group(
-            name='GRP_01 PUBLIC_RTJNDRPOF', is_public=True, is_library=True
-        )
-        pub_samp = pub_group.create_sample(name='SMPL PUBLIC_RTJNDRPOF')
-        pub_ar = pub_samp.create_analysis_result(module_name='module_foobar')
-        other_org = Organization.objects.create(name='Test Organization RTJNDRPOF')
-        priv_group = other_org.create_sample_group(
-            name='GRP_01 PRIVATE_RTJNDRPOF', is_public=False, is_library=True
-        )
-        priv_samp = priv_group.create_sample(name='SMPL PRIVATE_RTJNDRPOF')
-        priv_ar = pub_samp.create_analysis_result(module_name='module_foobar')
-        url = reverse('sample-ars-create')
-        response = self.client.get(url, format='json')
-        names = {el['sample_obj']['name'] for el in response.data['results']}
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(pub_samp.name, names)
-        self.assertNotIn(priv_samp.name, names)
-
-    def test_create_sample_group_analysis_result(self):
-        self.client.force_authenticate(user=self.user)
-
-        url = reverse('sample-group-ars-create')
-        data = {'module_name': 'taxa', 'sample_group': self.sample_group.pk}
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(SampleGroupAnalysisResult.objects.count(), 1)
-        self.assertEqual(SampleGroupAnalysisResult.objects.get().sample_group, self.sample_group)
-        self.assertEqual(SampleGroupAnalysisResult.objects.get().module_name, 'taxa')
-
-    def test_create_sample_analysis_result(self):
-        self.client.force_authenticate(user=self.user)
-
-        url = reverse('sample-ars-create')
-        data = {'module_name': 'taxa', 'sample': self.sample.pk}
-        response = self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(SampleAnalysisResult.objects.count(), 1)
-        self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
-        self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
-
-    def test_presign_s3_url_in_sample_ar_field(self):
-        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
-        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
-        if not (pubkey and privkey):
-            return  # Only run this test if the keys are available
-        field = self.sample.create_analysis_result(
-            module_name='test_file',
-        ).create_field(
-            name='file',
-            stored_data={
-                '__type__': 's3',
-                'endpoint_url': 'https://s3.wasabisys.com',
-                'uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
-            }
-        )
-        self.organization.users.add(self.user)
-        self.organization.create_s3apikey(
-            description='KEY_01',
-            endpoint_url='https://s3.wasabisys.com',
-            public_key=pubkey,
-            private_key=privkey,
-        )
-        url = reverse('sample-ar-fields-details', kwargs={'pk': field.uuid})
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.data['stored_data']
-        self.assertIn('presigned_url', data)
-        url = data['presigned_url']
-        self.assertTrue(
-            url.startswith('https://s3.wasabisys.com/pangea.test.bucket/my_private_s3_test_file.txt')
-        )
-        self.assertIn('AWSAccessKeyId=', url)
-        self.assertIn('Signature=', url)
-        self.assertIn('Expires=', url)
-
-    def test_no_presign_s3_url_in_sample_ar_field(self):
-        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
-        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
-        if not (pubkey and privkey):
-            return  # Only run this test if the keys are available
-        field = self.sample.create_analysis_result(
-            module_name='test_file',
-        ).create_field(
-            name='file',
-            stored_data={
-                '__type__': 's3',
-                'endpoint_url': 'https://s3.wasabisys.com',
-                'uri': 's3://pangea.test.bucket/my_private_s3_test_file.txt',
-            }
-        )
-        self.organization.users.add(self.user)
-        url = reverse('sample-ar-fields-details', kwargs={'pk': field.uuid})
-        self.client.force_authenticate(user=self.user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.data['stored_data']
-        self.assertNotIn('presigned_url', data)

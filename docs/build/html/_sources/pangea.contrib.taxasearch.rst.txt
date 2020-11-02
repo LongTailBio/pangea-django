@@ -1,0 +1,69 @@
+pangea.contrib.taxasearch package
+=================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pangea.contrib.taxasearch.migrations
+
+Submodules
+----------
+
+pangea.contrib.taxasearch.admin module
+--------------------------------------
+
+.. automodule:: pangea.contrib.taxasearch.admin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.taxasearch.apps module
+-------------------------------------
+
+.. automodule:: pangea.contrib.taxasearch.apps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.taxasearch.models module
+---------------------------------------
+
+.. automodule:: pangea.contrib.taxasearch.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.taxasearch.tests module
+--------------------------------------
+
+.. automodule:: pangea.contrib.taxasearch.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.taxasearch.urls module
+-------------------------------------
+
+.. automodule:: pangea.contrib.taxasearch.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.taxasearch.views module
+--------------------------------------
+
+.. automodule:: pangea.contrib.taxasearch.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.taxasearch
+    :members:
+    :undoc-members:
+    :show-inheritance:

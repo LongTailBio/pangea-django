@@ -1,0 +1,38 @@
+pangea.contrib.omnisearch package
+=================================
+
+Submodules
+----------
+
+pangea.contrib.omnisearch.search module
+---------------------------------------
+
+.. automodule:: pangea.contrib.omnisearch.search
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.omnisearch.urls module
+-------------------------------------
+
+.. automodule:: pangea.contrib.omnisearch.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.omnisearch.views module
+--------------------------------------
+
+.. automodule:: pangea.contrib.omnisearch.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.omnisearch
+    :members:
+    :undoc-members:
+    :show-inheritance:

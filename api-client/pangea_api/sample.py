@@ -11,6 +11,7 @@ class Sample(RemoteObject):
         'name',
         'metadata',
         'library',
+        'description',
     ]
     parent_field = 'lib'
 
@@ -37,8 +38,13 @@ class Sample(RemoteObject):
     def _get(self):
         """Fetch the result from the server."""
         self.lib.get()
-        blob = self.knex.get(self.nested_url())
-        self.load_blob(blob)
+        blob = self.get_cached_blob()
+        if not blob:
+            blob = self.knex.get(self.nested_url())
+            self.load_blob(blob)
+            self.cache_blob(blob)
+        else:
+            self.load_blob(blob)
 
     def _create(self):
         assert self.lib.is_library
@@ -51,8 +57,8 @@ class Sample(RemoteObject):
         blob = self.knex.post(url, json=data)
         self.load_blob(blob)
 
-    def analysis_result(self, module_name, replicate=None):
-        return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate)
+    def analysis_result(self, module_name, replicate=None, metadata=None):
+        return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate, metadata=metadata)
 
     def get_analysis_results(self, cache=True):
         """Yield sample analysis results fetched from the server."""
@@ -87,3 +93,6 @@ class Sample(RemoteObject):
 
     def __repr__(self):
         return f'<Pangea::Sample {self.name} {self.uuid} />'
+
+    def pre_hash(self):
+        return 'SAMPLE' + self.name + self.lib.pre_hash()

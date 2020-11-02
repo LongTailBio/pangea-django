@@ -13,6 +13,9 @@ class SampleGroup(RemoteObject):
         'name',
         'is_library',
         'is_public',
+        'metadata',
+        'long_description',
+        'description',
     ]
     parent_field = 'org'
 
@@ -29,7 +32,7 @@ class SampleGroup(RemoteObject):
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
 
-    def _save(self):
+    def _save_group_obj(self):
         data = {
             field: getattr(self, field)
             for field in self.remote_fields if hasattr(self, field)
@@ -38,17 +41,27 @@ class SampleGroup(RemoteObject):
         url = f'sample_groups/{self.uuid}'
         self.knex.put(url, json=data)
 
+    def _save_sample_list(self):
         for sample in self._sample_cache:
             sample.idem()
             url = f'sample_groups/{self.uuid}/samples'
             self.knex.post(url, json={'sample_uuid': sample.uuid})
         self._sample_cache = []
 
+    def _save(self):
+        self._save_group_obj()
+        self._save_sample_list()
+
     def _get(self):
         """Fetch the result from the server."""
         self.org.idem()
-        blob = self.knex.get(self.nested_url())
-        self.load_blob(blob)
+        blob = self.get_cached_blob()
+        if not blob:
+            blob = self.knex.get(self.nested_url())
+            self.load_blob(blob)
+            self.cache_blob(blob)
+        else:
+            self.load_blob(blob)
 
     def _create(self):
         self.org.idem()
@@ -83,6 +96,7 @@ class SampleGroup(RemoteObject):
         for sample_blob in paginated_iterator(self.knex, f'sample_groups/{self.uuid}/samples'):
             sample = self.sample(sample_blob['name'])
             sample.load_blob(sample_blob)
+            sample.cache_blob(sample_blob)
             # We just fetched from the server so we change the RemoteObject
             # meta properties to reflect that
             sample._already_fetched = True
@@ -128,3 +142,6 @@ class SampleGroup(RemoteObject):
 
     def __repr__(self):
         return f'<Pangea::SampleGroup {self.name} {self.uuid} />'
+
+    def pre_hash(self):
+        return 'SG' + self.name + self.org.pre_hash()

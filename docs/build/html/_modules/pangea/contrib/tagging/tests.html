@@ -1,0 +1,284 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.contrib.tagging.tests &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.contrib.tagging.tests</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Test suite for Sample model.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="k">import</span> <span class="n">TestCase</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="k">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="k">import</span> <span class="n">status</span>
+<span class="kn">from</span> <span class="nn">rest_framework.test</span> <span class="k">import</span> <span class="n">APITestCase</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">Tag</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">pangea.core.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">PangeaUser</span><span class="p">,</span>
+    <span class="n">Organization</span><span class="p">,</span>
+    <span class="n">SampleGroup</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="TagModelTests"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests">[docs]</a><span class="k">class</span> <span class="nc">TagModelTests</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test suite for Sample model.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TagModelTests.test_add_tag"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_add_tag">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;mytag YUDFS&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;mytag YUDFS&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagModelTests.test_add_tag_with_payload"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_add_tag_with_payload">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_tag_with_payload</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;mytag YJTUYDS&#39;</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="s1">&#39;FOO&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;mytag YJTUYDS&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">payload</span><span class="p">,</span> <span class="s1">&#39;FOO&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagModelTests.test_relate_tag_pair"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_relate_tag_pair">[docs]</a>    <span class="k">def</span> <span class="nf">test_relate_tag_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag1</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag1 TFDKSG&#39;</span><span class="p">)</span>
+        <span class="n">tag2</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag2 TFDKSG&#39;</span><span class="p">)</span>
+        <span class="n">tag2</span><span class="o">.</span><span class="n">add_related_tag</span><span class="p">(</span><span class="n">tag1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag2</span><span class="o">.</span><span class="n">related_tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">other_tag</span><span class="p">,</span> <span class="n">tag1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagModelTests.test_relate_tag_triple"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_relate_tag_triple">[docs]</a>    <span class="k">def</span> <span class="nf">test_relate_tag_triple</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag1</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag1 HJFJUS&#39;</span><span class="p">)</span>
+        <span class="n">tag2</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag2 HJFJUS&#39;</span><span class="p">)</span>
+        <span class="n">tag3</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag3 HJFJUS&#39;</span><span class="p">)</span>
+        <span class="n">tag2</span><span class="o">.</span><span class="n">add_related_tag</span><span class="p">(</span><span class="n">tag1</span><span class="p">)</span>
+        <span class="n">tag3</span><span class="o">.</span><span class="n">add_related_tag</span><span class="p">(</span><span class="n">tag2</span><span class="p">)</span>
+        <span class="n">tag1</span><span class="o">.</span><span class="n">add_related_tag</span><span class="p">(</span><span class="n">tag3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag2</span><span class="o">.</span><span class="n">related_tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">other_tag</span><span class="p">,</span> <span class="n">tag1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag3</span><span class="o">.</span><span class="n">related_tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">other_tag</span><span class="p">,</span> <span class="n">tag2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag1</span><span class="o">.</span><span class="n">related_tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">other_tag</span><span class="p">,</span> <span class="n">tag3</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagModelTests.test_tag_sample_group"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_tag_sample_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure we can tag a sample group.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;org ADUJABF&#39;</span><span class="p">)</span>
+        <span class="n">grp</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP ADUJABF&#39;</span><span class="p">)</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag ADUJABF&#39;</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample_group</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">tagged_sample_groups</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagModelTests.test_tag_sample"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_tag_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure we can tag a sample group.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;org AUHFVJKELF&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 AUHFVJKELF&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 AUHFVJKELF&#39;</span><span class="p">)</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag AUHFVJKELF&#39;</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">tagged_samples</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">sample</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagModelTests.test_tag_sample_and_group"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagModelTests.test_tag_sample_and_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_sample_and_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure we can tag a sample group.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;org AUHFVJKELF&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 AUHFVJKELF&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 AUHFVJKELF&#39;</span><span class="p">)</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;tag AUHFVJKELF&#39;</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample_group</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">tagged_samples</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">sample</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">tag</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">tagged_sample_groups</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TagApiTests"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests">[docs]</a><span class="k">class</span> <span class="nc">TagApiTests</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TagApiTests.setUpTestData"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.setUpTestData">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">setUpTestData</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">org1</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">org2</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization (No Membership)&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">creds</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;user@domain.com&#39;</span><span class="p">,</span> <span class="s1">&#39;Foobar22&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">PangeaUser</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">creds</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">password</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">creds</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">org1</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">priv_grp_auth</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">org1</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01&#39;</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">pub_grp</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">org2</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_02&#39;</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">priv_grp_unauth</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">org2</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_03&#39;</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_create_tag"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_create_tag">[docs]</a>    <span class="k">def</span> <span class="nf">test_create_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure authorized user can create sample group.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-create&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Test Tag&#39;</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;Test Tag&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_tag_read"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_tag_read">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure no login is required to read a tag.&quot;&quot;&quot;</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_tag_tag"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_tag_tag">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag1</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag 1&#39;</span><span class="p">)</span>
+        <span class="n">tag2</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag 2&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-tags&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tag_pk&#39;</span><span class="p">:</span> <span class="n">tag1</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;tag_uuid&#39;</span><span class="p">:</span> <span class="n">tag2</span><span class="o">.</span><span class="n">uuid</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">tag1</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">tag1</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag1</span><span class="o">.</span><span class="n">related_tags</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">other_tag</span><span class="p">,</span> <span class="n">tag2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_tag_public_sample_group"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_tag_public_sample_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_public_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag AHGDGS&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-sample-groups&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tag_pk&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sample_group_uuid&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pub_grp</span><span class="o">.</span><span class="n">uuid</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">tagged_sample_groups</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pub_grp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_auth_tag_private_sample_group"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_auth_tag_private_sample_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_auth_tag_private_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag YDSGJ&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-sample-groups&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tag_pk&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sample_group_uuid&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_auth</span><span class="o">.</span><span class="n">uuid</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">tag1</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">tagged_sample_groups</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_auth</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_unauth_tag_private_sample_group"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_unauth_tag_private_sample_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_unauth_tag_private_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag ADIRH&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-sample-groups&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tag_pk&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;sample_group_uuid&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_unauth</span><span class="o">.</span><span class="n">uuid</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_read_tagged_sample_groups"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_read_tagged_sample_groups">[docs]</a>    <span class="k">def</span> <span class="nf">test_read_tagged_sample_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;My Test Tag YDSGJ&#39;</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pub_grp</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_unauth</span><span class="p">)</span>
+        <span class="n">tag</span><span class="o">.</span><span class="n">tag_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_auth</span><span class="p">)</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;tag-sample-groups&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tag_pk&#39;</span><span class="p">:</span> <span class="n">tag</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">response_uuids</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">response_uuids</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pub_grp</span><span class="o">.</span><span class="n">uuid</span><span class="p">),</span> <span class="n">response_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_auth</span><span class="o">.</span><span class="n">uuid</span><span class="p">),</span> <span class="n">response_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">priv_grp_unauth</span><span class="o">.</span><span class="n">uuid</span><span class="p">),</span> <span class="n">response_uuids</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_tag_public_sample"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_tag_public_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_tag_public_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_auth_tag_private_sample"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_auth_tag_private_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_auth_tag_private_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_unauth_tag_private_sample"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_unauth_tag_private_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_unauth_tag_private_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="TagApiTests.test_read_tagged_samples"><a class="viewcode-back" href="../../../../pangea.contrib.tagging.html#pangea.contrib.tagging.tests.TagApiTests.test_read_tagged_samples">[docs]</a>    <span class="k">def</span> <span class="nf">test_read_tagged_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

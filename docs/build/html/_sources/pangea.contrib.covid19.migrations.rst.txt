@@ -1,0 +1,10 @@
+pangea.contrib.covid19.migrations package
+=========================================
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.covid19.migrations
+    :members:
+    :undoc-members:
+    :show-inheritance:

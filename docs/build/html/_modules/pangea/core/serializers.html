@@ -1,0 +1,319 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.serializers &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.core.serializers</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="k">import</span> <span class="n">serializers</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="k">import</span> <span class="n">Q</span>
+<span class="kn">import</span> <span class="nn">structlog</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">PangeaUser</span><span class="p">,</span>
+    <span class="n">Organization</span><span class="p">,</span>
+    <span class="n">S3ApiKey</span><span class="p">,</span>
+    <span class="n">S3Bucket</span><span class="p">,</span>
+    <span class="n">SampleGroup</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResultField</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResultField</span><span class="p">,</span>
+    <span class="n">Project</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PangeaUserSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.PangeaUserSerializer">[docs]</a><span class="k">class</span> <span class="nc">PangeaUserSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+<div class="viewcode-block" id="PangeaUserSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.PangeaUserSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">PangeaUser</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;is_staff&#39;</span><span class="p">,</span> <span class="s1">&#39;is_active&#39;</span><span class="p">,</span> <span class="s1">&#39;personal_org_uuid&#39;</span><span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;email&#39;</span><span class="p">,</span> <span class="s1">&#39;personal_org_uuid&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OrganizationSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.OrganizationSerializer">[docs]</a><span class="k">class</span> <span class="nc">OrganizationSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OrganizationSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.OrganizationSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Organization</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;core_sample_group_uuid&#39;</span><span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;core_sample_group_uuid&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="S3BucketSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.S3BucketSerializer">[docs]</a><span class="k">class</span> <span class="nc">S3BucketSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+<div class="viewcode-block" id="S3BucketSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.S3BucketSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">S3Bucket</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;endpoint_url&#39;</span><span class="p">,</span> <span class="s1">&#39;organization&#39;</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="S3ApiKeySerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.S3ApiKeySerializer">[docs]</a><span class="k">class</span> <span class="nc">S3ApiKeySerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+<div class="viewcode-block" id="S3ApiKeySerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.S3ApiKeySerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">S3ApiKey</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;bucket&#39;</span><span class="p">,</span> <span class="s1">&#39;public_key&#39;</span><span class="p">,</span> <span class="s1">&#39;private_key&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;uuid&#39;</span><span class="p">)</span>
+        <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;private_key&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;write_only&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+        <span class="p">}</span></div></div>
+
+
+<div class="viewcode-block" id="OrganizationAddUserSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.OrganizationAddUserSerializer">[docs]</a><span class="k">class</span> <span class="nc">OrganizationAddUserSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">PrimaryKeyRelatedField</span><span class="p">(</span><span class="n">queryset</span><span class="o">=</span><span class="n">PangeaUser</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="SampleGroupSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">organization_obj</span> <span class="o">=</span> <span class="n">OrganizationSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SampleGroup</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;is_library&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;is_public&#39;</span><span class="p">,</span> <span class="s1">&#39;theme&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_obj&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;long_description&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_obj&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupAddSampleSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupAddSampleSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupAddSampleSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+    <span class="n">sample_uuid</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">UUIDField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ProjectSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.ProjectSerializer">[docs]</a><span class="k">class</span> <span class="nc">ProjectSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">organization_obj</span> <span class="o">=</span> <span class="n">OrganizationSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ProjectSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.ProjectSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Project</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_obj&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;sub_projects&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_obj&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ProjectAddSampleGroupSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.ProjectAddSampleGroupSerializer">[docs]</a><span class="k">class</span> <span class="nc">ProjectAddSampleGroupSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">Serializer</span><span class="p">):</span>
+    <span class="n">sample_group_uuid</span> <span class="o">=</span> <span class="n">serializers</span><span class="o">.</span><span class="n">UUIDField</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SampleSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">library_obj</span> <span class="o">=</span> <span class="n">SampleGroupSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;library.group&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Sample</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;library&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span> <span class="s1">&#39;library_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;library_obj&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SampleAnalysisResultSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleAnalysisResultSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleAnalysisResultSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">sample_obj</span> <span class="o">=</span> <span class="n">SampleSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleAnalysisResultSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleAnalysisResultSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SampleAnalysisResult</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="s1">&#39;replicate&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_obj&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupAnalysisResultSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">sample_group_obj</span> <span class="o">=</span> <span class="n">SampleGroupSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;sample_group&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SampleGroupAnalysisResult</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;module_name&#39;</span><span class="p">,</span> <span class="s1">&#39;replicate&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_group&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample_group_obj&#39;</span><span class="p">,</span> <span class="s1">&#39;description&#39;</span><span class="p">,</span> <span class="s1">&#39;metadata&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_group_obj&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="presign_ar_field_stored_data_if_appropriate"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.presign_ar_field_stored_data_if_appropriate">[docs]</a><span class="k">def</span> <span class="nf">presign_ar_field_stored_data_if_appropriate</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">grp</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Intercept serialization of an analysis result field to add a presigned URL.</span>
+
+<span class="sd">    At this point we are assuming the user has permission to access this result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_presign_ar_field_stored_data_if_appropriate</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">grp</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Gracefully fail here. Presigning fail isn&#39;t a reason to fail to respond</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="s1">&#39;presigning_url_failed_during_serialization&#39;</span><span class="p">,</span>
+            <span class="n">grp_uuid</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+            <span class="n">stored_data</span><span class="o">=</span><span class="n">ret</span><span class="p">,</span>
+            <span class="n">exception</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<span class="k">def</span> <span class="nf">_presign_ar_field_stored_data_if_appropriate</span><span class="p">(</span><span class="n">ret</span><span class="p">,</span> <span class="n">org</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__type__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;s3&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ret</span>
+    <span class="n">bucket_name</span> <span class="o">=</span> <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">][</span><span class="s1">&#39;uri&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;s3://&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">s3bucket_query</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">s3bucket_set</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">endpoint_url</span><span class="o">=</span><span class="n">ret</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">][</span><span class="s1">&#39;endpoint_url&#39;</span><span class="p">])</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">bucket_name</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">s3bucket_query</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">s3key</span> <span class="o">=</span> <span class="n">s3bucket_query</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">api_key</span>
+        <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">][</span><span class="s1">&#39;presigned_url&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s3key</span><span class="o">.</span><span class="n">presign_url</span><span class="p">(</span>
+            <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">][</span><span class="s1">&#39;endpoint_url&#39;</span><span class="p">],</span>
+            <span class="n">ret</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">][</span><span class="s1">&#39;uri&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">ret</span>
+
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleAnalysisResultFieldSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleAnalysisResultFieldSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">analysis_result_obj</span> <span class="o">=</span> <span class="n">SampleAnalysisResultSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;analysis_result&#39;</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleAnalysisResultFieldSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SampleAnalysisResultField</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;stored_data&#39;</span><span class="p">,</span> <span class="s1">&#39;analysis_result&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result_obj&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;analysis_result_obj&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SampleAnalysisResultFieldSerializer.to_representation"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleAnalysisResultFieldSerializer.to_representation">[docs]</a>    <span class="k">def</span> <span class="nf">to_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert `username` to lowercase.&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_representation</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">presign_ar_field_stored_data_if_appropriate</span><span class="p">(</span>
+            <span class="n">ret</span><span class="p">,</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">organization</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldSerializer"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupAnalysisResultFieldSerializer</span><span class="p">(</span><span class="n">serializers</span><span class="o">.</span><span class="n">ModelSerializer</span><span class="p">):</span>
+
+    <span class="n">analysis_result_obj</span> <span class="o">=</span> <span class="n">SampleGroupAnalysisResultSerializer</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="s1">&#39;analysis_result&#39;</span><span class="p">,</span>
+                                                              <span class="n">read_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldSerializer.Meta"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer.Meta">[docs]</a>    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">SampleGroupAnalysisResultField</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;stored_data&#39;</span><span class="p">,</span> <span class="s1">&#39;analysis_result&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;analysis_result_obj&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">read_only_fields</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">,</span> <span class="s1">&#39;updated_at&#39;</span><span class="p">,</span> <span class="s1">&#39;analysis_result_obj&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SampleGroupAnalysisResultFieldSerializer.to_representation"><a class="viewcode-back" href="../../../pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer.to_representation">[docs]</a>    <span class="k">def</span> <span class="nf">to_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert `username` to lowercase.&quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_representation</span><span class="p">(</span><span class="n">instance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">presign_ar_field_stored_data_if_appropriate</span><span class="p">(</span>
+            <span class="n">ret</span><span class="p">,</span>
+            <span class="n">instance</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">organization</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
