@@ -1,0 +1,968 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.views package &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pangea-core-views-package">
+<h1>pangea.core.views package<a class="headerlink" href="#pangea-core-views-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pangea.core.views.analysis_result_views">
+<span id="pangea-core-views-analysis-result-views-module"></span><h2>pangea.core.views.analysis_result_views module<a class="headerlink" href="#module-pangea.core.views.analysis_result_views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleAnalysisResultCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleAnalysisResultCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'sample_id', 'module_name', 'replicate']</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleAnalysisResultCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.SampleAnalysisResultPermission" title="pangea.core.permissions.SampleAnalysisResultPermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.SampleAnalysisResultPermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleAnalysisResultSerializer" title="pangea.core.serializers.SampleAnalysisResultSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleAnalysisResultSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleAnalysisResultDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleAnalysisResultDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.SampleAnalysisResultPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleAnalysisResultSerializer" title="pangea.core.serializers.SampleAnalysisResultSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleAnalysisResultSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleAnalysisResultFieldCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleAnalysisResultFieldCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'name', 'analysis_result_id']</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleAnalysisResultFieldCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.SampleAnalysisResultFieldPermission" title="pangea.core.permissions.SampleAnalysisResultFieldPermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.SampleAnalysisResultFieldPermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleAnalysisResultFieldSerializer" title="pangea.core.serializers.SampleAnalysisResultFieldSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleAnalysisResultFieldSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleAnalysisResultFieldDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleAnalysisResultFieldDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.SampleAnalysisResultFieldPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleAnalysisResultFieldDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleAnalysisResultFieldSerializer" title="pangea.core.serializers.SampleAnalysisResultFieldSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleAnalysisResultFieldSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleGroupAnalysisResultCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleGroupAnalysisResultCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'sample_group_id', 'module_name', 'replicate']</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleGroupAnalysisResultCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.SampleGroupAnalysisResultPermission" title="pangea.core.permissions.SampleGroupAnalysisResultPermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.SampleGroupAnalysisResultPermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultSerializer" title="pangea.core.serializers.SampleGroupAnalysisResultSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleGroupAnalysisResultSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleGroupAnalysisResultDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleGroupAnalysisResultDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.SampleGroupAnalysisResultPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultSerializer" title="pangea.core.serializers.SampleGroupAnalysisResultSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleGroupAnalysisResultSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleGroupAnalysisResultFieldCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleGroupAnalysisResultFieldCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'name', 'analysis_result_id']</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleGroupAnalysisResultFieldCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.SampleGroupAnalysisResultFieldPermission" title="pangea.core.permissions.SampleGroupAnalysisResultFieldPermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.SampleGroupAnalysisResultFieldPermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer" title="pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">SampleGroupAnalysisResultFieldDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#SampleGroupAnalysisResultFieldDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.SampleGroupAnalysisResultFieldPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.analysis_result_views.SampleGroupAnalysisResultFieldDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer" title="pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleGroupAnalysisResultFieldSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.analysis_result_views.authorize_sample_ar_upload_url">
+<code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">authorize_sample_ar_upload_url</code><span class="sig-paren">(</span><em>request</em>, <em>pk</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#authorize_sample_ar_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.authorize_sample_ar_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.analysis_result_views.authorize_sample_group_ar_upload_url">
+<code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">authorize_sample_group_ar_upload_url</code><span class="sig-paren">(</span><em>request</em>, <em>pk</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#authorize_sample_group_ar_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.authorize_sample_group_ar_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.analysis_result_views.post_sample_ar_complete_multipart_upload_url">
+<code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">post_sample_ar_complete_multipart_upload_url</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#post_sample_ar_complete_multipart_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.post_sample_ar_complete_multipart_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with a sample group manifest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.analysis_result_views.post_sample_ar_upload_url">
+<code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">post_sample_ar_upload_url</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#post_sample_ar_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.post_sample_ar_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with a sample group manifest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.analysis_result_views.post_sample_group_ar_complete_multipart_upload_url">
+<code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">post_sample_group_ar_complete_multipart_upload_url</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#post_sample_group_ar_complete_multipart_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.post_sample_group_ar_complete_multipart_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with a sample group manifest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.analysis_result_views.post_sample_group_ar_upload_url">
+<code class="descclassname">pangea.core.views.analysis_result_views.</code><code class="descname">post_sample_group_ar_upload_url</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/analysis_result_views.html#post_sample_group_ar_upload_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.analysis_result_views.post_sample_group_ar_upload_url" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with a sample group manifest.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views.organization_views">
+<span id="pangea-core-views-organization-views-module"></span><h2>pangea.core.views.organization_views module<a class="headerlink" href="#module-pangea.core.views.organization_views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.views.organization_views.OrganizationCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.organization_views.</code><code class="descname">OrganizationCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListCreateAPIView</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'name']</em><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.organization_views.OrganizationCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Require valid session to create organization.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.OrganizationSerializer" title="pangea.core.serializers.OrganizationSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.OrganizationSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.organization_views.OrganizationDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.organization_views.</code><code class="descname">OrganizationDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<p>This class handles the http GET, PUT and DELETE requests.</p>
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.OrganizationPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.OrganizationSerializer" title="pangea.core.serializers.OrganizationSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.OrganizationSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.organization_views.OrganizationUsersView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.organization_views.</code><code class="descname">OrganizationUsersView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationUsersView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationUsersView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListAPIView</span></code></p>
+<p>This class handles managing membership of users within organizations.</p>
+<dl class="method">
+<dt id="pangea.core.views.organization_views.OrganizationUsersView.get_queryset">
+<code class="descname">get_queryset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationUsersView.get_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationUsersView.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Limit sample queryset to samples in the specified sample group.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.organization_views.OrganizationUsersView.get_serializer_class">
+<code class="descname">get_serializer_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationUsersView.get_serializer_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationUsersView.get_serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the class to use for the serializer.
+Defaults to using <cite>self.serializer_class</cite>.</p>
+<p>You may want to override this if you need to provide different
+serializations depending on the incoming request.</p>
+<p>(Eg. admins get full serialization, others get basic serialization)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.organization_views.OrganizationUsersView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationUsersView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.organization_views.OrganizationUsersView.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/organization_views.html#OrganizationUsersView.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.organization_views.OrganizationUsersView.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views.project_views">
+<span id="pangea-core-views-project-views-module"></span><h2>pangea.core.views.project_views module<a class="headerlink" href="#module-pangea.core.views.project_views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.views.project_views.ProjectCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.project_views.</code><code class="descname">ProjectCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'organization_id', 'name']</em><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.project_views.ProjectCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Require organization membership to create sample group.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.ProjectPermission" title="pangea.core.permissions.ProjectPermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.ProjectPermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.project_views.ProjectCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.ProjectSerializer" title="pangea.core.serializers.ProjectSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.ProjectSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.project_views.ProjectDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.project_views.</code><code class="descname">ProjectDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<p>This class handles the http GET, PUT and DELETE requests.</p>
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.ProjectPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.project_views.ProjectDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.project_views.ProjectDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.project_views.ProjectDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.ProjectSerializer" title="pangea.core.serializers.ProjectSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.ProjectSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.project_views.ProjectSampleGroupsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.project_views.</code><code class="descname">ProjectSampleGroupsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectSampleGroupsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectSampleGroupsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListAPIView</span></code></p>
+<p>This class handles managing membership of sample groups within projects.</p>
+<dl class="method">
+<dt id="pangea.core.views.project_views.ProjectSampleGroupsView.filter_queryset">
+<code class="descname">filter_queryset</code><span class="sig-paren">(</span><em>queryset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectSampleGroupsView.filter_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectSampleGroupsView.filter_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a queryset, filter it with whichever filter backend is in use.</p>
+<p>You are unlikely to want to override this method, although you may need
+to call it either from a list view, or from a custom <cite>get_object</cite>
+method if you want to apply the configured filtering backend to the
+default queryset.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.project_views.ProjectSampleGroupsView.get_serializer_class">
+<code class="descname">get_serializer_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectSampleGroupsView.get_serializer_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectSampleGroupsView.get_serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the class to use for the serializer.
+Defaults to using <cite>self.serializer_class</cite>.</p>
+<p>You may want to override this if you need to provide different
+serializations depending on the incoming request.</p>
+<p>(Eg. admins get full serialization, others get basic serialization)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectSampleGroupsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.ProjectPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.project_views.ProjectSampleGroupsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.project_views.ProjectSampleGroupsView.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/project_views.html#ProjectSampleGroupsView.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.project_views.ProjectSampleGroupsView.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.project_views.ProjectSampleGroupsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.project_views.ProjectSampleGroupsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views.s3_views">
+<span id="pangea-core-views-s3-views-module"></span><h2>pangea.core.views.s3_views module<a class="headerlink" href="#module-pangea.core.views.s3_views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.views.s3_views.S3ApiKeyCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.s3_views.</code><code class="descname">S3ApiKeyCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3ApiKeyCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListCreateAPIView</span></code></p>
+<dl class="method">
+<dt id="pangea.core.views.s3_views.S3ApiKeyCreateView.get_queryset">
+<code class="descname">get_queryset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3ApiKeyCreateView.get_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyCreateView.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of items for this view.
+This must be an iterable, and may be a queryset.
+Defaults to using <cite>self.queryset</cite>.</p>
+<p>This method should always be used rather than accessing <cite>self.queryset</cite>
+directly, as <cite>self.queryset</cite> gets evaluated only once, and those results
+are cached for all subsequent requests.</p>
+<p>You may want to override this if you need to provide different
+querysets depending on the incoming request.</p>
+<p>(Eg. return a list of items that is specific to the user)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.s3_views.S3ApiKeyCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3ApiKeyCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Require organization membership to create S3 API Key.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3ApiKeyCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticated'&gt;, &lt;class 'pangea.core.permissions.S3ApiKeyPermission'&gt;)</em><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3ApiKeyCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.S3ApiKeySerializer" title="pangea.core.serializers.S3ApiKeySerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.S3ApiKeySerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.s3_views.S3ApiKeyDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.s3_views.</code><code class="descname">S3ApiKeyDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3ApiKeyDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<dl class="method">
+<dt id="pangea.core.views.s3_views.S3ApiKeyDetailsView.get_queryset">
+<code class="descname">get_queryset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3ApiKeyDetailsView.get_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyDetailsView.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of items for this view.
+This must be an iterable, and may be a queryset.
+Defaults to using <cite>self.queryset</cite>.</p>
+<p>This method should always be used rather than accessing <cite>self.queryset</cite>
+directly, as <cite>self.queryset</cite> gets evaluated only once, and those results
+are cached for all subsequent requests.</p>
+<p>You may want to override this if you need to provide different
+querysets depending on the incoming request.</p>
+<p>(Eg. return a list of items that is specific to the user)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3ApiKeyDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.S3ApiKeyPermission'&gt;, &lt;class 'rest_framework.permissions.IsAuthenticated'&gt;)</em><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3ApiKeyDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.s3_views.S3ApiKeyDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.S3ApiKeySerializer" title="pangea.core.serializers.S3ApiKeySerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.S3ApiKeySerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.s3_views.S3BucketCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.s3_views.</code><code class="descname">S3BucketCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3BucketCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListCreateAPIView</span></code></p>
+<dl class="method">
+<dt id="pangea.core.views.s3_views.S3BucketCreateView.get_queryset">
+<code class="descname">get_queryset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3BucketCreateView.get_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketCreateView.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of items for this view.
+This must be an iterable, and may be a queryset.
+Defaults to using <cite>self.queryset</cite>.</p>
+<p>This method should always be used rather than accessing <cite>self.queryset</cite>
+directly, as <cite>self.queryset</cite> gets evaluated only once, and those results
+are cached for all subsequent requests.</p>
+<p>You may want to override this if you need to provide different
+querysets depending on the incoming request.</p>
+<p>(Eg. return a list of items that is specific to the user)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.s3_views.S3BucketCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3BucketCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Require organization membership to create S3 bucket.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3BucketCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticated'&gt;, &lt;class 'pangea.core.permissions.S3BucketPermission'&gt;)</em><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3BucketCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.S3BucketSerializer" title="pangea.core.serializers.S3BucketSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.S3BucketSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.s3_views.S3BucketDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.s3_views.</code><code class="descname">S3BucketDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3BucketDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<dl class="method">
+<dt id="pangea.core.views.s3_views.S3BucketDetailsView.get_queryset">
+<code class="descname">get_queryset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/s3_views.html#S3BucketDetailsView.get_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketDetailsView.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the list of items for this view.
+This must be an iterable, and may be a queryset.
+Defaults to using <cite>self.queryset</cite>.</p>
+<p>This method should always be used rather than accessing <cite>self.queryset</cite>
+directly, as <cite>self.queryset</cite> gets evaluated only once, and those results
+are cached for all subsequent requests.</p>
+<p>You may want to override this if you need to provide different
+querysets depending on the incoming request.</p>
+<p>(Eg. return a list of items that is specific to the user)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3BucketDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.S3BucketPermission'&gt;, &lt;class 'rest_framework.permissions.IsAuthenticated'&gt;)</em><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.s3_views.S3BucketDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.s3_views.S3BucketDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.S3BucketSerializer" title="pangea.core.serializers.S3BucketSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.S3BucketSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views.sample_group_views">
+<span id="pangea-core-views-sample-group-views-module"></span><h2>pangea.core.views.sample_group_views module<a class="headerlink" href="#module-pangea.core.views.sample_group_views" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="pangea.core.views.sample_group_views.AnalysisResultFieldDownloadError">
+<em class="property">exception </em><code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">AnalysisResultFieldDownloadError</code><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#AnalysisResultFieldDownloadError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.AnalysisResultFieldDownloadError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">SampleGroupCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'organization_id', 'name', 'is_public']</em><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd><p>Require organization membership to create sample group.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.SampleGroupPermission" title="pangea.core.permissions.SampleGroupPermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.SampleGroupPermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleGroupSerializer" title="pangea.core.serializers.SampleGroupSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleGroupSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.sample_group_views.SampleGroupDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">SampleGroupDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<p>This class handles the http GET, PUT and DELETE requests.</p>
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.SampleGroupPermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleGroupSerializer" title="pangea.core.serializers.SampleGroupSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleGroupSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.sample_group_views.SampleGroupSamplesView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">SampleGroupSamplesView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupSamplesView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupSamplesView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListAPIView</span></code></p>
+<p>This class handles managing membership of samples within sample groups.</p>
+<dl class="method">
+<dt id="pangea.core.views.sample_group_views.SampleGroupSamplesView.filter_queryset">
+<code class="descname">filter_queryset</code><span class="sig-paren">(</span><em>queryset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupSamplesView.filter_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupSamplesView.filter_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a queryset, filter it with whichever filter backend is in use.</p>
+<p>You are unlikely to want to override this method, although you may need
+to call it either from a list view, or from a custom <cite>get_object</cite>
+method if you want to apply the configured filtering backend to the
+default queryset.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.sample_group_views.SampleGroupSamplesView.get_serializer_class">
+<code class="descname">get_serializer_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupSamplesView.get_serializer_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupSamplesView.get_serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the class to use for the serializer.
+Defaults to using <cite>self.serializer_class</cite>.</p>
+<p>You may want to override this if you need to provide different
+serializations depending on the incoming request.</p>
+<p>(Eg. admins get full serialization, others get basic serialization)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupSamplesView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupSamplesView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.sample_group_views.SampleGroupSamplesView.post">
+<code class="descname">post</code><span class="sig-paren">(</span><em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#SampleGroupSamplesView.post"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupSamplesView.post" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_group_views.SampleGroupSamplesView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.sample_group_views.SampleGroupSamplesView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.clean_tarball_cache">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">clean_tarball_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#clean_tarball_cache"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.clean_tarball_cache" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.download_file">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">download_file</code><span class="sig-paren">(</span><em>ar_field</em>, <em>local_filepath</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#download_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.download_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.get_sample_ar_counts_in_group">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">get_sample_ar_counts_in_group</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#get_sample_ar_counts_in_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.get_sample_ar_counts_in_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with counts for all types of sample analysis results in the group.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.get_sample_data_in_group">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">get_sample_data_in_group</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#get_sample_data_in_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.get_sample_data_in_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with metadata for samples in group.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.get_sample_group_manifest">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">get_sample_group_manifest</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#get_sample_group_manifest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.get_sample_group_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with a sample group manifest.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.get_sample_metadata_in_group">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">get_sample_metadata_in_group</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#get_sample_metadata_in_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.get_sample_metadata_in_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with metadata for samples in group.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.get_tarball">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">get_tarball</code><span class="sig-paren">(</span><em>group_name</em>, <em>module_name</em>, <em>analysis_results</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#get_tarball"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.get_tarball" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.make_tarball">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">make_tarball</code><span class="sig-paren">(</span><em>tarball_name</em>, <em>analysis_results</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#make_tarball"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.make_tarball" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_group_views.referenced_filename">
+<code class="descclassname">pangea.core.views.sample_group_views.</code><code class="descname">referenced_filename</code><span class="sig-paren">(</span><em>arf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_group_views.html#referenced_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_group_views.referenced_filename" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views.sample_views">
+<span id="pangea-core-views-sample-views-module"></span><h2>pangea.core.views.sample_views module<a class="headerlink" href="#module-pangea.core.views.sample_views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.views.sample_views.SampleCreateView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.sample_views.</code><code class="descname">SampleCreateView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_views.html#SampleCreateView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="pangea.core.views.utils.PermissionedListCreateAPIView"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.views.utils.PermissionedListCreateAPIView</span></code></a></p>
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleCreateView.filterset_fields">
+<code class="descname">filterset_fields</code><em class="property"> = ['uuid', 'library_id', 'name']</em><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView.filterset_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pangea.core.views.sample_views.SampleCreateView.perform_create">
+<code class="descname">perform_create</code><span class="sig-paren">(</span><em>serializer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_views.html#SampleCreateView.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleCreateView.permission">
+<code class="descname">permission</code><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView.permission" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.permissions.SamplePermission" title="pangea.core.permissions.SamplePermission"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.permissions.SamplePermission</span></code></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleCreateView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleCreateView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleCreateView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.sample_views.SampleCreateView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleSerializer" title="pangea.core.serializers.SampleSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pangea.core.views.sample_views.SampleDetailsView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.sample_views.</code><code class="descname">SampleDetailsView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_views.html#SampleDetailsView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_views.SampleDetailsView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.RetrieveUpdateDestroyAPIView</span></code></p>
+<p>This class handles the http GET, PUT and DELETE requests.</p>
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleDetailsView.permission_classes">
+<code class="descname">permission_classes</code><em class="property"> = (&lt;class 'pangea.core.permissions.SamplePermission'&gt;,)</em><a class="headerlink" href="#pangea.core.views.sample_views.SampleDetailsView.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleDetailsView.queryset">
+<code class="descname">queryset</code><a class="headerlink" href="#pangea.core.views.sample_views.SampleDetailsView.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.views.sample_views.SampleDetailsView.serializer_class">
+<code class="descname">serializer_class</code><a class="headerlink" href="#pangea.core.views.sample_views.SampleDetailsView.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="pangea.core.html#pangea.core.serializers.SampleSerializer" title="pangea.core.serializers.SampleSerializer"><code class="xref py py-class docutils literal notranslate"><span class="pre">pangea.core.serializers.SampleSerializer</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pangea.core.views.sample_views.get_sample_manifest">
+<code class="descclassname">pangea.core.views.sample_views.</code><code class="descname">get_sample_manifest</code><span class="sig-paren">(</span><em>self</em>, <em>request</em>, <em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/sample_views.html#get_sample_manifest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.sample_views.get_sample_manifest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reply with a sample group manifest.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views.utils">
+<span id="pangea-core-views-utils-module"></span><h2>pangea.core.views.utils module<a class="headerlink" href="#module-pangea.core.views.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.views.utils.PermissionedListCreateAPIView">
+<em class="property">class </em><code class="descclassname">pangea.core.views.utils.</code><code class="descname">PermissionedListCreateAPIView</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/utils.html#PermissionedListCreateAPIView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.utils.PermissionedListCreateAPIView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">rest_framework.generics.ListCreateAPIView</span></code></p>
+<dl class="method">
+<dt id="pangea.core.views.utils.PermissionedListCreateAPIView.filter_queryset">
+<code class="descname">filter_queryset</code><span class="sig-paren">(</span><em>queryset</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/views/utils.html#PermissionedListCreateAPIView.filter_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.views.utils.PermissionedListCreateAPIView.filter_queryset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a queryset, filter it with whichever filter backend is in use.</p>
+<p>You are unlikely to want to override this method, although you may need
+to call it either from a list view, or from a custom <cite>get_object</cite>
+method if you want to apply the configured filtering backend to the
+default queryset.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.views">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pangea.core.views" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/pangea.core.views.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

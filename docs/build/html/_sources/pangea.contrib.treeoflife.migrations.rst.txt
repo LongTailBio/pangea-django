@@ -1,0 +1,22 @@
+pangea.contrib.treeoflife.migrations package
+============================================
+
+Submodules
+----------
+
+pangea.contrib.treeoflife.migrations.0001\_initial module
+---------------------------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.migrations.0001_initial
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.treeoflife.migrations
+    :members:
+    :undoc-members:
+    :show-inheritance:

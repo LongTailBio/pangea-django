@@ -1,0 +1,442 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.tests.test_api_analysis_result &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.core.tests.test_api_analysis_result</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">from</span> <span class="nn">boto3</span> <span class="k">import</span> <span class="n">Session</span>
+<span class="kn">from</span> <span class="nn">django.urls</span> <span class="k">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="k">import</span> <span class="n">status</span>
+<span class="kn">from</span> <span class="nn">rest_framework.test</span> <span class="k">import</span> <span class="n">APITestCase</span>
+
+<span class="kn">from</span> <span class="nn">pangea.core.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">PangeaUser</span><span class="p">,</span>
+    <span class="n">Organization</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResult</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">UPLOAD_TEST_FILENAME</span><span class="p">,</span>
+    <span class="n">UPLOAD_TEST_FILEPATH</span><span class="p">,</span>
+    <span class="n">MULTIPART_UPLOAD_TEST_FILENAME</span><span class="p">,</span>
+    <span class="n">MULTIPART_UPLOAD_TEST_FILEPATH</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="AnalysisResultTests"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests">[docs]</a><span class="k">class</span> <span class="nc">AnalysisResultTests</span><span class="p">(</span><span class="n">APITestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="AnalysisResultTests.setUpTestData"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.setUpTestData">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">setUpTestData</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">organization</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="n">PangeaUser</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s1">&#39;user@domain.com&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;Foobar22&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">sample_group</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Library&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">sample_library</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">library</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">sample</span> <span class="o">=</span> <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Sample&#39;</span><span class="p">,</span> <span class="n">library</span><span class="o">=</span><span class="bp">cls</span><span class="o">.</span><span class="n">sample_library</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_public_sample_analysis_result_read"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_public_sample_analysis_result_read">[docs]</a>    <span class="k">def</span> <span class="nf">test_public_sample_analysis_result_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure no login is required to read public group.&quot;&quot;&quot;</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 PUBLIC_YUDB&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 YUDB&#39;</span><span class="p">)</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_foobar&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_authorized_sample_analysis_result_read"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_authorized_sample_analysis_result_read">[docs]</a>    <span class="k">def</span> <span class="nf">test_authorized_sample_analysis_result_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure authorized user can read private sample group.&quot;&quot;&quot;</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 PRIVATE_TYVNV&#39;</span><span class="p">,</span>
+            <span class="n">is_public</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 YUDB&#39;</span><span class="p">)</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_foobar&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_no_login_sample_analysis_result_read"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_no_login_sample_analysis_result_read">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_login_sample_analysis_result_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure 403 error is thrown if trying to illicitly read private group.&quot;&quot;&quot;</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 PRIVATE_UHHKJ&#39;</span><span class="p">,</span>
+            <span class="n">is_public</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 UHHKJ&#39;</span><span class="p">)</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_foobar&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_unauthorized_sample_analysis_result_read"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_unauthorized_sample_analysis_result_read">[docs]</a>    <span class="k">def</span> <span class="nf">test_unauthorized_sample_analysis_result_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure 403 error is thrown if trying to illicitly read private group.&quot;&quot;&quot;</span>
+        <span class="n">other_org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization JHGJHGH&#39;</span><span class="p">)</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">other_org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 PRIVATE_JHGJHGH&#39;</span><span class="p">,</span>
+            <span class="n">is_public</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">group</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 JHGJHGH&#39;</span><span class="p">)</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_foobar&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_403_FORBIDDEN</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_no_login_sample_analysis_result_list"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_no_login_sample_analysis_result_list">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_login_sample_analysis_result_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure 403 error is thrown if trying to illicitly read private group.&quot;&quot;&quot;</span>
+        <span class="n">pub_group</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 PUBLIC_RTJNDRPOF&#39;</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">pub_samp</span> <span class="o">=</span> <span class="n">pub_group</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL PUBLIC_RTJNDRPOF&#39;</span><span class="p">)</span>
+        <span class="n">pub_ar</span> <span class="o">=</span> <span class="n">pub_samp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_foobar&#39;</span><span class="p">)</span>
+        <span class="n">other_org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization RTJNDRPOF&#39;</span><span class="p">)</span>
+        <span class="n">priv_group</span> <span class="o">=</span> <span class="n">other_org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 PRIVATE_RTJNDRPOF&#39;</span><span class="p">,</span> <span class="n">is_public</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="n">priv_samp</span> <span class="o">=</span> <span class="n">priv_group</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL PRIVATE_RTJNDRPOF&#39;</span><span class="p">)</span>
+        <span class="n">priv_ar</span> <span class="o">=</span> <span class="n">pub_samp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_foobar&#39;</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-create&#39;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="n">names</span> <span class="o">=</span> <span class="p">{</span><span class="n">el</span><span class="p">[</span><span class="s1">&#39;sample_obj&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">]}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">pub_samp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="n">priv_samp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">names</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_create_sample_group_analysis_result"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_create_sample_group_analysis_result">[docs]</a>    <span class="k">def</span> <span class="nf">test_create_sample_group_analysis_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-group-ars-create&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;module_name&#39;</span><span class="p">:</span> <span class="s1">&#39;taxa&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_group&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">pk</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleGroupAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleGroupAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_group</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleGroupAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;taxa&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_create_sample_analysis_result"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_create_sample_analysis_result">[docs]</a>    <span class="k">def</span> <span class="nf">test_create_sample_analysis_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-create&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;module_name&#39;</span><span class="p">:</span> <span class="s1">&#39;taxa&#39;</span><span class="p">,</span> <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">pk</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;taxa&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_create_sample_analysis_result_with_description"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_create_sample_analysis_result_with_description">[docs]</a>    <span class="k">def</span> <span class="nf">test_create_sample_analysis_result_with_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ars-create&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;module_name&#39;</span><span class="p">:</span> <span class="s1">&#39;taxa&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;sample&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+            <span class="s1">&#39;description&#39;</span><span class="p">:</span> <span class="s1">&#39;short description&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;metadata&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="s1">&#39;foo&#39;</span><span class="p">},</span>
+        <span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_201_CREATED</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">count</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">()</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;taxa&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_group_upload_presign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">stance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_parts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">pubkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PUBLIC_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">privkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PRIVATE_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pubkey</span> <span class="ow">and</span> <span class="n">privkey</span><span class="p">):</span>
+            <span class="k">return</span>  <span class="c1"># Only run this test if the keys are available</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span>
+            <span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;test_file&#39;</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="n">stored_data</span><span class="o">=</span><span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_s3bucket</span><span class="p">(</span>
+            <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pangea.test.bucket&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">bucket</span><span class="o">.</span><span class="n">create_s3apikey</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;KEY_01&#39;</span><span class="p">,</span>
+            <span class="n">public_key</span><span class="o">=</span><span class="n">pubkey</span><span class="p">,</span>
+            <span class="n">private_key</span><span class="o">=</span><span class="n">privkey</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">add_s3_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-group-ar-fields-get-upload-url&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">field</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;n_parts&#39;</span><span class="p">:</span> <span class="n">n_parts</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">stance</span><span class="p">:</span>
+            <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;stance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stance</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">blob</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="n">field</span>
+
+    <span class="k">def</span> <span class="nf">_setup_upload_presign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">stance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_parts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">pubkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PUBLIC_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">privkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PRIVATE_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pubkey</span> <span class="ow">and</span> <span class="n">privkey</span><span class="p">):</span>
+            <span class="k">return</span>  <span class="c1"># Only run this test if the keys are available</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span>
+            <span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;test_file&#39;</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_field</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">,</span> <span class="n">stored_data</span><span class="o">=</span><span class="p">{})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_s3bucket</span><span class="p">(</span>
+            <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pangea.test.bucket&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">bucket</span><span class="o">.</span><span class="n">create_s3apikey</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;KEY_01&#39;</span><span class="p">,</span>
+            <span class="n">public_key</span><span class="o">=</span><span class="n">pubkey</span><span class="p">,</span>
+            <span class="n">private_key</span><span class="o">=</span><span class="n">privkey</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">add_s3_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ar-fields-get-upload-url&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">field</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">blob</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filename&#39;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;n_parts&#39;</span><span class="p">:</span> <span class="n">n_parts</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">stance</span><span class="p">:</span>
+            <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;stance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">stance</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">blob</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="p">,</span> <span class="n">field</span>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_get_multipart_upload_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_get_multipart_upload_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_multipart_upload_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_upload_presign</span><span class="p">(</span><span class="s1">&#39;my_test_file.foo&#39;</span><span class="p">,</span> <span class="n">stance</span><span class="o">=</span><span class="s1">&#39;upload-multipart&#39;</span><span class="p">,</span> <span class="n">n_parts</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;urls&#39;</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_use_multipart_upload_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_use_multipart_upload_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_use_multipart_upload_url</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_size</span><span class="o">=</span><span class="mi">5</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">):</span>
+        <span class="n">file_size</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">MULTIPART_UPLOAD_TEST_FILEPATH</span><span class="p">)</span>
+        <span class="n">n_parts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">file_size</span> <span class="o">/</span> <span class="n">max_size</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_upload_presign</span><span class="p">(</span>
+            <span class="s1">&#39;my_multipart_upload_test_file.txt&#39;</span><span class="p">,</span>
+            <span class="n">stance</span><span class="o">=</span><span class="s1">&#39;upload-multipart&#39;</span><span class="p">,</span>
+            <span class="n">n_parts</span><span class="o">=</span><span class="n">n_parts</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">MULTIPART_UPLOAD_TEST_FILEPATH</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;urls&#39;</span><span class="p">]):</span>
+                <span class="n">file_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">max_size</span><span class="p">)</span>
+                <span class="n">http_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">file_data</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s1">&#39;ETag&#39;</span><span class="p">:</span> <span class="n">http_response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;ETag&#39;</span><span class="p">],</span>
+                    <span class="s1">&#39;PartNumber&#39;</span><span class="p">:</span> <span class="n">num</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="p">})</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">http_response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ar-fields-get-upload-complete-url&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">field</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="p">{</span><span class="s1">&#39;parts&#39;</span><span class="p">:</span> <span class="n">parts</span><span class="p">,</span> <span class="s1">&#39;upload_id&#39;</span><span class="p">:</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;upload_id&#39;</span><span class="p">]},</span>
+            <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">http_response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_get_upload_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_get_upload_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_upload_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_upload_presign</span><span class="p">(</span><span class="s1">&#39;my_test_file.foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="s1">&#39;https://s3.wasabisys.com/pangea.test.bucket&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">],</span> <span class="s1">&#39;pangea/v1/Test Library/samples/Test Sample/my_test_file.foo&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;AWSAccessKeyId&#39;</span><span class="p">,</span> <span class="s1">&#39;policy&#39;</span><span class="p">,</span> <span class="s1">&#39;signature&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">])</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">refresh_from_db</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">field_type</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">],</span> <span class="s1">&#39;s3://pangea.test.bucket/pangea/v1/Test Library/samples/Test Sample/my_test_file.foo&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_get_group_upload_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_get_group_upload_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_group_upload_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_group_upload_presign</span><span class="p">(</span><span class="s1">&#39;my_test_file.foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="s1">&#39;https://s3.wasabisys.com/pangea.test.bucket&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">],</span> <span class="s1">&#39;pangea/v1/Test Library/results/my_test_file.foo&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;AWSAccessKeyId&#39;</span><span class="p">,</span> <span class="s1">&#39;policy&#39;</span><span class="p">,</span> <span class="s1">&#39;signature&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">])</span>
+        <span class="n">field</span><span class="o">.</span><span class="n">refresh_from_db</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">field_type</span><span class="p">,</span> <span class="s1">&#39;s3&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">],</span> <span class="s1">&#39;s3://pangea.test.bucket/pangea/v1/Test Library/results/my_test_file.foo&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_use_upload_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_use_upload_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_use_upload_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_upload_presign</span><span class="p">(</span><span class="n">UPLOAD_TEST_FILENAME</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">UPLOAD_TEST_FILEPATH</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">UPLOAD_TEST_FILEPATH</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">],</span> <span class="n">f</span><span class="p">)}</span>
+            <span class="n">http_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">],</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">http_response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_204_NO_CONTENT</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AnalysisResultTests.test_use_group_upload_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_use_group_upload_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_use_group_upload_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_group_upload_presign</span><span class="p">(</span><span class="n">UPLOAD_TEST_FILENAME</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">UPLOAD_TEST_FILEPATH</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">())</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">UPLOAD_TEST_FILEPATH</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">files</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">][</span><span class="s1">&#39;key&#39;</span><span class="p">],</span> <span class="n">f</span><span class="p">)}</span>
+            <span class="n">http_response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;url&#39;</span><span class="p">],</span> <span class="n">data</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">],</span> <span class="n">files</span><span class="o">=</span><span class="n">files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">http_response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_204_NO_CONTENT</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AnalysisResultTests.test_presign_s3_url_in_sample_ar_field"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_presign_s3_url_in_sample_ar_field">[docs]</a>    <span class="k">def</span> <span class="nf">test_presign_s3_url_in_sample_ar_field</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pubkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PUBLIC_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">privkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PRIVATE_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pubkey</span> <span class="ow">and</span> <span class="n">privkey</span><span class="p">):</span>
+            <span class="k">return</span>  <span class="c1"># Only run this test if the keys are available</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span>
+            <span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;test_file&#39;</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_field</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">,</span>
+            <span class="n">stored_data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;__type__&#39;</span><span class="p">:</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;endpoint_url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="s1">&#39;s3://pangea.test.bucket/my_private_s3_test_file.txt&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">create_s3bucket</span><span class="p">(</span>
+            <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;pangea.test.bucket&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">bucket</span><span class="o">.</span><span class="n">create_s3apikey</span><span class="p">(</span>
+            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;KEY_01&#39;</span><span class="p">,</span>
+            <span class="n">public_key</span><span class="o">=</span><span class="n">pubkey</span><span class="p">,</span>
+            <span class="n">private_key</span><span class="o">=</span><span class="n">privkey</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_group</span><span class="o">.</span><span class="n">add_s3_bucket</span><span class="p">(</span><span class="n">bucket</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ar-fields-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">field</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;presigned_url&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;presigned_url&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;https://s3.wasabisys.com/pangea.test.bucket/my_private_s3_test_file.txt&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;AWSAccessKeyId=&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Signature=&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Expires=&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnalysisResultTests.test_no_presign_s3_url_in_sample_ar_field"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_api_analysis_result.AnalysisResultTests.test_no_presign_s3_url_in_sample_ar_field">[docs]</a>    <span class="k">def</span> <span class="nf">test_no_presign_s3_url_in_sample_ar_field</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pubkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PUBLIC_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">privkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PRIVATE_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pubkey</span> <span class="ow">and</span> <span class="n">privkey</span><span class="p">):</span>
+            <span class="k">return</span>  <span class="c1"># Only run this test if the keys are available</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span>
+            <span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;test_file&#39;</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">create_field</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;file&#39;</span><span class="p">,</span>
+            <span class="n">stored_data</span><span class="o">=</span><span class="p">{</span>
+                <span class="s1">&#39;__type__&#39;</span><span class="p">:</span> <span class="s1">&#39;s3&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;endpoint_url&#39;</span><span class="p">:</span> <span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;uri&#39;</span><span class="p">:</span> <span class="s1">&#39;s3://pangea.test.bucket/my_private_s3_test_file.txt&#39;</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">reverse</span><span class="p">(</span><span class="s1">&#39;sample-ar-fields-details&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;pk&#39;</span><span class="p">:</span> <span class="n">field</span><span class="o">.</span><span class="n">uuid</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">force_authenticate</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;json&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">status_code</span><span class="p">,</span> <span class="n">status</span><span class="o">.</span><span class="n">HTTP_200_OK</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;stored_data&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotIn</span><span class="p">(</span><span class="s1">&#39;presigned_url&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

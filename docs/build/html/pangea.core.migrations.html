@@ -1,0 +1,278 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.migrations package &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="pangea-core-migrations-package">
+<h1>pangea.core.migrations package<a class="headerlink" href="#pangea-core-migrations-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pangea.core.migrations.0001_initial">
+<span id="pangea-core-migrations-0001-initial-module"></span><h2>pangea.core.migrations.0001_initial module<a class="headerlink" href="#module-pangea.core.migrations.0001_initial" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0001_initial.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0001_initial.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0001_initial.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0001_initial.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0001_initial.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('auth', '0011_update_proxy_permissions')]</em><a class="headerlink" href="#pangea.core.migrations.0001_initial.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0001_initial.Migration.initial">
+<code class="descname">initial</code><em class="property"> = True</em><a class="headerlink" href="#pangea.core.migrations.0001_initial.Migration.initial" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0001_initial.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;CreateModel  name='PangeaUser', fields=[('id', &lt;django.db.models.fields.AutoField&gt;), ('password', &lt;django.db.models.fields.CharField&gt;), ('last_login', &lt;django.db.models.fields.DateTimeField&gt;), ('is_superuser', &lt;django.db.models.fields.BooleanField&gt;), ('first_name', &lt;django.db.models.fields.CharField&gt;), ('last_name', &lt;django.db.models.fields.CharField&gt;), ('is_staff', &lt;django.db.models.fields.BooleanField&gt;), ('is_active', &lt;django.db.models.fields.BooleanField&gt;), ('date_joined', &lt;django.db.models.fields.DateTimeField&gt;), ('email', &lt;django.db.models.fields.EmailField&gt;), ('groups', &lt;django.db.models.fields.related.ManyToManyField&gt;), ('user_permissions', &lt;django.db.models.fields.related.ManyToManyField&gt;)], options={'verbose_name': 'user', 'verbose_name_plural': 'users', 'abstract': False}&gt;, &lt;CreateModel  name='Organization', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('users', &lt;django.db.models.fields.related.ManyToManyField&gt;)], options={'abstract': False}&gt;, &lt;CreateModel  name='Sample', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('metadata', &lt;django.contrib.postgres.fields.jsonb.JSONField&gt;)]&gt;, &lt;CreateModel  name='SampleAnalysisResult', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('module_name', &lt;django.db.models.fields.TextField&gt;), ('replicate', &lt;django.db.models.fields.TextField&gt;), ('status', &lt;django.db.models.fields.TextField&gt;), ('sample', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'unique_together': {('module_name', 'replicate', 'sample')}}&gt;, &lt;CreateModel  name='SampleGroup', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('description', &lt;django.db.models.fields.TextField&gt;), ('is_public', &lt;django.db.models.fields.BooleanField&gt;), ('theme', &lt;django.db.models.fields.TextField&gt;), ('organization', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'abstract': False}&gt;, &lt;CreateModel  name='SampleGroupAnalysisResult', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('module_name', &lt;django.db.models.fields.TextField&gt;), ('replicate', &lt;django.db.models.fields.TextField&gt;), ('status', &lt;django.db.models.fields.TextField&gt;), ('sample_group', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'unique_together': {('module_name', 'replicate', 'sample_group')}}&gt;, &lt;CreateModel  name='SampleLibrary', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('group', &lt;django.db.models.fields.related.OneToOneField&gt;)], options={'abstract': False}&gt;, &lt;AddField  model_name='sample', name='sample_groups', field=&lt;django.db.models.fields.related.ManyToManyField&gt;&gt;, &lt;CreateModel  name='SampleGroupAnalysisResultField', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('stored_data', &lt;django.contrib.postgres.fields.jsonb.JSONField&gt;), ('analysis_result', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'abstract': False, 'unique_together': {('analysis_result', 'name')}}&gt;, &lt;CreateModel  name='SampleAnalysisResultField', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('stored_data', &lt;django.contrib.postgres.fields.jsonb.JSONField&gt;), ('analysis_result', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'abstract': False, 'unique_together': {('analysis_result', 'name')}}&gt;, &lt;AddField  model_name='sample', name='library', field=&lt;django.db.models.fields.related.ForeignKey&gt;&gt;, &lt;AlterUniqueTogether  name='sample', unique_together={('name', 'library')}&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0001_initial.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0002_auto_20200323_1658">
+<span id="pangea-core-migrations-0002-auto-20200323-1658-module"></span><h2>pangea.core.migrations.0002_auto_20200323_1658 module<a class="headerlink" href="#module-pangea.core.migrations.0002_auto_20200323_1658" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0002_auto_20200323_1658.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0002_auto_20200323_1658.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0002_auto_20200323_1658.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0002_auto_20200323_1658.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0002_auto_20200323_1658.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0001_initial')]</em><a class="headerlink" href="#pangea.core.migrations.0002_auto_20200323_1658.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0002_auto_20200323_1658.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;AddField  model_name='organization', name='core_sample_group_uuid', field=&lt;django.db.models.fields.UUIDField&gt;&gt;, &lt;AddField  model_name='pangeauser', name='personal_org_uuid', field=&lt;django.db.models.fields.UUIDField&gt;&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0002_auto_20200323_1658.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0003_s3apikey">
+<span id="pangea-core-migrations-0003-s3apikey-module"></span><h2>pangea.core.migrations.0003_s3apikey module<a class="headerlink" href="#module-pangea.core.migrations.0003_s3apikey" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0003_s3apikey.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0003_s3apikey.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0003_s3apikey.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0003_s3apikey.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0003_s3apikey.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0002_auto_20200323_1658')]</em><a class="headerlink" href="#pangea.core.migrations.0003_s3apikey.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0003_s3apikey.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;CreateModel  name='S3ApiKey', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('description', &lt;django.db.models.fields.TextField&gt;), ('endpoint_url', &lt;django.db.models.fields.TextField&gt;), ('bucket', &lt;django.db.models.fields.TextField&gt;), ('public_key', &lt;django.db.models.fields.TextField&gt;), ('private_key', &lt;django.db.models.fields.TextField&gt;), ('organization', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'abstract': False}&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0003_s3apikey.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0003_samplegroup_is_library">
+<span id="pangea-core-migrations-0003-samplegroup-is-library-module"></span><h2>pangea.core.migrations.0003_samplegroup_is_library module<a class="headerlink" href="#module-pangea.core.migrations.0003_samplegroup_is_library" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0003_samplegroup_is_library.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0003_samplegroup_is_library.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0003_samplegroup_is_library.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0003_samplegroup_is_library.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0003_samplegroup_is_library.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0002_auto_20200323_1658')]</em><a class="headerlink" href="#pangea.core.migrations.0003_samplegroup_is_library.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0003_samplegroup_is_library.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;AddField  model_name='samplegroup', name='is_library', field=&lt;django.db.models.fields.BooleanField&gt;&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0003_samplegroup_is_library.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0004_merge_20200329_1743">
+<span id="pangea-core-migrations-0004-merge-20200329-1743-module"></span><h2>pangea.core.migrations.0004_merge_20200329_1743 module<a class="headerlink" href="#module-pangea.core.migrations.0004_merge_20200329_1743" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0004_merge_20200329_1743.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0004_merge_20200329_1743.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0004_merge_20200329_1743.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0004_merge_20200329_1743.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0004_merge_20200329_1743.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0003_samplegroup_is_library'), ('core', '0003_s3apikey')]</em><a class="headerlink" href="#pangea.core.migrations.0004_merge_20200329_1743.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0004_merge_20200329_1743.Migration.operations">
+<code class="descname">operations</code><em class="property"> = []</em><a class="headerlink" href="#pangea.core.migrations.0004_merge_20200329_1743.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0005_auto_20200822_0140">
+<span id="pangea-core-migrations-0005-auto-20200822-0140-module"></span><h2>pangea.core.migrations.0005_auto_20200822_0140 module<a class="headerlink" href="#module-pangea.core.migrations.0005_auto_20200822_0140" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0005_auto_20200822_0140.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0005_auto_20200822_0140.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0005_auto_20200822_0140.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0005_auto_20200822_0140.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0005_auto_20200822_0140.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0004_merge_20200329_1743')]</em><a class="headerlink" href="#pangea.core.migrations.0005_auto_20200822_0140.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0005_auto_20200822_0140.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;RemoveField  model_name='s3apikey', name='endpoint_url'&gt;, &lt;RemoveField  model_name='s3apikey', name='organization'&gt;, &lt;AddField  model_name='pangeauser', name='saved_sample_groups', field=&lt;django.db.models.fields.related.ManyToManyField&gt;&gt;, &lt;CreateModel  name='S3Bucket', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('endpoint_url', &lt;django.db.models.fields.TextField&gt;), ('organization', &lt;django.db.models.fields.related.ForeignKey&gt;)], options={'abstract': False}&gt;, &lt;AddField  model_name='samplegroup', name='bucket', field=&lt;django.db.models.fields.related.ForeignKey&gt;&gt;, &lt;AlterField  model_name='s3apikey', name='bucket', field=&lt;django.db.models.fields.related.OneToOneField&gt;&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0005_auto_20200822_0140.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0006_auto_20200905_2245">
+<span id="pangea-core-migrations-0006-auto-20200905-2245-module"></span><h2>pangea.core.migrations.0006_auto_20200905_2245 module<a class="headerlink" href="#module-pangea.core.migrations.0006_auto_20200905_2245" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0006_auto_20200905_2245.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0006_auto_20200905_2245.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0006_auto_20200905_2245.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0006_auto_20200905_2245.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0006_auto_20200905_2245.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0005_auto_20200822_0140')]</em><a class="headerlink" href="#pangea.core.migrations.0006_auto_20200905_2245.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0006_auto_20200905_2245.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;AddField  model_name='sampleanalysisresult', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;, &lt;AddField  model_name='samplegroupanalysisresult', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;, &lt;CreateModel  name='Project', fields=[('created_at', &lt;django.db.models.fields.DateTimeField&gt;), ('updated_at', &lt;django.db.models.fields.DateTimeField&gt;), ('uuid', &lt;django.db.models.fields.UUIDField&gt;), ('name', &lt;django.db.models.fields.TextField&gt;), ('description', &lt;django.db.models.fields.TextField&gt;), ('organization', &lt;django.db.models.fields.related.ForeignKey&gt;), ('sample_groups', &lt;django.db.models.fields.related.ManyToManyField&gt;), ('sub_projects', &lt;django.db.models.fields.related.ManyToManyField&gt;)], options={'abstract': False}&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0006_auto_20200905_2245.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0007_auto_20200905_2311">
+<span id="pangea-core-migrations-0007-auto-20200905-2311-module"></span><h2>pangea.core.migrations.0007_auto_20200905_2311 module<a class="headerlink" href="#module-pangea.core.migrations.0007_auto_20200905_2311" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0007_auto_20200905_2311.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0007_auto_20200905_2311.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0007_auto_20200905_2311.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0007_auto_20200905_2311.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0007_auto_20200905_2311.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0006_auto_20200905_2245')]</em><a class="headerlink" href="#pangea.core.migrations.0007_auto_20200905_2311.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0007_auto_20200905_2311.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;AddField  model_name='sample', name='description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AddField  model_name='sampleanalysisresult', name='description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AddField  model_name='samplegroup', name='long_description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AddField  model_name='samplegroup', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;, &lt;AddField  model_name='samplegroupanalysisresult', name='description', field=&lt;django.db.models.fields.TextField&gt;&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0007_auto_20200905_2311.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations.0008_auto_20200907_2159">
+<span id="pangea-core-migrations-0008-auto-20200907-2159-module"></span><h2>pangea.core.migrations.0008_auto_20200907_2159 module<a class="headerlink" href="#module-pangea.core.migrations.0008_auto_20200907_2159" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="pangea.core.migrations.0008_auto_20200907_2159.Migration">
+<em class="property">class </em><code class="descclassname">pangea.core.migrations.0008_auto_20200907_2159.</code><code class="descname">Migration</code><span class="sig-paren">(</span><em>name</em>, <em>app_label</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pangea/core/migrations/0008_auto_20200907_2159.html#Migration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pangea.core.migrations.0008_auto_20200907_2159.Migration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">django.db.migrations.migration.Migration</span></code></p>
+<dl class="attribute">
+<dt id="pangea.core.migrations.0008_auto_20200907_2159.Migration.dependencies">
+<code class="descname">dependencies</code><em class="property"> = [('core', '0007_auto_20200905_2311')]</em><a class="headerlink" href="#pangea.core.migrations.0008_auto_20200907_2159.Migration.dependencies" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pangea.core.migrations.0008_auto_20200907_2159.Migration.operations">
+<code class="descname">operations</code><em class="property"> = [&lt;AlterField  model_name='project', name='sample_groups', field=&lt;django.db.models.fields.related.ManyToManyField&gt;&gt;, &lt;AlterField  model_name='project', name='sub_projects', field=&lt;django.db.models.fields.related.ManyToManyField&gt;&gt;, &lt;AlterField  model_name='sample', name='description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AlterField  model_name='sample', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;, &lt;AlterField  model_name='sampleanalysisresult', name='description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AlterField  model_name='sampleanalysisresult', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;, &lt;AlterField  model_name='samplegroup', name='long_description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AlterField  model_name='samplegroup', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;, &lt;AlterField  model_name='samplegroupanalysisresult', name='description', field=&lt;django.db.models.fields.TextField&gt;&gt;, &lt;AlterField  model_name='samplegroupanalysisresult', name='metadata', field=&lt;django.contrib.postgres.fields.jsonb.JSONField&gt;&gt;]</em><a class="headerlink" href="#pangea.core.migrations.0008_auto_20200907_2159.Migration.operations" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pangea.core.migrations">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pangea.core.migrations" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/pangea.core.migrations.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

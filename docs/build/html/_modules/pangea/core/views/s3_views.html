@@ -1,0 +1,203 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.views.s3_views &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.core.views.s3_views</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">structlog</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="k">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="k">import</span> <span class="n">generics</span>
+<span class="kn">from</span> <span class="nn">rest_framework.exceptions</span> <span class="k">import</span> <span class="n">PermissionDenied</span>
+<span class="kn">from</span> <span class="nn">rest_framework.permissions</span> <span class="k">import</span> <span class="n">IsAuthenticated</span>
+
+<span class="kn">from</span> <span class="nn">..models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">S3ApiKey</span><span class="p">,</span>
+    <span class="n">S3Bucket</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..permissions</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">S3ApiKeyPermission</span><span class="p">,</span>
+    <span class="n">S3BucketPermission</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..serializers</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">S3ApiKeySerializer</span><span class="p">,</span>
+    <span class="n">S3BucketSerializer</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="S3ApiKeyCreateView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3ApiKeyCreateView">[docs]</a><span class="k">class</span> <span class="nc">S3ApiKeyCreateView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">ListCreateAPIView</span><span class="p">):</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">S3ApiKeySerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">IsAuthenticated</span><span class="p">,</span> <span class="n">S3ApiKeyPermission</span><span class="p">)</span>
+
+<div class="viewcode-block" id="S3ApiKeyCreateView.get_queryset"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3ApiKeyCreateView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">S3ApiKeyPermission</span><span class="p">()</span>
+        <span class="n">s3_ids</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">s3</span><span class="o">.</span><span class="n">pk</span>
+            <span class="k">for</span> <span class="n">s3</span> <span class="ow">in</span> <span class="n">S3ApiKey</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">perm</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">S3ApiKey</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">s3_ids</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="S3ApiKeyCreateView.perform_create"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3ApiKeyCreateView.perform_create">[docs]</a>    <span class="k">def</span> <span class="nf">perform_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Require organization membership to create S3 API Key.&quot;&quot;&quot;</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;bucket&#39;</span><span class="p">)</span>
+        <span class="n">organization</span> <span class="o">=</span> <span class="n">bucket</span><span class="o">.</span><span class="n">organization</span>
+        <span class="n">membership_queryset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;attempted_create_s3apikey_without_permission&#39;</span><span class="p">,</span>
+                <span class="n">organization</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">organization</span><span class="o">.</span><span class="n">name</span><span class="p">},</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Organization membership is required to create an s3 api key.&#39;</span><span class="p">))</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="S3ApiKeyDetailsView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3ApiKeyDetailsView">[docs]</a><span class="k">class</span> <span class="nc">S3ApiKeyDetailsView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">RetrieveUpdateDestroyAPIView</span><span class="p">):</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">S3ApiKeySerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">S3ApiKeyPermission</span><span class="p">,</span> <span class="n">IsAuthenticated</span><span class="p">)</span>
+
+<div class="viewcode-block" id="S3ApiKeyDetailsView.get_queryset"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3ApiKeyDetailsView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">S3ApiKeyPermission</span><span class="p">()</span>
+        <span class="n">s3_ids</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">s3</span><span class="o">.</span><span class="n">pk</span>
+            <span class="k">for</span> <span class="n">s3</span> <span class="ow">in</span> <span class="n">S3ApiKey</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">perm</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">S3ApiKey</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">s3_ids</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="S3BucketCreateView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3BucketCreateView">[docs]</a><span class="k">class</span> <span class="nc">S3BucketCreateView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">ListCreateAPIView</span><span class="p">):</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">S3BucketSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">IsAuthenticated</span><span class="p">,</span> <span class="n">S3BucketPermission</span><span class="p">)</span>
+
+<div class="viewcode-block" id="S3BucketCreateView.get_queryset"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3BucketCreateView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">S3BucketPermission</span><span class="p">()</span>
+        <span class="n">s3_ids</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">s3</span><span class="o">.</span><span class="n">pk</span>
+            <span class="k">for</span> <span class="n">s3</span> <span class="ow">in</span> <span class="n">S3Bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">perm</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">S3Bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">s3_ids</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="S3BucketCreateView.perform_create"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3BucketCreateView.perform_create">[docs]</a>    <span class="k">def</span> <span class="nf">perform_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Require organization membership to create S3 bucket.&quot;&quot;&quot;</span>
+        <span class="n">organization</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;organization&#39;</span><span class="p">)</span>
+        <span class="n">membership_queryset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;attempted_create_s3bucket_without_permission&#39;</span><span class="p">,</span>
+                <span class="n">organization</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">organization</span><span class="o">.</span><span class="n">name</span><span class="p">},</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Organization membership is required to create an s3 bucket.&#39;</span><span class="p">))</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="S3BucketDetailsView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3BucketDetailsView">[docs]</a><span class="k">class</span> <span class="nc">S3BucketDetailsView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">RetrieveUpdateDestroyAPIView</span><span class="p">):</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">S3BucketSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">S3BucketPermission</span><span class="p">,</span> <span class="n">IsAuthenticated</span><span class="p">)</span>
+
+<div class="viewcode-block" id="S3BucketDetailsView.get_queryset"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.s3_views.S3BucketDetailsView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">S3BucketPermission</span><span class="p">()</span>
+        <span class="n">s3_ids</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">s3</span><span class="o">.</span><span class="n">pk</span>
+            <span class="k">for</span> <span class="n">s3</span> <span class="ow">in</span> <span class="n">S3Bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">perm</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">s3</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">S3Bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk__in</span><span class="o">=</span><span class="n">s3_ids</span><span class="p">)</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

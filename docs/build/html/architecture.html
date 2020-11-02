@@ -1,0 +1,152 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Architecture &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="License for Pangea" href="license.html" />
+    <link rel="prev" title="Welcome to Pangea’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<div class="figure" id="id1">
+<a class="reference internal image-reference" href="_images/overall_arch.jpeg"><img alt="_images/overall_arch.jpeg" src="_images/overall_arch.jpeg" style="width: 600px;" /></a>
+<p class="caption"><span class="caption-text">Pangea is, ultimately, a wrapper over cloud storage services like S3. It uses a PostGres database to track project structure, metada, and file URIs. A Django Web App and React front end provide an interface to the database.</span></p>
+</div>
+<p>Pangea is a Content Management System for the life sciences. Data for the life sciences is composed of large files that can be grouped into analyses, samples, and projects all of which contain significant metadata. Pangea provides an practical interface to store, manage, and access this data.</p>
+<p>Pangea consists of a Django App that provides a RESTful API to a PostGres database. This database is used to store project structure and metadata for ready access. For large files (which are common) the database provides linking to and from cloud storage services like S3 and the NCBI-SRA database.</p>
+<p>Pangea also provides a python API to interact with a remote endpoint of the RESTful API and a React-TypeScript client.</p>
+</div>
+<div class="section" id="data-model">
+<h2>Data Model<a class="headerlink" href="#data-model" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="core-data-model">
+<h3>Core Data Model<a class="headerlink" href="#core-data-model" title="Permalink to this headline">¶</a></h3>
+<p>Pangea employs a simple data model that can support a variety of use cases. The core of this data model is a Sample. Samples represent a singular physical object like a biopsy or swab. Samples contain metadata which records details that researchers deem important for their experiments, common examples include date of collection, processing technician, and more.</p>
+<div class="figure" id="id2">
+<a class="reference internal image-reference" href="_images/simple_data_model.jpeg"><img alt="_images/simple_data_model.jpeg" src="_images/simple_data_model.jpeg" style="width: 600px;" /></a>
+<p class="caption"><span class="caption-text">Simplified data model for Pangea. Samples are grouped into Sample-Groups. Both Samples and Sample-Groups can contain Analysis-Results.</span></p>
+</div>
+<p>To group samples into projects Pangea supports Sample-Groups. Sample-Groups are quite literally just groups of samples. Samples may belong to many different groups to support different analyses and sub-group analyses with the only restrictions being related to privacy. The only exception to this are Sample Libraries (often called just Libraries in our documentation). Sample Libraries are also Sample Groups but have a special property that every sample must belong to exactly one Sample Library. This library is, in effect, the sample’s home-base.</p>
+<p>The real strength of Pangea is its ability to connect data and analyses to samples. Samples contain Analysis-Results which represent either raw data from the sample or results derived from analysis of that data. An example of this could be the raw reads from paired-end DNA sequencing of a sample. The raw reads would be stored as an Analysis-Result with two Analysis-Result-Fields, one each for the forward and reverse reads. Each Field could point to a file stored on the cloud or, for results that require less storage, be stored directly in Pangea.</p>
+<p>Sample-Groups may also contain Analysis-Results. In this case Analysis-Results are used to represent anything that applies to all the samples at once. An example would be a pairwise distance matrix between all samples in a dataset.</p>
+<p>Analysis-Results may contain multiple replicates of the same type and each Analysis-Result may contain a list of the other Analysis-Results it was derived from. This helps to ensure provenance of each result and reproducible research.</p>
+</div>
+<div class="section" id="full-data-model">
+<h3>Full Data Model<a class="headerlink" href="#full-data-model" title="Permalink to this headline">¶</a></h3>
+<div class="figure" id="id3">
+<a class="reference internal image-reference" href="_images/full_data_model.jpeg"><img alt="_images/full_data_model.jpeg" src="_images/full_data_model.jpeg" style="width: 600px;" /></a>
+<p class="caption"><span class="caption-text">Full data model for Pangea. Analysis-Results can contain separate fields. All samples must be in exactly one Library (but can be in any number of non-library Sample-Groups). Users and Organizations provide authentication and control.</span></p>
+</div>
+<p>As implemented Pangea uses an enhanced data model. THis model provides additional utilities for organization and management.</p>
+</div>
+</div>
+<div class="section" id="contrib-modules">
+<h2>Contrib Modules<a class="headerlink" href="#contrib-modules" title="Permalink to this headline">¶</a></h2>
+<p>Pangea supports contrib modules that provide non-core functionality. This is meant to allow development of specific biological applications without affecting the core codebase.</p>
+</div>
+<div class="section" id="code-layout">
+<h2>Code Layout<a class="headerlink" href="#code-layout" title="Permalink to this headline">¶</a></h2>
+<p>Overall setup is Django standard. All core modules may be found in <code class="docutils literal notranslate"><span class="pre">pangea/core</span></code>, contrib modules are found in <code class="docutils literal notranslate"><span class="pre">pangea/contrib/&lt;module_name&gt;</span></code>. Tests are located in <code class="docutils literal notranslate"><span class="pre">pangea/core/tests</span></code> and <code class="docutils literal notranslate"><span class="pre">pangea/contrib/&lt;module_name&gt;/tests</span></code></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture and Design</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-model">Data Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contrib-modules">Contrib Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-layout">Code Layout</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to Pangea’s documentation!</a></li>
+      <li>Next: <a href="license.html" title="next chapter">License for Pangea</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="_sources/architecture.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

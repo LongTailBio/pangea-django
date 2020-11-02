@@ -1,0 +1,296 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.contrib.omnisearch.search &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.contrib.omnisearch.search</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">structlog</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="k">import</span> <span class="n">connection</span>
+<span class="kn">from</span> <span class="nn">haystack.query</span> <span class="k">import</span> <span class="n">SearchQuerySet</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="k">import</span> <span class="n">ObjectDoesNotExist</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework.exceptions</span> <span class="k">import</span> <span class="n">ValidationError</span>
+<span class="kn">from</span> <span class="nn">pangea.contrib.treeoflife.models</span> <span class="k">import</span> <span class="n">TaxonName</span>
+<span class="kn">from</span> <span class="nn">pangea.contrib.metasub.constants</span> <span class="k">import</span> <span class="n">METASUB_LIBRARY_UUID</span>
+
+<span class="kn">from</span> <span class="nn">pangea.core.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">SampleGroup</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pangea.core.serializers</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">SampleSerializer</span><span class="p">,</span>
+    <span class="n">SampleGroupSerializer</span><span class="p">,</span>
+    <span class="n">OrganizationSerializer</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_dna"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.is_dna">[docs]</a><span class="k">def</span> <span class="nf">is_dna</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">query</span><span class="p">[:</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="mi">100</span><span class="p">)]:</span>
+        <span class="k">if</span> <span class="n">char</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s1">&#39;ATCGUN&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="omni_search"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.omni_search">[docs]</a><span class="k">def</span> <span class="nf">omni_search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;search_term&#39;</span><span class="p">:</span> <span class="n">query</span><span class="p">,</span>
+        <span class="s1">&#39;samples&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;sample_groups&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;organizations&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;taxa&#39;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+
+    <span class="n">keyword_result</span> <span class="o">=</span> <span class="n">keyword_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">,</span> <span class="s1">&#39;sample_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;organizations&#39;</span><span class="p">]:</span>
+        <span class="n">out</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="n">keyword_result</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="n">taxon_result</span> <span class="o">=</span> <span class="n">taxon_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">taxon_result</span><span class="p">:</span>
+        <span class="n">taxon</span> <span class="o">=</span> <span class="n">taxon_result</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">out</span><span class="p">[</span><span class="s1">&#39;taxa&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+            <span class="s1">&#39;canon_name&#39;</span><span class="p">:</span> <span class="n">taxon</span><span class="p">,</span>
+            <span class="s1">&#39;annotation&#39;</span><span class="p">:</span> <span class="n">taxon_result</span><span class="o">.</span><span class="n">annotation</span><span class="p">,</span>
+        <span class="p">})</span>
+        <span class="n">out</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">fuzzy_taxa_search</span><span class="p">(</span><span class="n">taxon</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_dna</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+        <span class="n">dna_result</span> <span class="o">=</span> <span class="n">dna_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">out</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dna_result</span>
+
+    <span class="n">out</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">metadata_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<div class="viewcode-block" id="taxon_search"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.taxon_search">[docs]</a><span class="k">def</span> <span class="nf">taxon_search</span><span class="p">(</span><span class="n">taxon_query</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">taxon</span> <span class="o">=</span> <span class="n">TaxonName</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">taxon_id</span><span class="o">=</span><span class="n">taxon_query</span><span class="p">)</span><span class="o">.</span><span class="n">tree_node</span>
+    <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">taxon</span> <span class="o">=</span> <span class="n">TaxonName</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name__iexact</span><span class="o">=</span><span class="n">taxon_query</span><span class="p">)</span><span class="o">.</span><span class="n">tree_node</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">taxon</span></div>
+
+
+<div class="viewcode-block" id="dna_search"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.dna_search">[docs]</a><span class="k">def</span> <span class="nf">dna_search</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="s1">&#39;http://dnaloc.ethz.ch/raw-search&#39;</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span>
+            <span class="s1">&#39;input_data&#39;</span><span class="p">:</span> <span class="n">seq</span><span class="p">,</span>
+            <span class="s1">&#39;database&#39;</span><span class="p">:</span> <span class="s1">&#39;metasub19&#39;</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+    <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="n">library</span><span class="o">=</span><span class="n">METASUB_LIBRARY_UUID</span><span class="p">(),</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">el</span><span class="p">[</span><span class="s1">&#39;sample_name&#39;</span><span class="p">],</span>
+        <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;results&#39;</span><span class="p">]</span>
+    <span class="p">]</span>
+    <span class="n">serialized</span> <span class="o">=</span> <span class="p">[</span><span class="n">SampleSerializer</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">serialized</span></div>
+
+
+<div class="viewcode-block" id="keyword_search"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.keyword_search">[docs]</a><span class="k">def</span> <span class="nf">keyword_search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="n">sqs</span> <span class="o">=</span> <span class="n">SearchQuerySet</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">filter_serialize</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">serializer</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">object</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">sqs</span> <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">model_name</span> <span class="o">==</span> <span class="n">model_name</span><span class="p">]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;samples&#39;</span><span class="p">:</span> <span class="n">filter_serialize</span><span class="p">(</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">SampleSerializer</span><span class="p">),</span>
+        <span class="s1">&#39;sample_groups&#39;</span><span class="p">:</span> <span class="n">filter_serialize</span><span class="p">(</span><span class="s1">&#39;samplegroup&#39;</span><span class="p">,</span> <span class="n">SampleGroupSerializer</span><span class="p">),</span>
+        <span class="s1">&#39;organizations&#39;</span><span class="p">:</span> <span class="n">filter_serialize</span><span class="p">(</span><span class="s1">&#39;organization&#39;</span><span class="p">,</span> <span class="n">OrganizationSerializer</span><span class="p">),</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="metadata_search"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.metadata_search">[docs]</a><span class="k">def</span> <span class="nf">metadata_search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="k">if</span> <span class="s1">&#39;=&#39;</span> <span class="ow">in</span> <span class="n">query</span><span class="p">:</span>
+        <span class="n">tkns</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;=&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tkns</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">tkns</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">tkns</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">            select</span>
+<span class="s1">                core_sample.uuid</span>
+<span class="s1">            from</span>
+<span class="s1">                core_sample</span>
+<span class="s1">            where exists (</span>
+<span class="s1">                select 1</span>
+<span class="s1">                from</span>
+<span class="s1">                    jsonb_each_text(core_sample.metadata) m</span>
+<span class="s1">                where</span>
+<span class="s1">                    (m.key ilike </span><span class="si">%s</span><span class="s1">)</span>
+<span class="s1">                    and</span>
+<span class="s1">                    (m.value ilike </span><span class="si">%s</span><span class="s1">)</span>
+<span class="s1">            )</span>
+<span class="s1">            &#39;&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">f</span><span class="s1">&#39;%</span><span class="si">{key}</span><span class="s1">%&#39;</span><span class="p">,</span> <span class="n">f</span><span class="s1">&#39;%</span><span class="si">{val}</span><span class="s1">%&#39;</span><span class="p">])</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="p">]</span>
+    <span class="n">serialized</span> <span class="o">=</span> <span class="p">[</span><span class="n">SampleSerializer</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">serialized</span></div>
+
+
+<div class="viewcode-block" id="fuzzy_taxa_search"><a class="viewcode-back" href="../../../../pangea.contrib.omnisearch.html#pangea.contrib.omnisearch.search.fuzzy_taxa_search">[docs]</a><span class="k">def</span> <span class="nf">fuzzy_taxa_search</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[]</span>  <span class="c1"># temporarily disable fuzzy taxa search</span>
+    <span class="n">sql_query</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;%</span><span class="si">{query}</span><span class="s1">%&#39;</span>
+    <span class="k">with</span> <span class="n">connection</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span> <span class="k">as</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">            -- Use text-based search to restrict the search space</span>
+<span class="s1">            with clearcut as (</span>
+<span class="s1">                select analysis_result_id, stored_data</span>
+<span class="s1">                from core_sampleanalysisresultfield</span>
+<span class="s1">                where name = &#39;relative_abundance&#39;</span>
+<span class="s1">                    and stored_data::text ilike </span><span class="si">%s</span><span class="s1"></span>
+<span class="s1">            ),</span>
+<span class="s1">            -- Search on actual taxa results</span>
+<span class="s1">            filtered_taxa as (</span>
+<span class="s1">                select</span>
+<span class="s1">                    clearcut.analysis_result_id,</span>
+<span class="s1">                    taxa.*</span>
+<span class="s1">                from</span>
+<span class="s1">                    clearcut,</span>
+<span class="s1">                    jsonb_each_text(clearcut.stored_data) as taxa</span>
+<span class="s1">                where</span>
+<span class="s1">                    taxa.key ilike </span><span class="si">%s</span><span class="s1"></span>
+<span class="s1">            )</span>
+<span class="s1">            -- Pull in Sample records</span>
+<span class="s1">            select</span>
+<span class="s1">                filtered_taxa.key as taxa,</span>
+<span class="s1">                json_agg((select x from (</span>
+<span class="s1">                    select</span>
+<span class="s1">                        core_sample.uuid as sample_uuid,</span>
+<span class="s1">                        core_sample.name as sample_name,</span>
+<span class="s1">                        core_sample.library_id as sample_library_uuid</span>
+<span class="s1">                    order by</span>
+<span class="s1">                        core_sample.library_id</span>
+<span class="s1">                ) as x)) as samples</span>
+<span class="s1">            from</span>
+<span class="s1">                core_sample</span>
+<span class="s1">                join core_sampleanalysisresult</span>
+<span class="s1">                    on core_sampleanalysisresult.sample_id = core_sample.uuid</span>
+<span class="s1">                join filtered_taxa</span>
+<span class="s1">                    on filtered_taxa.analysis_result_id = core_sampleanalysisresult.uuid</span>
+<span class="s1">            group by</span>
+<span class="s1">                filtered_taxa.key</span>
+<span class="s1">            order by</span>
+<span class="s1">                filtered_taxa.key</span>
+<span class="s1">            &#39;&#39;&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">sql_query</span><span class="p">,</span> <span class="n">sql_query</span><span class="p">])</span>
+
+        <span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()}</span>
+    <span class="k">if</span> <span class="n">query</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">el</span><span class="p">[</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="n">results</span><span class="p">[</span><span class="n">query</span><span class="p">]</span>
+    <span class="p">]</span>
+    <span class="n">serialized</span> <span class="o">=</span> <span class="p">[</span><span class="n">SampleSerializer</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">serialized</span></div>
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

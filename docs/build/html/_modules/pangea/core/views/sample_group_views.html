@@ -1,0 +1,437 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.views.sample_group_views &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.core.views.sample_group_views</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">structlog</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">urllib.request</span> <span class="k">import</span> <span class="n">urlretrieve</span>
+
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="k">import</span> <span class="n">gettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.db.models</span> <span class="k">import</span> <span class="n">Q</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.http</span> <span class="k">import</span> <span class="n">require_GET</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="k">import</span> <span class="n">HttpResponse</span>
+<span class="kn">from</span> <span class="nn">django.core.exceptions</span> <span class="k">import</span> <span class="n">ObjectDoesNotExist</span>
+
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="k">import</span> <span class="n">generics</span>
+<span class="kn">from</span> <span class="nn">rest_framework.decorators</span> <span class="k">import</span> <span class="n">api_view</span><span class="p">,</span> <span class="n">authentication_classes</span>
+<span class="kn">from</span> <span class="nn">rest_framework.response</span> <span class="k">import</span> <span class="n">Response</span>
+<span class="kn">from</span> <span class="nn">rest_framework.exceptions</span> <span class="k">import</span> <span class="n">PermissionDenied</span>
+<span class="kn">from</span> <span class="nn">rest_framework.permissions</span> <span class="k">import</span> <span class="n">IsAuthenticatedOrReadOnly</span><span class="p">,</span> <span class="n">IsAuthenticated</span>
+
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">PermissionedListCreateAPIView</span>
+<span class="kn">from</span> <span class="nn">..param_auth</span> <span class="k">import</span> <span class="n">TokenParamAuthentication</span>
+<span class="kn">from</span> <span class="nn">..models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">SampleGroup</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResultField</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResultField</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..permissions</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">SampleGroupPermission</span><span class="p">,</span>
+    <span class="n">SamplePermission</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">..serializers</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">SampleGroupSerializer</span><span class="p">,</span>
+    <span class="n">SampleGroupAddSampleSerializer</span><span class="p">,</span>
+    <span class="n">SampleSerializer</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResultSerializer</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResultSerializer</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResultFieldSerializer</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResultFieldSerializer</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">...settings</span> <span class="k">import</span> <span class="n">TAR_DIR</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">structlog</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SampleGroupCreateView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupCreateView">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupCreateView</span><span class="p">(</span><span class="n">PermissionedListCreateAPIView</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">SampleGroupSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">IsAuthenticatedOrReadOnly</span><span class="p">,)</span>
+    <span class="n">filterset_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;organization_id&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;is_public&#39;</span><span class="p">]</span>
+    <span class="n">permission</span> <span class="o">=</span> <span class="n">SampleGroupPermission</span>
+
+<div class="viewcode-block" id="SampleGroupCreateView.perform_create"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupCreateView.perform_create">[docs]</a>    <span class="k">def</span> <span class="nf">perform_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Require organization membership to create sample group.&quot;&quot;&quot;</span>
+        <span class="n">organization</span> <span class="o">=</span> <span class="n">serializer</span><span class="o">.</span><span class="n">validated_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;organization&#39;</span><span class="p">)</span>
+        <span class="n">membership_queryset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;attempted_create_sample_group_without_permission&#39;</span><span class="p">,</span>
+                <span class="n">organization</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;uuid&#39;</span><span class="p">:</span> <span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">organization</span><span class="o">.</span><span class="n">name</span><span class="p">},</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Organization membership is required to create a sample group.&#39;</span><span class="p">))</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="SampleGroupDetailsView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupDetailsView">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupDetailsView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">RetrieveUpdateDestroyAPIView</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class handles the http GET, PUT and DELETE requests.&quot;&quot;&quot;</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">SampleGroupSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">SampleGroupPermission</span><span class="p">,)</span></div>
+
+
+<div class="viewcode-block" id="SampleGroupSamplesView"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupSamplesView">[docs]</a><span class="k">class</span> <span class="nc">SampleGroupSamplesView</span><span class="p">(</span><span class="n">generics</span><span class="o">.</span><span class="n">ListAPIView</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class handles managing membership of samples within sample groups.&quot;&quot;&quot;</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">IsAuthenticatedOrReadOnly</span><span class="p">,)</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupSamplesView.get_serializer_class"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupSamplesView.get_serializer_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_serializer_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;GET&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SampleSerializer</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;POST&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">SampleGroupAddSampleSerializer</span></div>
+
+    <span class="k">def</span> <span class="nf">_filter_queryset_library</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="p">,</span> <span class="n">sample_grp_uuid</span><span class="p">,</span> <span class="n">sample_grp</span><span class="p">,</span> <span class="n">perm</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        if the group is a library it should not have samples from other groups</span>
+<span class="sd">        so we only check this group</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">has_permission</span> <span class="o">=</span> <span class="n">perm</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">sample_grp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_permission</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">filter_queryset</span><span class="p">(</span><span class="n">queryset</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">sample_groups__pk</span><span class="o">=</span><span class="n">sample_grp_uuid</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">samples</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SampleGroupSamplesView.filter_queryset"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupSamplesView.filter_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">filter_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="p">):</span>
+        <span class="n">sample_grp_uuid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_pk&#39;</span><span class="p">)</span>
+        <span class="n">sample_group</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">sample_grp_uuid</span><span class="p">)</span>
+        <span class="n">perm</span><span class="p">,</span> <span class="n">has_permission</span> <span class="o">=</span> <span class="n">SampleGroupPermission</span><span class="p">(),</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">sample_group</span><span class="o">.</span><span class="n">is_library</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_queryset_library</span><span class="p">(</span>
+                <span class="n">queryset</span><span class="p">,</span> <span class="n">sample_grp_uuid</span><span class="p">,</span> <span class="n">sample_group</span><span class="p">,</span> <span class="n">perm</span>
+            <span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">filter_queryset</span><span class="p">(</span><span class="n">queryset</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">sample_groups__pk</span><span class="o">=</span><span class="n">sample_grp_uuid</span><span class="p">)</span>
+        <span class="n">libraries</span> <span class="o">=</span> <span class="p">{</span><span class="n">samp</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">group</span> <span class="k">for</span> <span class="n">samp</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">lib</span> <span class="ow">in</span> <span class="n">libraries</span><span class="p">:</span>
+            <span class="n">has_permission</span> <span class="o">&amp;=</span> <span class="n">perm</span><span class="o">.</span><span class="n">has_object_permission</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">has_permission</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">samples</span><span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="s1">&#39;created_at&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SampleGroupSamplesView.post"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.SampleGroupSamplesView.post">[docs]</a>    <span class="k">def</span> <span class="nf">post</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">sample_group_uuid</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;group_pk&#39;</span><span class="p">)</span>
+        <span class="n">sample_uuid</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sample_uuid&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">sample_group</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">sample_group_uuid</span><span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">sample_uuid</span><span class="p">)</span>
+
+        <span class="n">group_org</span> <span class="o">=</span> <span class="n">sample_group</span><span class="o">.</span><span class="n">organization</span>
+        <span class="n">group_membership_queryset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">group_org</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+        <span class="n">sample_org</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">organization</span>
+        <span class="n">sample_membership_queryset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">sample_org</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">group_membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">sample_membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s1">&#39;attempted_add_sample_to_group_without_permission&#39;</span><span class="p">,</span>
+                <span class="n">user</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span>
+                <span class="n">sample_pk</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="n">sample_group_pk</span><span class="o">=</span><span class="n">sample_group</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Insufficient permissions to add sample to sample group.&#39;</span><span class="p">))</span>
+
+        <span class="n">sample</span><span class="o">.</span><span class="n">sample_groups</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sample_group</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Response</span><span class="p">({</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;success&quot;</span><span class="p">})</span></div></div>
+
+
+<div class="viewcode-block" id="get_sample_metadata_in_group"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.get_sample_metadata_in_group">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">TokenParamAuthentication</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">get_sample_metadata_in_group</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reply with metadata for samples in group.&quot;&quot;&quot;</span>
+    <span class="n">grp</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">grp</span><span class="o">.</span><span class="n">is_public</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">membership_queryset</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># occurs if user is not logged in</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">authorized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Insufficient permissions to access group.&#39;</span><span class="p">))</span>
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">grp</span><span class="o">.</span><span class="n">sample_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">metadata</span><span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">metadata</span>
+
+    <span class="k">if</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;csv&#39;</span><span class="p">:</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
+        <span class="n">metadata</span> <span class="o">=</span> <span class="n">tbl</span><span class="o">.</span><span class="n">to_csv</span><span class="p">()</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;text/csv&#39;</span><span class="p">)</span>
+        <span class="n">grp_name</span> <span class="o">=</span> <span class="n">grp</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+        <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;attachment; filename=&quot;</span><span class="si">{grp_name}</span><span class="s1">_metadata.csv&quot;&#39;</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_sample_ar_counts_in_group"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.get_sample_ar_counts_in_group">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">TokenParamAuthentication</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">get_sample_ar_counts_in_group</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reply with counts for all types of sample analysis results in the group.&quot;&quot;&quot;</span>
+    <span class="n">grp</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">grp</span><span class="o">.</span><span class="n">is_public</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">membership_queryset</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># occurs if user is not logged in</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">authorized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Insufficient permissions to access group.&#39;</span><span class="p">))</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;n_samples&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">grp</span><span class="o">.</span><span class="n">sample_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;n_samples&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">module_name</span> <span class="ow">in</span> <span class="p">{</span><span class="n">ar</span><span class="o">.</span><span class="n">module_name</span> <span class="k">for</span> <span class="n">ar</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">analysis_result_set</span><span class="o">.</span><span class="n">all</span><span class="p">()}:</span>
+            <span class="n">blob</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">blob</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_sample_group_manifest"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.get_sample_group_manifest">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">TokenParamAuthentication</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">get_sample_group_manifest</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reply with a sample group manifest.&quot;&quot;&quot;</span>
+    <span class="n">grp</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">grp</span><span class="o">.</span><span class="n">is_public</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">membership_queryset</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># occurs if user is not logged in</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">authorized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Insufficient permissions to get group manifest.&#39;</span><span class="p">))</span>
+    <span class="n">blob</span> <span class="o">=</span> <span class="n">SampleGroupSerializer</span><span class="p">(</span><span class="n">grp</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">grp</span><span class="o">.</span><span class="n">sample_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">sample_blob</span> <span class="o">=</span> <span class="n">SampleSerializer</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">del</span> <span class="n">sample_blob</span><span class="p">[</span><span class="s1">&#39;library_obj&#39;</span><span class="p">]</span>
+        <span class="n">sample_blob</span><span class="p">[</span><span class="s1">&#39;analysis_results&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">ar</span> <span class="ow">in</span> <span class="n">sample</span><span class="o">.</span><span class="n">analysis_result_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">ar_blob</span> <span class="o">=</span> <span class="n">SampleAnalysisResultSerializer</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">del</span> <span class="n">ar_blob</span><span class="p">[</span><span class="s1">&#39;sample_obj&#39;</span><span class="p">]</span>
+            <span class="n">ar_blob</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">ar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">field_blob</span> <span class="o">=</span> <span class="n">SampleAnalysisResultFieldSerializer</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+                <span class="k">del</span> <span class="n">field_blob</span><span class="p">[</span><span class="s1">&#39;analysis_result_obj&#39;</span><span class="p">]</span>
+                <span class="n">ar_blob</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_blob</span><span class="p">)</span>
+            <span class="n">sample_blob</span><span class="p">[</span><span class="s1">&#39;analysis_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ar_blob</span><span class="p">)</span>
+        <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample_blob</span><span class="p">)</span>
+
+    <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;analysis_results&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">ar</span> <span class="ow">in</span> <span class="n">grp</span><span class="o">.</span><span class="n">analysis_result_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">ar_blob</span> <span class="o">=</span> <span class="n">SampleGroupAnalysisResultSerializer</span><span class="p">(</span><span class="n">ar</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">del</span> <span class="n">ar_blob</span><span class="p">[</span><span class="s1">&#39;sample_group_obj&#39;</span><span class="p">]</span>
+        <span class="n">ar_blob</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">ar</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">field_blob</span> <span class="o">=</span> <span class="n">SampleGroupAnalysisResultFieldSerializer</span><span class="p">(</span><span class="n">field</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+            <span class="k">del</span> <span class="n">field_blob</span><span class="p">[</span><span class="s1">&#39;analysis_result_obj&#39;</span><span class="p">]</span>
+            <span class="n">ar_blob</span><span class="p">[</span><span class="s1">&#39;fields&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_blob</span><span class="p">)</span>
+        <span class="n">blob</span><span class="p">[</span><span class="s1">&#39;analysis_results&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ar_blob</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">Response</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_sample_data_in_group"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.get_sample_data_in_group">[docs]</a><span class="nd">@api_view</span><span class="p">([</span><span class="s1">&#39;GET&#39;</span><span class="p">])</span>
+<span class="nd">@authentication_classes</span><span class="p">([</span><span class="n">TokenParamAuthentication</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">get_sample_data_in_group</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">pk</span><span class="p">,</span> <span class="n">module_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reply with metadata for samples in group.&quot;&quot;&quot;</span>
+    <span class="n">grp</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">pk</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">grp</span><span class="o">.</span><span class="n">is_public</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">membership_queryset</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">organization_set</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">pk</span><span class="p">)</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="n">membership_queryset</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># occurs if user is not logged in</span>
+            <span class="n">authorized</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">authorized</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PermissionDenied</span><span class="p">(</span><span class="n">_</span><span class="p">(</span><span class="s1">&#39;Insufficient permissions to access group.&#39;</span><span class="p">))</span>
+    <span class="n">kind</span> <span class="o">=</span> <span class="n">request</span><span class="o">.</span><span class="n">GET</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;kind&#39;</span><span class="p">,</span> <span class="s1">&#39;tar&#39;</span><span class="p">)</span>
+    <span class="n">ars</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">grp</span><span class="o">.</span><span class="n">sample_set</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">SampleAnalysisResult</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="n">module_name</span><span class="p">,</span> <span class="n">sample</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+            <span class="n">ars</span><span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ar</span>
+        <span class="k">except</span> <span class="n">ObjectDoesNotExist</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">kind</span> <span class="o">==</span> <span class="s1">&#39;tar&#39;</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">get_tarball</span><span class="p">(</span><span class="n">grp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">ars</span><span class="p">)</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="p">,</span> <span class="n">content_type</span><span class="o">=</span><span class="s1">&#39;binary&#39;</span><span class="p">)</span>
+        <span class="n">response</span><span class="p">[</span><span class="s1">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;attachment; filename=&quot;{os.path.basename(filename)}&quot;&#39;</span>
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">return</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">metadata</span><span class="p">),</span> <span class="n">content_type</span><span class="o">=</span><span class="s2">&quot;application/json&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="clean_tarball_cache"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.clean_tarball_cache">[docs]</a><span class="k">def</span> <span class="nf">clean_tarball_cache</span><span class="p">():</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">TAR_DIR</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">timestamp</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fname</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAR_DIR</span><span class="p">,</span> <span class="n">fname</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_tarball"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.get_tarball">[docs]</a><span class="k">def</span> <span class="nf">get_tarball</span><span class="p">(</span><span class="n">group_name</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">analysis_results</span><span class="p">):</span>
+    <span class="n">clean_tarball_cache</span><span class="p">()</span>
+    <span class="n">group_name</span> <span class="o">=</span> <span class="n">group_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="n">module_name</span> <span class="o">=</span> <span class="n">module_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">tarball_name</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{group_name}</span><span class="s1">__</span><span class="si">{module_name}</span><span class="s1">__</span><span class="si">{timestamp}</span><span class="s1">.tar.gz&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;::&#39;</span><span class="p">,</span> <span class="s1">&#39;__&#39;</span><span class="p">)</span>
+    <span class="n">tarball_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TAR_DIR</span><span class="p">,</span> <span class="n">tarball_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tarball_name</span><span class="p">):</span>
+        <span class="n">make_tarball</span><span class="p">(</span><span class="n">tarball_name</span><span class="p">,</span> <span class="n">analysis_results</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tarball_name</span></div>
+
+
+<div class="viewcode-block" id="referenced_filename"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.referenced_filename">[docs]</a><span class="k">def</span> <span class="nf">referenced_filename</span><span class="p">(</span><span class="n">arf</span><span class="p">):</span>
+    <span class="n">key</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;json&#39;</span>
+    <span class="k">for</span> <span class="n">a_key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;filename&#39;</span><span class="p">,</span> <span class="s1">&#39;uri&#39;</span><span class="p">,</span> <span class="s1">&#39;url&#39;</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">a_key</span> <span class="ow">in</span> <span class="n">arf</span><span class="o">.</span><span class="n">stored_data</span><span class="p">:</span>
+            <span class="n">key</span> <span class="o">=</span> <span class="n">a_key</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="n">key</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">arf</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;gz&#39;</span><span class="p">]:</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">arf</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">ext</span>
+    <span class="n">sname</span> <span class="o">=</span> <span class="n">arf</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="n">mname</span> <span class="o">=</span> <span class="n">arf</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">module_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+    <span class="n">fname</span> <span class="o">=</span> <span class="n">arf</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span><span class="p">)</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{sname}</span><span class="s1">.</span><span class="si">{mname}</span><span class="s1">.</span><span class="si">{fname}</span><span class="s1">.</span><span class="si">{ext}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;::&#39;</span><span class="p">,</span> <span class="s1">&#39;__&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filename</span></div>
+
+
+<div class="viewcode-block" id="AnalysisResultFieldDownloadError"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.AnalysisResultFieldDownloadError">[docs]</a><span class="k">class</span> <span class="nc">AnalysisResultFieldDownloadError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="make_tarball"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.make_tarball">[docs]</a><span class="k">def</span> <span class="nf">make_tarball</span><span class="p">(</span><span class="n">tarball_name</span><span class="p">,</span> <span class="n">analysis_results</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">tarball_name</span><span class="p">,</span> <span class="s1">&#39;w:gz&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tarball</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">sample_name</span><span class="p">,</span> <span class="n">ar</span> <span class="ow">in</span> <span class="n">analysis_results</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">arf</span> <span class="ow">in</span> <span class="n">SampleAnalysisResultField</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">analysis_result</span><span class="o">=</span><span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+                <span class="n">local_filepath</span> <span class="o">=</span> <span class="n">referenced_filename</span><span class="p">(</span><span class="n">arf</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">download_file</span><span class="p">(</span><span class="n">arf</span><span class="p">,</span> <span class="n">local_filepath</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">AnalysisResultFieldDownloadError</span><span class="p">:</span>
+                    <span class="nb">open</span><span class="p">(</span><span class="n">local_filepath</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">arf</span><span class="o">.</span><span class="n">stored_data</span><span class="p">))</span>
+                <span class="n">tarball</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">local_filepath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">tarball_name</span></div>
+
+
+<div class="viewcode-block" id="download_file"><a class="viewcode-back" href="../../../../pangea.core.views.html#pangea.core.views.sample_group_views.download_file">[docs]</a><span class="k">def</span> <span class="nf">download_file</span><span class="p">(</span><span class="n">ar_field</span><span class="p">,</span> <span class="n">local_filepath</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;__type__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;s3&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">AnalysisResultFieldDownloadError</span><span class="p">(</span><span class="s1">&#39;Not an S3 AR Field&#39;</span><span class="p">)</span>
+    <span class="n">bucket_name</span> <span class="o">=</span> <span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;s3://&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">s3key_query</span> <span class="o">=</span> <span class="n">ar_field</span><span class="o">.</span><span class="n">analysis_result</span><span class="o">.</span><span class="n">sample</span><span class="o">.</span><span class="n">library</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">organization</span><span class="o">.</span><span class="n">s3_api_keys</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">endpoint_url</span><span class="o">=</span><span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;endpoint_url&#39;</span><span class="p">])</span> \
+        <span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Q</span><span class="p">(</span><span class="n">bucket</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">)</span> <span class="o">|</span> <span class="n">Q</span><span class="p">(</span><span class="n">bucket</span><span class="o">=</span><span class="n">bucket_name</span><span class="p">))</span>
+    <span class="n">url</span> <span class="o">=</span> <span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">s3key_query</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">s3key</span> <span class="o">=</span> <span class="n">s3key_query</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">s3key</span><span class="o">.</span><span class="n">presign_url</span><span class="p">(</span>
+            <span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;endpoint_url&#39;</span><span class="p">],</span>
+            <span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;uri&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">url</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;s3://&#39;</span><span class="p">,</span> <span class="n">ar_field</span><span class="o">.</span><span class="n">stored_data</span><span class="p">[</span><span class="s1">&#39;endpoint_url&#39;</span><span class="p">])</span>
+    <span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">local_filepath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">local_filepath</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

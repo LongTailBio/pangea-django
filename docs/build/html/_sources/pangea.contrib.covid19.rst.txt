@@ -1,0 +1,101 @@
+pangea.contrib.covid19 package
+==============================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pangea.contrib.covid19.migrations
+
+Submodules
+----------
+
+pangea.contrib.covid19.admin module
+-----------------------------------
+
+.. automodule:: pangea.contrib.covid19.admin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.apps module
+----------------------------------
+
+.. automodule:: pangea.contrib.covid19.apps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.bio module
+---------------------------------
+
+.. automodule:: pangea.contrib.covid19.bio
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.models module
+------------------------------------
+
+.. automodule:: pangea.contrib.covid19.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.serializers module
+-----------------------------------------
+
+.. automodule:: pangea.contrib.covid19.serializers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.tasks module
+-----------------------------------
+
+.. automodule:: pangea.contrib.covid19.tasks
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.tests module
+-----------------------------------
+
+.. automodule:: pangea.contrib.covid19.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.urls module
+----------------------------------
+
+.. automodule:: pangea.contrib.covid19.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.utils module
+-----------------------------------
+
+.. automodule:: pangea.contrib.covid19.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.covid19.views module
+-----------------------------------
+
+.. automodule:: pangea.contrib.covid19.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.covid19
+    :members:
+    :undoc-members:
+    :show-inheritance:

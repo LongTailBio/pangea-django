@@ -1,0 +1,94 @@
+pangea.contrib.treeoflife package
+=================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pangea.contrib.treeoflife.migrations
+    pangea.contrib.treeoflife.tests
+
+Submodules
+----------
+
+pangea.contrib.treeoflife.admin module
+--------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.admin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.apps module
+-------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.apps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.constants module
+------------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.constants
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.mixins module
+---------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.mixins
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.models module
+---------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.taxa\_tree module
+-------------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.taxa_tree
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.urls module
+-------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.utils module
+--------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.treeoflife.views module
+--------------------------------------
+
+.. automodule:: pangea.contrib.treeoflife.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.treeoflife
+    :members:
+    :undoc-members:
+    :show-inheritance:

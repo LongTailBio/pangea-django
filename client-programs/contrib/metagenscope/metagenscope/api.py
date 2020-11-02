@@ -12,6 +12,7 @@ from .modules import (
     MicrobeDirectoryModule,
     TaxaSunburstModule,
     ReadsClassifiedModule,
+    CovidFastDetectModule,
 )
 
 GROUP_MODULES = [
@@ -23,6 +24,7 @@ GROUP_MODULES = [
     SampleSimilarityModule,
     VolcanoModule,
     MicrobeDirectoryModule,
+    CovidFastDetectModule,
 ]
 
 SAMPLE_MODULES = [

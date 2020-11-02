@@ -1,0 +1,22 @@
+pangea.contrib package
+======================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    pangea.contrib.covid19
+    pangea.contrib.metasub
+    pangea.contrib.omnisearch
+    pangea.contrib.tagging
+    pangea.contrib.taxasearch
+    pangea.contrib.treeoflife
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib
+    :members:
+    :undoc-members:
+    :show-inheritance:

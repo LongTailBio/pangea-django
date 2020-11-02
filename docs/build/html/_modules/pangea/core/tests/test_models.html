@@ -1,0 +1,406 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.core.tests.test_models &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.core.tests.test_models</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Test suite for Sample model.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">django.test</span> <span class="k">import</span> <span class="n">TestCase</span>
+<span class="kn">from</span> <span class="nn">django.db.utils</span> <span class="k">import</span> <span class="n">IntegrityError</span>
+<span class="kn">from</span> <span class="nn">unittest</span> <span class="k">import</span> <span class="n">skip</span>
+
+<span class="kn">from</span> <span class="nn">..encrypted_fields</span> <span class="k">import</span> <span class="n">EncryptedString</span>
+<span class="kn">from</span> <span class="nn">..models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">PangeaUser</span><span class="p">,</span>
+    <span class="n">Organization</span><span class="p">,</span>
+    <span class="n">S3ApiKey</span><span class="p">,</span>
+    <span class="n">S3Bucket</span><span class="p">,</span>
+    <span class="n">SampleGroup</span><span class="p">,</span>
+    <span class="n">Sample</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResult</span><span class="p">,</span>
+    <span class="n">SampleAnalysisResultField</span><span class="p">,</span>
+    <span class="n">SampleGroupAnalysisResultField</span><span class="p">,</span>
+    <span class="n">Project</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="TestUserModel"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestUserModel">[docs]</a><span class="k">class</span> <span class="nc">TestUserModel</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestUserModel.test_personal_org_from_user"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestUserModel.test_personal_org_from_user">[docs]</a>    <span class="k">def</span> <span class="nf">test_personal_org_from_user</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="n">PangeaUser</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s1">&#39;foo@bar.com&#39;</span><span class="p">)</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">user</span><span class="o">.</span><span class="n">personal_org</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">org</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">org</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">org</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">_personal_org_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">org</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">user</span><span class="o">.</span><span class="n">personal_org_uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="n">org</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">all</span><span class="p">())</span></div></div>
+
+
+<div class="viewcode-block" id="TestS3ApiKeyModel"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestS3ApiKeyModel">[docs]</a><span class="k">class</span> <span class="nc">TestS3ApiKeyModel</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TestS3ApiKeyModel.test_encrypt_on_save"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestS3ApiKeyModel.test_encrypt_on_save">[docs]</a>    <span class="k">def</span> <span class="nf">test_encrypt_on_save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization&#39;</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="n">S3Bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">organization</span><span class="o">=</span><span class="n">org</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_bucket&#39;</span><span class="p">,</span>
+            <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;https://sys.foobar.com&#39;</span><span class="p">,</span>                        
+        <span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">S3ApiKey</span><span class="p">(</span>
+            <span class="n">bucket</span><span class="o">=</span><span class="n">bucket</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;KEY_01&#39;</span><span class="p">,</span>
+            <span class="n">public_key</span><span class="o">=</span><span class="s1">&#39;my_public_key&#39;</span><span class="p">,</span>
+            <span class="n">private_key</span><span class="o">=</span><span class="s1">&#39;my_private_key&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">retrieved</span> <span class="o">=</span> <span class="n">S3ApiKey</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">retrieved</span><span class="o">.</span><span class="n">public_key</span><span class="p">,</span> <span class="s1">&#39;my_public_key&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">retrieved</span><span class="o">.</span><span class="n">private_key</span><span class="p">,</span> <span class="s1">&#39;my_private_key&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">retrieved</span><span class="o">.</span><span class="n">private_key</span><span class="p">,</span> <span class="n">EncryptedString</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">retrieved</span><span class="o">.</span><span class="n">private_key</span><span class="o">.</span><span class="n">decrypt</span><span class="p">(),</span> <span class="s1">&#39;my_private_key&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestS3ApiKeyModel.test_get_presigned_url"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestS3ApiKeyModel.test_get_presigned_url">[docs]</a>    <span class="k">def</span> <span class="nf">test_get_presigned_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pubkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PUBLIC_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">privkey</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;PANGEA_S3_TESTER_PRIVATE_KEY&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pubkey</span> <span class="ow">and</span> <span class="n">privkey</span><span class="p">):</span>
+            <span class="k">return</span>  <span class="c1"># Only run this test if the keys are available</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Test Organization&#39;</span><span class="p">)</span>
+        <span class="n">bucket</span> <span class="o">=</span> <span class="n">S3Bucket</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">organization</span><span class="o">=</span><span class="n">org</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;pangea.test.bucket&#39;</span><span class="p">,</span>
+            <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">S3ApiKey</span><span class="p">(</span>
+            <span class="n">bucket</span><span class="o">=</span><span class="n">bucket</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;KEY_01&#39;</span><span class="p">,</span>
+            <span class="n">public_key</span><span class="o">=</span><span class="n">pubkey</span><span class="p">,</span>
+            <span class="n">private_key</span><span class="o">=</span><span class="n">privkey</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">key</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">retrieved</span> <span class="o">=</span> <span class="n">S3ApiKey</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pk</span><span class="o">=</span><span class="n">key</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">retrieved</span><span class="o">.</span><span class="n">presign_url</span><span class="p">(</span>
+            <span class="s1">&#39;https://s3.wasabisys.com&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;s3://pangea.test.bucket/my_private_s3_test_file.txt&#39;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;https://s3.wasabisys.com/pangea.test.bucket/my_private_s3_test_file.txt&#39;</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;AWSAccessKeyId=&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Signature=&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;Expires=&#39;</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestSampleModel"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleModel">[docs]</a><span class="k">class</span> <span class="nc">TestSampleModel</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test suite for Sample model.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestSampleModel.test_add_sample"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleModel.test_add_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org AFFFS&#39;</span><span class="p">)</span>
+        <span class="n">grp</span> <span class="o">=</span> <span class="n">SampleGroup</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span>
+            <span class="n">organization</span><span class="o">=</span><span class="n">org</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;library AFFFS&#39;</span><span class="p">,</span>
+            <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">sample</span> <span class="o">=</span> <span class="n">Sample</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 AFFFS&#39;</span><span class="p">,</span>
+            <span class="n">library</span><span class="o">=</span><span class="n">grp</span><span class="o">.</span><span class="n">library</span><span class="p">,</span>
+            <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">}</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;SMPL_01 AFFFS&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;foo&#39;</span><span class="p">],</span> <span class="s1">&#39;bar&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSampleModel.test_add_duplicate_name"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleModel.test_add_duplicate_name">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names are not allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org OIUO&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 OIUO&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 OIUO&#39;</span><span class="p">)</span>
+        <span class="n">dupe</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 OIUO&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">IntegrityError</span><span class="p">,</span> <span class="n">dupe</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSampleModel.test_different_libraries"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleModel.test_different_libraries">[docs]</a>    <span class="k">def</span> <span class="nf">test_different_libraries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names in different libraries are allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org UIY&#39;</span><span class="p">)</span>
+        <span class="n">lib1</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 UIY&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">lib2</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_02 UIY&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">original</span> <span class="o">=</span> <span class="n">lib1</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 UIY&#39;</span><span class="p">)</span>
+        <span class="n">duplicate</span> <span class="o">=</span> <span class="n">lib2</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 UIY&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">original</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">duplicate</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">original</span><span class="o">.</span><span class="n">library</span><span class="p">,</span> <span class="n">duplicate</span><span class="o">.</span><span class="n">library</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestProject"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestProject">[docs]</a><span class="k">class</span> <span class="nc">TestProject</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test suite for Project model.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestProject.test_add_project"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestProject.test_add_project">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_project</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org UYDFG&#39;</span><span class="p">)</span>
+        <span class="n">proj</span> <span class="o">=</span> <span class="n">Project</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;project_01 UYDFG&#39;</span><span class="p">,</span>
+            <span class="n">organization</span><span class="o">=</span><span class="n">org</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;project_01 UYDFG&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">proj</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestSampleGroupModel"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleGroupModel">[docs]</a><span class="k">class</span> <span class="nc">TestSampleGroupModel</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test suite for SampleGroup model.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestSampleGroupModel.test_add_sample_group"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleGroupModel.test_add_sample_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_sample_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample group model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org HJGKTYU&#39;</span><span class="p">)</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 HJGKTYU&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;GRP_01 HJGKTYU&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSampleGroupModel.test_core_sample_group_from_org"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleGroupModel.test_core_sample_group_from_org">[docs]</a>    <span class="k">def</span> <span class="nf">test_core_sample_group_from_org</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure we can get a core sample group from an organization.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org TYFGHG&#39;</span><span class="p">)</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">core_sample_group</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">org</span><span class="o">.</span><span class="n">_core_sample_group_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">org</span><span class="o">.</span><span class="n">core_sample_group_uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">organization</span><span class="p">,</span> <span class="n">org</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSampleGroupModel.test_add_duplicate_name"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleGroupModel.test_add_duplicate_name">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate group names are not allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org UBUYJIU&#39;</span><span class="p">)</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 UBUYJIU&#39;</span><span class="p">)</span>
+        <span class="n">dupe</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 UBUYJIU&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">IntegrityError</span><span class="p">,</span> <span class="n">dupe</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestSampleGroupModel.test_add_samples"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestSampleGroupModel.test_add_samples">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that samples can be added to SampleGroup.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org OIUO&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 OIUO&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">sample_one</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 OIUO&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">sample_two</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_02 OIUO&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">})</span>
+        <span class="n">grp</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;GRP_01 OIUO&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">grp</span><span class="o">.</span><span class="n">add_sample</span><span class="p">(</span><span class="n">sample_one</span><span class="p">)</span>
+        <span class="n">grp</span><span class="o">.</span><span class="n">add_sample</span><span class="p">(</span><span class="n">sample_two</span><span class="p">)</span>
+
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">grp</span><span class="o">.</span><span class="n">sample_set</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">sample_uuids</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample</span><span class="o">.</span><span class="n">uuid</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">samples</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">sample_one</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">sample_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">sample_two</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">sample_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">samples</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">sample_one</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="n">sample_two</span><span class="p">,</span> <span class="n">samples</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TestAnalysisResultModel"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel">[docs]</a><span class="k">class</span> <span class="nc">TestAnalysisResultModel</span><span class="p">(</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Test suite for Sample model.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_ar_to_sample"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_ar_to_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_ar_to_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org EWRVB&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">smp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_ar_with_metadata_to_sample"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_ar_with_metadata_to_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_ar_with_metadata_to_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org EWRVB&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;foo&#39;</span><span class="p">:</span> <span class="s1">&#39;bar&#39;</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">smp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_dependencies_to_ar"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_dependencies_to_ar">[docs]</a>    <span class="nd">@skip</span><span class="p">(</span><span class="s1">&#39;TODO&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_add_dependencies_to_ar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org EWRVB&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="n">ar</span><span class="o">.</span><span class="n">add_dependency_uuids</span><span class="p">(</span><span class="s1">&#39;one-uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;another-uuid&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;one-uuid&#39;</span><span class="p">,</span> <span class="n">ar</span><span class="o">.</span><span class="n">dependency_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;another-uuid&#39;</span><span class="p">,</span> <span class="n">ar</span><span class="o">.</span><span class="n">dependency_uuids</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_dup_dependencies_to_ar"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_dup_dependencies_to_ar">[docs]</a>    <span class="nd">@skip</span><span class="p">(</span><span class="s1">&#39;TODO&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_add_dup_dependencies_to_ar</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org EWRVB&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="n">ar</span><span class="o">.</span><span class="n">add_dependency_uuids</span><span class="p">(</span><span class="s1">&#39;one-uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;another-uuid&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;one-uuid&#39;</span><span class="p">,</span> <span class="n">ar</span><span class="o">.</span><span class="n">dependency_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;another-uuid&#39;</span><span class="p">,</span> <span class="n">ar</span><span class="o">.</span><span class="n">dependency_uuids</span><span class="p">)</span>
+        <span class="n">ar</span><span class="o">.</span><span class="n">add_dependency_uuids</span><span class="p">(</span><span class="s1">&#39;one-uuid&#39;</span><span class="p">,</span> <span class="s1">&#39;third-uuid&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertIn</span><span class="p">(</span><span class="s1">&#39;third-uuid&#39;</span><span class="p">,</span> <span class="n">ar</span><span class="o">.</span><span class="n">dependency_uuids</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">dependency_uuids</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_duplicate_module_replicate_to_sample"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_duplicate_module_replicate_to_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_module_replicate_to_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names with same replicate are not allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org EWRVB&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 EWRVB&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="n">dupe</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">IntegrityError</span><span class="p">,</span> <span class="n">dupe</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_duplicate_module_to_sample"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_duplicate_module_to_sample">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_module_to_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names are not allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org UIIU&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 UIIU&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 UIIU&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="n">smp</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">smp</span><span class="o">.</span><span class="n">analysis_result_set</span><span class="o">.</span><span class="n">all</span><span class="p">()),</span> <span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_duplicate_to_diff_samples"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_duplicate_to_diff_samples">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_to_diff_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names in different libraries are allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org UYH&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 UYH&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">smp1</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_01 UYH&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">orig</span> <span class="o">=</span> <span class="n">smp1</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="n">smp2</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_sample</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;SMPL_02 UYH&#39;</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;subject_group&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+        <span class="n">dupe</span> <span class="o">=</span> <span class="n">smp2</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">orig</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="n">dupe</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">orig</span><span class="o">.</span><span class="n">replicate</span><span class="p">,</span> <span class="n">dupe</span><span class="o">.</span><span class="n">replicate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">orig</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">dupe</span><span class="o">.</span><span class="n">sample</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_ar_to_group"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_ar_to_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_ar_to_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure sample model is created correctly.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org YNFD&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 YNFD&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">ar</span> <span class="o">=</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="n">lib</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">ar</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_duplicate_module_replicate_to_group"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_duplicate_module_replicate_to_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_module_replicate_to_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names and with same replicate are not allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org MLAS&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 MLAS&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="n">dupe</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">lib</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="n">IntegrityError</span><span class="p">,</span> <span class="n">dupe</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_duplicate_module_to_group"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_duplicate_module_to_group">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_module_to_group</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names and with diff replicate are allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org YSDAFG&#39;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 YSDAFG&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lib</span><span class="o">.</span><span class="n">analysis_result_set</span><span class="o">.</span><span class="n">all</span><span class="p">()),</span> <span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TestAnalysisResultModel.test_add_duplicate_to_diff_groups"><a class="viewcode-back" href="../../../../pangea.core.tests.html#pangea.core.tests.test_models.TestAnalysisResultModel.test_add_duplicate_to_diff_groups">[docs]</a>    <span class="k">def</span> <span class="nf">test_add_duplicate_to_diff_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ensure duplicate sample names in different libraries are allowed.&quot;&quot;&quot;</span>
+        <span class="n">org</span> <span class="o">=</span> <span class="n">Organization</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;an_org VFASD&#39;</span><span class="p">)</span>
+        <span class="n">lib1</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_01 VFASD&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">lib2</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="n">create_sample_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;LBRY_02 VFASD&#39;</span><span class="p">,</span> <span class="n">is_library</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">orig</span> <span class="o">=</span> <span class="n">lib1</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="n">dupe</span> <span class="o">=</span> <span class="n">lib2</span><span class="o">.</span><span class="n">create_analysis_result</span><span class="p">(</span><span class="n">module_name</span><span class="o">=</span><span class="s1">&#39;module_1&#39;</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">&#39;foo&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">orig</span><span class="o">.</span><span class="n">module_name</span><span class="p">,</span> <span class="n">dupe</span><span class="o">.</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertNotEqual</span><span class="p">(</span><span class="n">orig</span><span class="o">.</span><span class="n">sample_group</span><span class="p">,</span> <span class="n">dupe</span><span class="o">.</span><span class="n">sample_group</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

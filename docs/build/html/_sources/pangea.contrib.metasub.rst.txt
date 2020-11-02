@@ -1,0 +1,70 @@
+pangea.contrib.metasub package
+==============================
+
+Submodules
+----------
+
+pangea.contrib.metasub.admin module
+-----------------------------------
+
+.. automodule:: pangea.contrib.metasub.admin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.metasub.apps module
+----------------------------------
+
+.. automodule:: pangea.contrib.metasub.apps
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.metasub.constants module
+---------------------------------------
+
+.. automodule:: pangea.contrib.metasub.constants
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.metasub.models module
+------------------------------------
+
+.. automodule:: pangea.contrib.metasub.models
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.metasub.tests module
+-----------------------------------
+
+.. automodule:: pangea.contrib.metasub.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.metasub.urls module
+----------------------------------
+
+.. automodule:: pangea.contrib.metasub.urls
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pangea.contrib.metasub.views module
+-----------------------------------
+
+.. automodule:: pangea.contrib.metasub.views
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: pangea.contrib.metasub
+    :members:
+    :undoc-members:
+    :show-inheritance:

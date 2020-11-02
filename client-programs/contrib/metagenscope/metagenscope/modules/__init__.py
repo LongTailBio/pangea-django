@@ -8,3 +8,4 @@ from .volcano import VolcanoModule
 from .microbe_directory import MicrobeDirectoryModule
 from .taxa_sunburst import TaxaSunburstModule
 from .reads_classified import ReadsClassifiedModule
+from .covid_fast_detect import CovidFastDetectModule

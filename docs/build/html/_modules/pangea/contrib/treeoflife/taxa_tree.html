@@ -1,0 +1,190 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>pangea.contrib.treeoflife.taxa_tree &#8212; Pangea 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pangea.contrib.treeoflife.taxa_tree</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">os</span> <span class="k">import</span> <span class="n">environ</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="k">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">dirname</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+
+<span class="kn">from</span> <span class="nn">.models</span> <span class="k">import</span> <span class="p">(</span>
+    <span class="n">TaxonName</span><span class="p">,</span>
+    <span class="n">TreeNode</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<span class="n">NCBI_DELIM</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">|&#39;</span>  <span class="c1"># really...</span>
+<span class="n">NAMES_ENV_VAR</span> <span class="o">=</span> <span class="s1">&#39;CAPALYZER_NCBI_NAMES&#39;</span>
+<span class="n">NODES_ENV_VAR</span> <span class="o">=</span> <span class="s1">&#39;CAPALYZER_NCBI_NODES&#39;</span>
+<span class="n">NAMES_DEF</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;ncbi_tree/names.dmp.gz&#39;</span><span class="p">)</span>
+<span class="n">NODES_DEF</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;ncbi_tree/nodes.dmp.gz&#39;</span><span class="p">)</span>
+
+<span class="n">RANKS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;species&#39;</span><span class="p">,</span> <span class="s1">&#39;genus&#39;</span><span class="p">,</span> <span class="s1">&#39;family&#39;</span><span class="p">,</span> <span class="s1">&#39;order&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;phylum&#39;</span><span class="p">,</span> <span class="s1">&#39;superkingdom&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="TaxaTree"><a class="viewcode-back" href="../../../../pangea.contrib.treeoflife.html#pangea.contrib.treeoflife.taxa_tree.TaxaTree">[docs]</a><span class="k">class</span> <span class="nc">TaxaTree</span><span class="p">:</span>
+
+<div class="viewcode-block" id="TaxaTree.ancestors"><a class="viewcode-back" href="../../../../pangea.contrib.treeoflife.html#pangea.contrib.treeoflife.taxa_tree.TaxaTree.ancestors">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ancestors</span><span class="p">(</span><span class="n">taxon</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all ancestors of the taxon starting with the taxon itself.&quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="o">.</span><span class="n">byname</span><span class="p">(</span><span class="n">taxon</span><span class="p">)</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">while</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;root&#39;</span><span class="p">:</span>
+            <span class="n">parents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">return</span> <span class="n">parents</span></div>
+
+<div class="viewcode-block" id="TaxaTree.ranked_ancestors"><a class="viewcode-back" href="../../../../pangea.contrib.treeoflife.html#pangea.contrib.treeoflife.taxa_tree.TaxaTree.ranked_ancestors">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ranked_ancestors</span><span class="p">(</span><span class="n">taxon</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a dict of all ancestors of the taxon starting with the taxon itself.</span>
+<span class="sd">        Keys of the dict are taxon ranks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="o">.</span><span class="n">byname</span><span class="p">(</span><span class="n">taxon</span><span class="p">)</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="p">{</span><span class="n">node</span><span class="o">.</span><span class="n">rank</span><span class="p">:</span> <span class="n">node</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+        <span class="k">while</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;root&#39;</span><span class="p">:</span>
+            <span class="n">parents</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">rank</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">return</span> <span class="n">parents</span></div>
+
+<div class="viewcode-block" id="TaxaTree.ancestor_rank"><a class="viewcode-back" href="../../../../pangea.contrib.treeoflife.html#pangea.contrib.treeoflife.taxa_tree.TaxaTree.ancestor_rank">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">ancestor_rank</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">taxon</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the ancestor of taxon at the given rank.&quot;&quot;&quot;</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="o">.</span><span class="n">byname</span><span class="p">(</span><span class="n">taxon</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;root&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">rank</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">default</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;</span><span class="si">{rank}</span><span class="s1"> for taxa </span><span class="si">{taxon}</span><span class="s1"> not found.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">default</span></div>
+
+<div class="viewcode-block" id="TaxaTree.get_taxon_parent_lists"><a class="viewcode-back" href="../../../../pangea.contrib.treeoflife.html#pangea.contrib.treeoflife.taxa_tree.TaxaTree.get_taxon_parent_lists">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_taxon_parent_lists</span><span class="p">(</span><span class="n">taxa</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a pair of lists giving the name of each taxon and its parent.</span>
+
+<span class="sd">        Give an empty string as the parent of the root.</span>
+
+<span class="sd">        This function is used to prepare data for a Plotly suburst plot.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">queue</span> <span class="o">=</span> <span class="p">[</span><span class="n">TreeNode</span><span class="o">.</span><span class="n">byname</span><span class="p">(</span><span class="n">taxon</span><span class="p">)</span> <span class="k">for</span> <span class="n">taxon</span> <span class="ow">in</span> <span class="n">taxa</span><span class="p">]</span>
+        <span class="n">added</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="n">taxon_list</span><span class="p">,</span> <span class="n">parent_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">taxon_id</span> <span class="ow">in</span> <span class="n">added</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">node_name</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="n">node_name</span> <span class="ow">in</span> <span class="n">added</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">taxon_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node_name</span><span class="p">)</span>
+            <span class="n">parent_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">node</span><span class="o">.</span><span class="n">is_root</span><span class="p">:</span>
+                <span class="n">parent_node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">parent</span>
+                <span class="n">parent_name</span> <span class="o">=</span> <span class="n">parent_node</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span>
+                <span class="k">while</span> <span class="n">parent_name</span> <span class="o">==</span> <span class="n">node_name</span><span class="p">:</span>
+                    <span class="n">parent_node</span> <span class="o">=</span> <span class="n">parent_node</span><span class="o">.</span><span class="n">parent</span>
+                    <span class="n">parent_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">if</span> <span class="n">parent_node</span><span class="p">:</span>
+                        <span class="n">parent_name</span> <span class="o">=</span> <span class="n">parent_node</span><span class="o">.</span><span class="n">canon_name</span><span class="o">.</span><span class="n">name</span>
+                <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parent_node</span><span class="p">)</span>
+            <span class="n">parent_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parent_name</span><span class="p">)</span>
+            <span class="n">added</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">taxon_id</span><span class="p">)</span>
+            <span class="n">added</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node_name</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">taxon_list</span><span class="p">,</span> <span class="n">parent_list</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">Pangea</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../architecture.html">Architecture and Design</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../python_client.html">Python API Client</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, David C. Danko.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
