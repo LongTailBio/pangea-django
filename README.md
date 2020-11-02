@@ -1,5 +1,7 @@
 # Pangea
 
+Documentation may be found [here](https://longtailbio.github.io/pangea-django/).
+
 Built with [Django](https://github.com/django/django).
 
 ## Getting Started
