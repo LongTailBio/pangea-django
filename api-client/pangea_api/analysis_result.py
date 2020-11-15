@@ -33,7 +33,11 @@ class AnalysisResult(RemoteObject):
         logger.info(f'Getting AnalysisResult.')
         blob = self.get_cached_blob()
         if not blob:
-            blob = self.knex.get(self.nested_url())
+            url = self.nested_url()
+            if self.replicate:
+                url += f'?replicate={self.replicate}'
+            print(url)
+            blob = self.knex.get(url)
             self.load_blob(blob)
             self.cache_blob(blob)
         else:

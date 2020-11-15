@@ -83,12 +83,13 @@ def to_uuid(**kwargs):
         if uuid_key not in kwargs:
             break
         filter_field = 'pk' if is_uuid(kwargs[uuid_key]) else 'name__iexact'
+        filter_args = {parent_key_name: parent.uuid, filter_field: kwargs[uuid_key]}
         if filter_field != 'pk' and model in [SampleAnalysisResult, SampleGroupAnalysisResult]:
-            filter_field = 'module_name__iexact'
-        parent = model.objects.filter(**{
-            parent_key_name: parent.uuid,
-            filter_field: kwargs[uuid_key],
-        }).order_by('updated_at')
+            del filter_args[filter_field]
+            filter_args['module_name__iexact'] = kwargs[uuid_key]
+            if kwargs.get('replicate'):
+                filter_args['replicate'] = kwargs.get('replicate')
+        parent = model.objects.filter(**filter_args).order_by('updated_at')
         if not parent.exists():
             raise ObjectDoesNotExist()
         parent = parent[0]
@@ -106,6 +107,8 @@ def nested_path(url, base_view, *out_args, **out_kwargs):
         for key in ['org_pk', 'grp_pk', 'sample_pk', 'ar_pk', 'field_pk']:
             if key in kwargs:
                 uuid_kwargs[key] = kwargs.pop(key)
+            if key == 'ar_pk' and not create:
+                uuid_kwargs['replicate'] = request.GET.get('replicate', None)
         try:
             uuid, field_name = to_uuid(**uuid_kwargs)
         except ObjectDoesNotExist:
