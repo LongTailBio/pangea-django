@@ -177,6 +177,38 @@ class AnalysisResultTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_retrieve_sample_analysis_result_with_nonexistent_replicate(self):
+        """Ensure we can retrieve analysis result."""
+        self.sample.create_analysis_result(module_name='test_module_IUWJHREWJ', replicate='foo')
+        url = reverse('nested-sample-ar-details', kwargs={
+            'org_pk': self.organization.pk,
+            'grp_pk': self.sample_group.name,
+            'sample_pk': self.sample.pk,
+            'ar_pk': 'test_module_IUWJHREWJ',
+        })
+        url += '?replicate=bar'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_retrieve_sample_analysis_result_with_replicate(self):
+        """Ensure we can retrieve analysis result."""
+        s1 = self.sample.create_analysis_result(module_name='test_module_TYUKDSJGHV', replicate='foo')
+        s2 = self.sample.create_analysis_result(module_name='test_module_TYUKDSJGHV', replicate='bar')
+        base_url = reverse('nested-sample-ar-details', kwargs={
+            'org_pk': self.organization.pk,
+            'grp_pk': self.sample_group.name,
+            'sample_pk': self.sample.pk,
+            'ar_pk': 'test_module_TYUKDSJGHV',
+        })
+        url = base_url + '?replicate=foo'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['uuid'], str(s1.uuid))
+        url = base_url + '?replicate=bar'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()['uuid'], str(s2.uuid))
+
     def test_create_sample_group_analysis_result(self):
         self.client.force_authenticate(user=self.user)
 
