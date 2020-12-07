@@ -135,9 +135,9 @@ class TagSamplesView(generics.ListAPIView):
         tag = Tag.objects.get(pk=self.kwargs.get('tag_pk'))
         perm = SamplePermission()
         samples = [
-            sample
-            for sample in tag.tagged_samples.order_by('created_at')
-            if perm.has_object_permission(self.request, self, sample)
+            sample_rel.sample
+            for sample_rel in tag.tagged_samples.order_by('created_at')
+            if perm.has_object_permission(self.request, self, sample_rel.sample)
         ]
         return samples
 
