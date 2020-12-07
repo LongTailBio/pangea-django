@@ -117,6 +117,14 @@ class TagApiTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_tag_read_by_name(self):
+        """Ensure no login is required to read a tag."""
+        tag_name = 'My Test Tag 2'
+        tag = Tag.objects.create(name=tag_name)
+        url = reverse('tag-name-details', kwargs={'name': tag_name})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_tag_tag(self):
         tag1 = Tag.objects.create(name='My Test Tag 1')
         tag2 = Tag.objects.create(name='My Test Tag 2')

@@ -1,7 +1,7 @@
 import structlog
 
 from django.utils.translation import gettext_lazy as _
-
+from uuid import UUID
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
@@ -32,7 +32,16 @@ from pangea.core.serializers import (
 logger = structlog.get_logger(__name__)
 
 
-class TagCreateView(PermissionedListCreateAPIView):
+def is_uuid(el):
+    """Return true if el is an UUID."""
+    try:
+        UUID(el)
+        return True
+    except ValueError:
+        return False
+
+
+class TagCreateView(generics.ListCreateAPIView):
     queryset = Tag.objects.all().order_by('created_at')
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
@@ -44,6 +53,14 @@ class TagDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all().order_by('created_at')
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
+class TagNameDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    """This class handles the http GET, PUT and DELETE requests."""
+    queryset = Tag.objects.all().order_by('created_at')
+    serializer_class = TagSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    lookup_field = 'name'
 
 
 class TagTagsView(generics.ListAPIView):
