@@ -16,3 +16,13 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(TagTagRelationship)
 class TagTagAdmin(admin.ModelAdmin):
     list_display = ('tag', 'other_tag', 'payload',)
+
+
+@admin.register(SampleTagRelationship)
+class SampleTagAdmin(admin.ModelAdmin):
+    list_display = ('tag', 'sample', 'payload',)
+
+
+@admin.register(SampleGroupTagRelationship)
+class SampleGroupTagAdmin(admin.ModelAdmin):
+    list_display = ('tag', 'sample_group', 'payload',)
