@@ -47,6 +47,13 @@ class TagCreateView(generics.ListCreateAPIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'name']
 
+    def get_queryset(self):
+        sample_pk = self.request.query_params.get('sample', None)
+        qset = self.queryset
+        if sample_pk:
+            qset = qset.filter(tagged_samples__sample__uuid__contains=sample_pk)
+        return qset
+
 
 class TagDetailsView(generics.RetrieveUpdateDestroyAPIView):
     """This class handles the http GET, PUT and DELETE requests."""
@@ -146,7 +153,7 @@ class TagSamplesView(generics.ListAPIView):
         sample = Sample.objects.get(pk=request.data.get('sample_uuid'))
         sample_member_query = self.request.user.organization_set.filter(pk=sample.organization.pk)
 
-        if not sample_member_query.exists():
+        if not sample.is_public and not sample_member_query.exists():
             logger.info(
                 'attempted_tag_sample_without_permission',
                 user=request.user,

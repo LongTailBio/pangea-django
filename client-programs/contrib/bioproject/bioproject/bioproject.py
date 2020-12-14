@@ -27,11 +27,15 @@ class BioProject:
     def __str__(self):
         return f'<BioProject accession={self.accession} />'
 
-    def to_table(self, sleep=5):
+    def to_table(self, sleep=.5):
         rows = []
-        for sra_rec in self.get_sra_records():
+        for sra_rec in self.get_sra_records()[:1]:
+            print(sra_rec)
             time.sleep(sleep)
             for sra_file in sra_rec.get_sra_files():
+                print(sra_file)
+                for k, v in sra_file.blob.items():
+                    print('\t- ', k, ':', v)
                 kind = sra_file.blob['semantic_name']
                 kind = 'sra_run' if kind == 'run' else kind
                 if kind == 'fastq':
@@ -68,6 +72,7 @@ class SRARecord:
             return self
         handle = Entrez.efetch(db='sra', id=self.accession)
         xml_str = handle.read()
+        print(xml_str)
         self.root = ET.fromstring(xml_str)
         return self
 

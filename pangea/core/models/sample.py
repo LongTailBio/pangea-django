@@ -36,6 +36,10 @@ class Sample(AutoCreatedUpdatedMixin):
         unique_together = (('name', 'library'),)
 
     @property
+    def is_public(self):
+        return self.library.group.is_public
+
+    @property
     def organization(self):
         return self.library.group.organization
 

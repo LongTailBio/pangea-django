@@ -84,7 +84,7 @@ class Knex:
         try:
             response.raise_for_status()
         except:
-            logger.error(f'Request failed. {response}')
+            logger.error(f'Request failed. {response}\n{response.content}')
             raise
         if json_response:
             return response.json()

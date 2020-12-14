@@ -23,6 +23,7 @@ def main():
 @click.option('-o', '--outfile', type=click.File('w'), default='-')
 @click.argument('accessions', nargs=-1)
 def cli_to_csv(sleep, outfile, accessions):
+    print('FOOOOOOo')
     tbls = []
     for accession in accessions:
         bioproj = BioProject(accession)
