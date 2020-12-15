@@ -120,12 +120,7 @@ class SampleGroupPermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS and obj.is_public:
             return True
 
-        # Require auth for write operations
-        if not bool(request.user and request.user.is_authenticated):
-            return False
-
-        # Require organization membership to edit/delete
-        return request.user.organization_set.filter(pk=obj.organization.pk).exists()
+        return obj.user_can_access(request.user)
 
 
 class SamplePermission(permissions.BasePermission):
@@ -138,12 +133,7 @@ class SamplePermission(permissions.BasePermission):
             return True
 
         # Require auth for write operations
-        if not bool(request.user and request.user.is_authenticated):
-            return False
-
-        # Require organization membership to edit/delete
-        organization = grp.organization
-        return request.user.organization_set.filter(pk=organization.pk).exists()
+        return obj.user_can_access(request.user)
 
 
 class SampleAnalysisResultPermission(permissions.BasePermission):
@@ -156,12 +146,7 @@ class SampleAnalysisResultPermission(permissions.BasePermission):
             return True
 
         # Require auth for write operations
-        if not bool(request.user and request.user.is_authenticated):
-            return False
-
-        # Require organization membership to edit/delete
-        organization = grp.organization
-        return request.user.organization_set.filter(pk=organization.pk).exists()
+        return obj.user_can_access(request.user)
 
 
 class SampleGroupAnalysisResultPermission(permissions.BasePermission):
@@ -174,12 +159,7 @@ class SampleGroupAnalysisResultPermission(permissions.BasePermission):
             return True
 
         # Require auth for write operations
-        if not bool(request.user and request.user.is_authenticated):
-            return False
-
-        # Require organization membership to edit/delete
-        organization = grp.organization
-        return request.user.organization_set.filter(pk=organization.pk).exists()
+        return obj.user_can_access(request.user)
 
 
 class SampleAnalysisResultFieldPermission(permissions.BasePermission):
@@ -192,12 +172,7 @@ class SampleAnalysisResultFieldPermission(permissions.BasePermission):
             return True
 
         # Require auth for write operations
-        if not bool(request.user and request.user.is_authenticated):
-            return False
-
-        # Require organization membership to edit/delete
-        organization = grp.organization
-        return request.user.organization_set.filter(pk=organization.pk).exists()
+        return obj.user_can_access(request.user)
 
 
 class SampleGroupAnalysisResultFieldPermission(permissions.BasePermission):
@@ -210,10 +185,4 @@ class SampleGroupAnalysisResultFieldPermission(permissions.BasePermission):
             return True
 
         # Require auth for write operations
-        if not bool(request.user and request.user.is_authenticated):
-            return False
-
-        # Require organization membership to edit/delete
-        organization = grp.organization
-        return request.user.organization_set.filter(pk=organization.pk).exists()
-
+        return obj.user_can_access(request.user)

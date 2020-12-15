@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'pangea.contrib.taxasearch',
     'pangea.contrib.treeoflife',
     'pangea.contrib.tagging',
+
     # 'drf_yasg',
 ]
 

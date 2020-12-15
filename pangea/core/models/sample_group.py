@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.fields import JSONField
 from django.db import models
+from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -35,6 +36,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     is_library = models.BooleanField(blank=False, default=False)
     theme = models.TextField(blank=True)
     bucket = models.ForeignKey('S3Bucket', on_delete=models.SET_NULL, null=True)
+    guest_users = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     def save(self, *args, **kwargs):
         out = super(SampleGroup, self).save(*args, **kwargs)
@@ -54,6 +56,14 @@ class SampleGroup(AutoCreatedUpdatedMixin):
             is_library=self.is_library,
         )
         return out
+
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this group."""
+        if not user.is_authenticated:
+            return False
+        user_is_in_org = user.organization_set.filter(pk=self.organization.pk).exists()
+        user_is_guest = user in self.guest_users.all()
+        return user_is_in_org or user_is_guest
 
     def create_sample(self, *args, **kwargs):
         if not self.is_library:

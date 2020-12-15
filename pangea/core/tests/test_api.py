@@ -402,6 +402,16 @@ class SampleGroupTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_guest_authorized_sample_group_read(self):
+        """Ensure authorized user can read private sample group."""
+        group = self.organization.create_sample_group(name='GRP_01 PRIVATE_ISNR', is_public=False)
+        url = reverse('sample-group-details', kwargs={'pk': group.uuid})
+        group.guest_users.add(self.user)
+        group.save()
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_no_login_sample_group_read(self):
         """Ensure 403 error is thrown if trying to illicitly read private group."""
         group = self.organization.create_sample_group(name='GRP_01 PRIVATE_GJYJ', is_public=False)

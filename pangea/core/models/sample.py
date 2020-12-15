@@ -43,6 +43,10 @@ class Sample(AutoCreatedUpdatedMixin):
     def organization(self):
         return self.library.group.organization
 
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this sample."""
+        return self.library.group.user_can_access(user)
+
     def __str__(self):
         return f"{self.name}"
 

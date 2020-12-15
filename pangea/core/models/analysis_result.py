@@ -85,6 +85,10 @@ class SampleAnalysisResult(AnalysisResult):
         field = SampleAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
 
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this ar."""
+        return self.sample.user_can_access(user)
+
     def __str__(self):
         return f"{self.sample.name} ({self.module_name})"
 
@@ -116,6 +120,10 @@ class SampleGroupAnalysisResult(AnalysisResult):
     def create_field(self, *args, **kwargs):
         field = SampleGroupAnalysisResultField.objects.create(analysis_result=self, *args, **kwargs)
         return field
+
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this ar."""
+        return self.sample_group.user_can_access(user)
 
     def __str__(self):
         return f"{self.sample_group.name} ({self.module_name})"
@@ -196,6 +204,10 @@ class SampleAnalysisResultField(AnalysisResultField):
     def bucket(self):
         return self.analysis_result.sample.library.group.bucket
 
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this ar field."""
+        return self.analysis_result.user_can_access(user)
+
     def _as_s3_link(self, filename):
         lib_name = self.analysis_result.sample.library.group.name
         sample_name = self.analysis_result.sample.name
@@ -241,6 +253,10 @@ class SampleGroupAnalysisResultField(AnalysisResultField):
         grp_name = self.analysis_result.sample_group.name
         uri = f's3://{self.bucket.name}/pangea/v1/{grp_name}/results/{filename}'
         return uri
+
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this ar field."""
+        return self.analysis_result.user_can_access(user)
 
     def __str__(self):
         return f"{self.analysis_result.sample_group.name} ({self.analysis_result.module_name}: {self.name})"
