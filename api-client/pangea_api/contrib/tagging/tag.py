@@ -3,6 +3,7 @@ from ...remote_object import RemoteObject
 from ...sample import Sample
 from ...sample_group import SampleGroup
 from ...blob_constructors import sample_from_blob
+from ...utils import paginated_iterator
 
 
 class Tag(RemoteObject):
@@ -78,7 +79,7 @@ class Tag(RemoteObject):
     def get_samples(self):
         url = f'contrib/tags/{self.uuid}/samples'
         response = self.knex.get(url)
-        for sample_blob in response['results']:
+        for sample_blob in paginated_iterator(self.knex, url):
             yield sample_from_blob(self.knex, sample_blob)
 
     def __str__(self):
