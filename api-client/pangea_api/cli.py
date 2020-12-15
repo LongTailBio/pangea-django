@@ -3,6 +3,7 @@ import click
 import json
 import pandas as pd
 
+from requests.exceptions import HTTPError
 from os import environ
 from os.path import join, dirname
 from os import makedirs
@@ -12,11 +13,15 @@ from . import (
     User,
     Organization,
 )
+from .contrib.tagging.cli import tag_main
 
 
 @click.group()
 def main():
     pass
+
+
+main.add_command(tag_main)
 
 
 @main.group('list')
@@ -172,6 +177,7 @@ def cli_upload():
 @click.option('-e', '--email', envvar='PANGEA_USER')
 @click.option('-p', '--password', envvar='PANGEA_PASS')
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
+@click.option('--overwrite/--no-overwrite', default=False)
 @click.option('-d', '--delim', default=None, help='Split sample name on this character')
 @click.option('-m', '--module-name', default='raw::raw_reads')
 @click.option('-1', '--ext-1', default='.R1.fastq.gz')
@@ -180,7 +186,7 @@ def cli_upload():
 @click.argument('org_name')
 @click.argument('library_name')
 @click.argument('file_list', type=click.File('r'))
-def cli_upload_reads(email, password, endpoint, delim, module_name,
+def cli_upload_reads(email, password, endpoint, overwrite, delim, module_name,
                      ext_1, ext_2, outfile, org_name, library_name, file_list):
     """Create samples in the specified group.
 
@@ -214,8 +220,14 @@ def cli_upload_reads(email, password, endpoint, delim, module_name,
             raise ValueError(f'Sample {sname} has wrong number of reads: {reads}')
         sample = lib.sample(sname).idem()
         ar = sample.analysis_result(module_name)
-        r1 = ar.field('read_1').idem().upload_file(reads['read_1'], logger=lambda x: click.echo(x, err=True))
-        r2 = ar.field('read_2').idem().upload_file(reads['read_2'], logger=lambda x: click.echo(x, err=True))
+        try:
+            if overwrite:
+                raise HTTPError()
+            r1 = ar.field('read_1').get()
+            r2 = ar.field('read_2').get()
+        except HTTPError:
+            r1 = ar.field('read_1').idem().upload_file(reads['read_1'], logger=lambda x: click.echo(x, err=True))
+            r2 = ar.field('read_2').idem().upload_file(reads['read_2'], logger=lambda x: click.echo(x, err=True))
         print(sample, ar, r1, r2, file=outfile)
 
 
