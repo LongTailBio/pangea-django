@@ -143,7 +143,7 @@ class TagSamplesView(generics.ListAPIView):
         perm = SamplePermission()
         samples = (
             sample_rel.sample
-            for sample_rel in tag.tagged_samples
+            for sample_rel in tag.tagged_samples.all()
         )
         samples = [
             sample for sample in samples
