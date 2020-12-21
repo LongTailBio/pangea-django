@@ -141,10 +141,13 @@ class TagSamplesView(generics.ListAPIView):
     def filter_queryset(self, queryset):
         tag = Tag.objects.get(pk=self.kwargs.get('tag_pk'))
         perm = SamplePermission()
-        samples = [
+        samples = (
             sample_rel.sample
-            for sample_rel in tag.tagged_samples.order_by('created_at')
-            if perm.has_object_permission(self.request, self, sample_rel.sample)
+            for sample_rel in tag.tagged_samples
+        )
+        samples = [
+            sample for sample in samples
+            if perm.has_object_permission(self.request, self, sample)
         ]
         return samples
 
