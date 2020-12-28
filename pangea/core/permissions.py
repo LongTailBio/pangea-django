@@ -142,7 +142,8 @@ class SampleAnalysisResultPermission(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         # Allow all reads
         grp = obj.sample.library.group
-        if request.method in permissions.SAFE_METHODS and grp.is_public:
+        is_public = (not obj.is_private) and grp.is_public
+        if request.method in permissions.SAFE_METHODS and is_public:
             return True
 
         # Require auth for write operations
@@ -154,8 +155,9 @@ class SampleGroupAnalysisResultPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         grp = obj.sample_group
+        is_public = (not obj.is_private) and grp.is_public
         # Allow all reads if group is public
-        if request.method in permissions.SAFE_METHODS and grp.is_public:
+        if request.method in permissions.SAFE_METHODS and is_public:
             return True
 
         # Require auth for write operations
@@ -167,8 +169,9 @@ class SampleAnalysisResultFieldPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         grp = obj.analysis_result.sample.library.group
+        is_public = (not obj.analysis_result.is_private) and grp.is_public
         # Allow all reads if group is public
-        if request.method in permissions.SAFE_METHODS and grp.is_public:
+        if request.method in permissions.SAFE_METHODS and is_public:
             return True
 
         # Require auth for write operations
@@ -180,8 +183,9 @@ class SampleGroupAnalysisResultFieldPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         grp = obj.analysis_result.sample_group
+        is_public = (not obj.analysis_result.is_private) and grp.is_public
         # Allow all reads if group is public
-        if request.method in permissions.SAFE_METHODS and grp.is_public:
+        if request.method in permissions.SAFE_METHODS and is_public:
             return True
 
         # Require auth for write operations

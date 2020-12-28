@@ -25,6 +25,7 @@ class AnalysisResult(RemoteObject):
         'replicate',
         'metadata',
         'description',
+        'is_private',
     ]
 
     def _get(self):

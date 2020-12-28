@@ -53,6 +53,9 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
     metadata = JSONField(blank=True, default=dict)
     description = models.TextField(blank=True, default='')
 
+    # If true treat this AR as if it was private regardless of its parent's status
+    is_private = models.BooleanField(blank=False, default=False)
+
     class Meta:
         abstract = True
 
