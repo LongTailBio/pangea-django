@@ -123,6 +123,7 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
             'sample_obj', 'description', 'metadata',
+            'is_private',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_obj')
 
@@ -137,6 +138,7 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
             'sample_group_obj', 'description', 'metadata',
+            'is_private',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
 
