@@ -98,6 +98,7 @@ class TagApiTests(APITestCase):
         cls.pub_grp = cls.org2.create_sample_group(name='GRP_02', is_public=True, is_library=True)
         cls.priv_grp_unauth = cls.org2.create_sample_group(name='GRP_03', is_public=False)
         cls.pub_sample = cls.pub_grp.create_sample(name='SAMPLE_01')
+        cls.pub_sample_2 = cls.pub_grp.create_sample(name='SAMPLE_02')
 
     def test_create_tag(self):
         """Ensure authorized user can create sample group."""
@@ -202,6 +203,19 @@ class TagApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_uuids = [el['uuid'] for el in response.data['results']]
         self.assertIn(str(tag.uuid), response_uuids)
+
+    def test_get_random_tagged_samples(self):
+        tag = Tag.objects.create(name='My Test Tag YDSGJ')
+        tag.tag_sample(self.pub_sample)
+        tag.tag_sample(self.pub_sample_2)
+
+        url = reverse('tag-random-samples', kwargs={'tag_pk': tag.uuid})
+        url += '?n=1'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_uuids = [el['uuid'] for el in response.data['results']]
+        self.assertEqual(len(response_uuids), 1)
+        self.assertIn(response_uuids[0], [str(self.pub_sample.uuid), str(self.pub_sample_2.uuid)])
 
     def test_auth_tag_private_sample(self):
         pass

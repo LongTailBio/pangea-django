@@ -78,8 +78,13 @@ class Tag(RemoteObject):
 
     def get_samples(self):
         url = f'contrib/tags/{self.uuid}/samples'
-        response = self.knex.get(url)
         for sample_blob in paginated_iterator(self.knex, url):
+            yield sample_from_blob(self.knex, sample_blob)
+
+    def get_random_samples(self, n=100):
+        url = f'contrib/tags/{self.uuid}/random_samples?n={n}'
+        response = self.knex.get(url)
+        for sample_blob in response['results']:
             yield sample_from_blob(self.knex, sample_blob)
 
     def __str__(self):

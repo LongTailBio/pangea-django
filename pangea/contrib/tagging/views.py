@@ -1,11 +1,16 @@
 import structlog
+from random import shuffle
+import json
 
 from django.utils.translation import gettext_lazy as _
+from rest_framework.response import Response
+
 from uuid import UUID
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import api_view, authentication_classes
 
 from pangea.core.views.utils import PermissionedListCreateAPIView
 from .models import (
@@ -166,3 +171,24 @@ class TagSamplesView(generics.ListAPIView):
             raise PermissionDenied(_('Insufficient permissions to tag sample.'))
         tag.tag_sample(sample)
         return Response({"status": "success"})
+
+
+@api_view(['GET'])
+def get_random_samples_in_tag(request, tag_pk):
+    """Reply with metadata for samples in group."""
+    tag = Tag.objects.get(pk=tag_pk)
+    perm = SamplePermission()
+    samples = [
+        sample_rel.sample
+        for sample_rel in tag.tagged_samples.all()
+    ]
+    shuffle(samples)
+    n_samples = int(request.GET.get('n', 100))
+    samples = samples[:n_samples]
+    perm = SamplePermission()
+    samples = [
+        sample for sample in samples
+        if perm.has_object_permission(request, None, sample)
+    ]
+    samples = [SampleSerializer(sample).data for sample in samples]
+    return Response({'results': samples})
