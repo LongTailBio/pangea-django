@@ -3,19 +3,19 @@
 
 import setuptools
 
-
+setuptools
 setuptools.setup(
-    name='pangea_api',
-    version='0.8.10',
+    name='bioproject',
+    version='0.1.0',
     author="David C. Danko",
     author_email='dcdanko@gmail.com',
     packages=setuptools.find_packages(),
-    package_dir={'pangea_api': 'pangea_api'},
+    package_dir={'bioproject': 'bioproject'},
     install_requires=[
     ],
     entry_points={
         'console_scripts': [
-            'pangea-api=pangea_api.cli:main'
+            'bioproj=bioproject.cli:main'
         ]
     },
     classifiers=[

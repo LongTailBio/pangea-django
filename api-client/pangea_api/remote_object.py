@@ -74,7 +74,7 @@ class RemoteObject:
                     raise RemoteObjectOverwriteError((
                         f'Loading blob would overwrite field "{field}":\n\t'
                         f'current: "{current}" (type: "{type(current)}")\n\t'
-                        f'new: "{new}" (type: "{type(new)}")'
+                        f'new:     "{new}" (type: "{type(new)}")'
                     ))
             setattr(self, field, new)
 

@@ -16,6 +16,7 @@ class SampleGroup(RemoteObject):
         'metadata',
         'long_description',
         'description',
+        'bucket',
     ]
     parent_field = 'org'
 
@@ -135,6 +136,11 @@ class SampleGroup(RemoteObject):
     def get_manifest(self):
         """Return a manifest for this group."""
         url = f'sample_groups/{self.uuid}/manifest'
+        return self.knex.get(url)
+
+    def get_module_counts(self):
+        """Return a dictionary with module counts for samples in this group."""
+        url = f'sample_groups/{self.uuid}/module_counts'
         return self.knex.get(url)
 
     def __str__(self):

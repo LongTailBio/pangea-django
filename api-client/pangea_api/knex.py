@@ -62,7 +62,7 @@ class Knex:
 
     def login(self, username, password):
         d = self._logging_info(email=username, password='*' * len(password))
-        logger.info(f'Sending log in request. {d}')
+        logger.debug(f'Sending log in request. {d}')
         blob = self.cache.get_cached_blob(username)
         if not blob:
             response = requests.post(
@@ -74,7 +74,7 @@ class Knex:
                 }
             )
             response.raise_for_status()
-            logger.info(f'Received log in response. {response.json()}')
+            logger.debug(f'Received log in response. {response.json()}')
             blob = response.json()
             self.cache.cache_blob(username, blob)
         self.add_auth_token(blob['auth_token'])
@@ -84,7 +84,7 @@ class Knex:
         try:
             response.raise_for_status()
         except:
-            logger.error(f'Request failed. {response}')
+            logger.debug(f'Request failed. {response}\n{response.content}')
             raise
         if json_response:
             return response.json()
@@ -93,7 +93,7 @@ class Knex:
     def get(self, url, **kwargs):
         url = self._clean_url(url)
         d = self._logging_info(url=url, auth_token=self.auth)
-        logger.info(f'Sending GET request. {d}')
+        logger.debug(f'Sending GET request. {d}')
         response = requests.get(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -104,7 +104,7 @@ class Knex:
     def post(self, url, json={}, **kwargs):
         url = self._clean_url(url)
         d = self._logging_info(url=url, auth_token=self.auth, json=json)
-        logger.info(f'Sending POST request. {d}')
+        logger.debug(f'Sending POST request. {d}')
         response = requests.post(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -116,7 +116,7 @@ class Knex:
     def put(self, url, json={}, **kwargs):
         url = self._clean_url(url)
         d = self._logging_info(url=url, auth_token=self.auth, json=json)
-        logger.info(f'Sending PUT request. {d}')
+        logger.debug(f'Sending PUT request. {d}')
         response = requests.put(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,
@@ -128,7 +128,7 @@ class Knex:
     def delete(self, url, **kwargs):
         url = self._clean_url(url)
         d = self._logging_info(url=url, auth_token=self.auth)
-        logger.info(f'Sending DELETE request. {d}')
+        logger.debug(f'Sending DELETE request. {d}')
         response = requests.delete(
             f'{self.endpoint_url}/{url}',
             headers=self.headers,

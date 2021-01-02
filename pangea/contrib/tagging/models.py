@@ -71,3 +71,10 @@ class SampleGroupTagRelationship(GenericTagRelationship):
 class SampleTagRelationship(GenericTagRelationship):
     tag = models.ForeignKey('Tag', on_delete=models.CASCADE, related_name='tagged_samples')
     sample = models.ForeignKey(Sample, on_delete=models.CASCADE, related_name='tags')
+
+    def __str__(self):
+        return f'<SampleTagRelationShip tag="{self.tag}" sample="{self.sample}" payload="{self.payload}">'
+
+    def __repr__(self):
+        return f'<SampleTagRelationShip tag="{self.tag}" sample="{self.sample}" payload="{self.payload}">'
+
