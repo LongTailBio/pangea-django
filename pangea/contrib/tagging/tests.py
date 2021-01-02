@@ -95,8 +95,10 @@ class TagApiTests(APITestCase):
         cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
         cls.org1.users.add(cls.user)
         cls.priv_grp_auth = cls.org1.create_sample_group(name='GRP_01', is_public=False)
-        cls.pub_grp = cls.org2.create_sample_group(name='GRP_02', is_public=True)
+        cls.pub_grp = cls.org2.create_sample_group(name='GRP_02', is_public=True, is_library=True)
         cls.priv_grp_unauth = cls.org2.create_sample_group(name='GRP_03', is_public=False)
+        cls.pub_sample = cls.pub_grp.create_sample(name='SAMPLE_01')
+        cls.pub_sample_2 = cls.pub_grp.create_sample(name='SAMPLE_02')
 
     def test_create_tag(self):
         """Ensure authorized user can create sample group."""
@@ -114,6 +116,14 @@ class TagApiTests(APITestCase):
         """Ensure no login is required to read a tag."""
         tag = Tag.objects.create(name='My Test Tag')
         url = reverse('tag-details', kwargs={'pk': tag.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_tag_read_by_name(self):
+        """Ensure no login is required to read a tag."""
+        tag_name = 'My Test Tag 2'
+        tag = Tag.objects.create(name=tag_name)
+        url = reverse('tag-name-details', kwargs={'name': tag_name})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -173,7 +183,39 @@ class TagApiTests(APITestCase):
         self.assertNotIn(str(self.priv_grp_unauth.uuid), response_uuids)
 
     def test_tag_public_sample(self):
-        pass
+        tag = Tag.objects.create(name='My Test Tag GJJTYF')
+        url = reverse('tag-samples', kwargs={'tag_pk': tag.uuid})
+        data = {'sample_uuid': self.pub_sample.uuid}
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        tag = Tag.objects.get(pk=tag.uuid)
+        self.assertEqual(tag.tagged_samples.get().sample, self.pub_sample)
+
+    def test_retrieve_tags_for_sample(self):
+        org = Organization.objects.create(name='org YKTJHG')
+        lib = org.create_sample_group(name='LBRY_01 YKTJHG', is_library=True)
+        sample = lib.create_sample(name='SMPL_01 YKTJHG')
+        tag = Tag.objects.create(name='tag YKTJHG')
+        tag.tag_sample(sample)
+        url = reverse('tag-create') + f'?sample={sample.uuid}'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_uuids = [el['uuid'] for el in response.data['results']]
+        self.assertIn(str(tag.uuid), response_uuids)
+
+    def test_get_random_tagged_samples(self):
+        tag = Tag.objects.create(name='My Test Tag YDSGJ')
+        tag.tag_sample(self.pub_sample)
+        tag.tag_sample(self.pub_sample_2)
+
+        url = reverse('tag-random-samples', kwargs={'tag_pk': tag.uuid})
+        url += '?n=1'
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_uuids = [el['uuid'] for el in response.data['results']]
+        self.assertEqual(len(response_uuids), 1)
+        self.assertIn(response_uuids[0], [str(self.pub_sample.uuid), str(self.pub_sample_2.uuid)])
 
     def test_auth_tag_private_sample(self):
         pass

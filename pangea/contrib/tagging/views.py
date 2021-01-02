@@ -1,11 +1,16 @@
 import structlog
+from random import shuffle
+import json
 
 from django.utils.translation import gettext_lazy as _
+from rest_framework.response import Response
 
+from uuid import UUID
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import api_view, authentication_classes
 
 from pangea.core.views.utils import PermissionedListCreateAPIView
 from .models import (
@@ -32,11 +37,27 @@ from pangea.core.serializers import (
 logger = structlog.get_logger(__name__)
 
 
-class TagCreateView(PermissionedListCreateAPIView):
+def is_uuid(el):
+    """Return true if el is an UUID."""
+    try:
+        UUID(el)
+        return True
+    except ValueError:
+        return False
+
+
+class TagCreateView(generics.ListCreateAPIView):
     queryset = Tag.objects.all().order_by('created_at')
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filterset_fields = ['uuid', 'name']
+
+    def get_queryset(self):
+        sample_pk = self.request.query_params.get('sample', None)
+        qset = self.queryset
+        if sample_pk:
+            qset = qset.filter(tagged_samples__sample__uuid__contains=sample_pk)
+        return qset
 
 
 class TagDetailsView(generics.RetrieveUpdateDestroyAPIView):
@@ -44,6 +65,14 @@ class TagDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tag.objects.all().order_by('created_at')
     serializer_class = TagSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
+class TagNameDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    """This class handles the http GET, PUT and DELETE requests."""
+    queryset = Tag.objects.all().order_by('created_at')
+    serializer_class = TagSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    lookup_field = 'name'
 
 
 class TagTagsView(generics.ListAPIView):
@@ -117,9 +146,12 @@ class TagSamplesView(generics.ListAPIView):
     def filter_queryset(self, queryset):
         tag = Tag.objects.get(pk=self.kwargs.get('tag_pk'))
         perm = SamplePermission()
+        samples = (
+            sample_rel.sample
+            for sample_rel in tag.tagged_samples.all()
+        )
         samples = [
-            sample
-            for sample in tag.tagged_samples.order_by('created_at')
+            sample for sample in samples
             if perm.has_object_permission(self.request, self, sample)
         ]
         return samples
@@ -129,7 +161,7 @@ class TagSamplesView(generics.ListAPIView):
         sample = Sample.objects.get(pk=request.data.get('sample_uuid'))
         sample_member_query = self.request.user.organization_set.filter(pk=sample.organization.pk)
 
-        if not sample_member_query.exists():
+        if not sample.is_public and not sample_member_query.exists():
             logger.info(
                 'attempted_tag_sample_without_permission',
                 user=request.user,
@@ -139,3 +171,24 @@ class TagSamplesView(generics.ListAPIView):
             raise PermissionDenied(_('Insufficient permissions to tag sample.'))
         tag.tag_sample(sample)
         return Response({"status": "success"})
+
+
+@api_view(['GET'])
+def get_random_samples_in_tag(request, tag_pk):
+    """Reply with metadata for samples in group."""
+    tag = Tag.objects.get(pk=tag_pk)
+    perm = SamplePermission()
+    samples = [
+        sample_rel.sample
+        for sample_rel in tag.tagged_samples.all()
+    ]
+    shuffle(samples)
+    n_samples = int(request.GET.get('n', 100))
+    samples = samples[:n_samples]
+    perm = SamplePermission()
+    samples = [
+        sample for sample in samples
+        if perm.has_object_permission(request, None, sample)
+    ]
+    samples = [SampleSerializer(sample).data for sample in samples]
+    return Response({'results': samples})
