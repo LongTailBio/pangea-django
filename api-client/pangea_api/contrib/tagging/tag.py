@@ -2,7 +2,7 @@
 from ...remote_object import RemoteObject
 from ...sample import Sample
 from ...sample_group import SampleGroup
-from ...blob_constructors import sample_from_blob
+from ...blob_constructors import sample_from_blob, sample_group_from_blob
 from ...utils import paginated_iterator
 
 
@@ -59,7 +59,7 @@ class Tag(RemoteObject):
         if isinstance(other, Sample):
             return self._tag_sample(other, payload=payload)
         if isinstance(other, SampleGroup):
-            return self_tag_sample_group(other, payload=payload)
+            return self._tag_sample_group(other, payload=payload)
 
     def _tag_tag(self, tag, payload=""):
         url = f'contrib/tags/{self.uuid}/tags'
@@ -80,6 +80,11 @@ class Tag(RemoteObject):
         url = f'contrib/tags/{self.uuid}/samples'
         for sample_blob in paginated_iterator(self.knex, url):
             yield sample_from_blob(self.knex, sample_blob)
+
+    def get_sample_groups(self):
+        url = f'contrib/tags/{self.uuid}/sample_groups'
+        for sample_group_blob in paginated_iterator(self.knex, url):
+            yield sample_group_from_blob(self.knex, sample_group_blob)
 
     def get_random_samples(self, n=100):
         url = f'contrib/tags/{self.uuid}/random_samples?n={n}'

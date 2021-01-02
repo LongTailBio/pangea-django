@@ -6,23 +6,35 @@ from .sample import Sample
 from functools import lru_cache
 
 
-def org_from_blob(knex, blob):
+def org_from_blob(knex, blob, already_fetched=True, modified=False):
     org = Organization(knex, blob['name'])
     org.load_blob(blob)
+    org._already_fetched = already_fetched
+    org._modified = modified
     return org
 
 
-def sample_group_from_blob(knex, blob):
-    org = org_from_blob(knex, blob['organization_obj'])
+def sample_group_from_blob(knex, blob, already_fetched=True, modified=False):
+    org = org_from_blob(
+        knex, blob['organization_obj'],
+        already_fetched=already_fetched, modified=modified
+    )
     grp = SampleGroup(knex, org, blob['name'], is_library=blob['is_library'])
     grp.load_blob(blob)
+    grp._already_fetched = already_fetched
+    grp._modified = modified
     return grp
 
 
-def sample_from_blob(knex, blob):
-    lib = sample_group_from_blob(knex, blob['library_obj'])
+def sample_from_blob(knex, blob, already_fetched=True, modified=False):
+    lib = sample_group_from_blob(
+        knex, blob['library_obj'],
+        already_fetched=already_fetched, modified=modified
+    )
     sample = Sample(knex, lib, blob['name'], metadata=blob['metadata'])
     sample.load_blob(blob)
+    sample._already_fetched = already_fetched
+    sample._modified = modified
     return sample
 
 

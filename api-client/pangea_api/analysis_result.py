@@ -52,7 +52,7 @@ class AnalysisResult(RemoteObject):
 class SampleAnalysisResult(AnalysisResult):
     parent_field = 'sample'
 
-    def __init__(self, knex, sample, module_name, replicate=None, metadata={}):
+    def __init__(self, knex, sample, module_name, replicate=None, metadata={}, is_private=False):
         super().__init__(self)
         self.knex = knex
         self.sample = sample
@@ -61,6 +61,7 @@ class SampleAnalysisResult(AnalysisResult):
         self.replicate = replicate
         self._get_field_cache = []
         self.metadata = metadata
+        self.is_private = is_private
 
     def nested_url(self):
         return self.sample.nested_url() + f'/analysis_results/{self.module_name}'
@@ -122,7 +123,7 @@ class SampleAnalysisResult(AnalysisResult):
 class SampleGroupAnalysisResult(AnalysisResult):
     parent_field = 'grp'
 
-    def __init__(self, knex, grp, module_name, replicate=None, metadata={}):
+    def __init__(self, knex, grp, module_name, replicate=None, metadata={}, is_private=False):
         super().__init__(self)
         self.knex = knex
         self.grp = grp
@@ -130,6 +131,7 @@ class SampleGroupAnalysisResult(AnalysisResult):
         self.module_name = module_name
         self.replicate = replicate
         self.metadata = metadata
+        self.is_private = is_private
 
     def nested_url(self):
         return self.grp.nested_url() + f'/analysis_results/{self.module_name}'
@@ -267,7 +269,7 @@ class AnalysisResultField(RemoteObject):
     def download_file(self, filename=None, cache=True):
         """Return a local filepath to the file this result points to."""
         blob_type = self.stored_data.get('__type__', '').lower()
-        if blob_type not in ['s3', 'sra']:
+        if blob_type not in ['s3', 'sra', 'ftp']:
             raise TypeError('Cannot fetch a file for a BLOB type result field.')
         if cache and self._cached_filename:
             return self._cached_filename
@@ -275,6 +277,8 @@ class AnalysisResultField(RemoteObject):
             return self._download_s3(filename, cache)
         elif blob_type == 'sra':
             return self._download_sra(filename, cache)
+        elif blob_type == 'ftp':
+            return self._download_ftp(filename, cache)
 
     def _download_s3(self, filename, cache):
         try:
@@ -294,6 +298,12 @@ class AnalysisResultField(RemoteObject):
         return filename
 
     def _download_sra(self, filename, cache):
+        return self._download_generic_url(filename, cache)
+
+    def _download_ftp(self, filename, cache):
+        return self._download_generic_url(filename, cache)
+
+    def _download_generic_url(self, filename, cache):
         url = self.stored_data['url']
         if not filename:
             self._temp_filename = True
