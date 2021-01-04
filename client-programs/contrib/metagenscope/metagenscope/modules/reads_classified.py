@@ -49,7 +49,10 @@ class ReadsClassifiedModule(Module):
             sample for sample in grp.get_samples()
             if sample_has_modules(sample)
         ]
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            cls.group_replicate(len(samples))
+        ).field(
             'json',
             data={
                 'samples': {
@@ -85,7 +88,10 @@ class ReadsClassifiedModule(Module):
 
     @classmethod
     def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:
-        field = sample.analysis_result(cls.name()).field(
+        field = sample.analysis_result(
+            cls.name(),
+            cls.sample_replicate(len(samples))
+        ).field(
             'json',
             data={'samples': {sample.name: parse_sample(sample)}}
         )

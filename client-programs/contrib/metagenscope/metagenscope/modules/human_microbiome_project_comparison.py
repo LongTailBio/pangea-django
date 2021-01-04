@@ -75,7 +75,10 @@ class TopTaxaModule(Module):
             samples,
             group_apply=group_apply
         )
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'top_taxa',
             data={
                 'categories': categories_from_metadata(samples),
@@ -103,7 +106,10 @@ class TopTaxaModule(Module):
 
     @classmethod
     def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:
-        field = sample.analysis_result(cls.name()).field(
+        field = sample.analysis_result(
+            cls.name(),
+            replicate=cls.sample_replicate()
+        ).field(
             'top_taxa',
             data=parse_report(
                 sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1])

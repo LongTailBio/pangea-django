@@ -28,19 +28,14 @@ from .parse_utils import (
     parse_generic,
     umap,
     run_pca,
+    group_taxa_report,
 )
 
 TOOLS = [KRAKENUNIQ_NAMES] #, MICROBECENSUS_NAMES]
 
 
-def taxa_axes(samples):
-    taxa_matrix = pd.DataFrame.from_dict(
-        {
-            sample.name: parse_taxa_report(sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]))
-            for sample in samples
-        },
-        orient='index'
-    ).fillna(0)
+def taxa_axes(samples, grp):
+    taxa_matrix = group_taxa_report(grp)(samples)
     pca = run_pca(taxa_matrix, n_comp=3)
     out = {
         f'{KRAKENUNIQ_NAMES[2]} Chao1': {'vals': taxa_matrix.apply(chao1, axis=1).to_dict()},
@@ -54,8 +49,8 @@ def taxa_axes(samples):
     return out
 
 
-def make_axes(samples):
-    out = taxa_axes(samples)
+def make_axes(samples, grp):
+    out = taxa_axes(samples, grp)
     # out['Ave. Genome Size'] = {'vals': pd.Series({
     #     sample.name: parse_generic(
     #         sample_module_field(sample, MICROBECENSUS_NAMES[0], MICROBECENSUS_NAMES[1]),
@@ -96,11 +91,14 @@ class MultiAxisModule(Module):
             meta[sample.name] = sample.metadata
             meta[sample.name]['All'] = 'All'
         data = {
-            'axes': make_axes(samples),
+            'axes': make_axes(samples, grp),
             'categories': categories_from_metadata(samples),
             'metadata': meta,
         }
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'multi_axis',
             data=data
         )

@@ -1,5 +1,6 @@
 
 import pandas as pd
+import logging
 from pandas.api.types import is_string_dtype
 from pandas.api.types import is_numeric_dtype
 from sklearn.cluster import dbscan
@@ -8,8 +9,11 @@ from .modules.parse_utils import (
     proportions,
     run_pca,
     parse_taxa_report,
+    group_taxa_report,
 )
 from .data_utils import sample_module_field
+
+logger = logging.getLogger(__name__)
 
 
 def sample_has_modules(sample):
@@ -44,27 +48,21 @@ def pca_dbscan(samples, taxa_matrix):
         sample.metadata['MGS - PCA-DBSCAN'] = label
 
 
-def add_taxa_auto_metadata(samples, logger):
+def add_taxa_auto_metadata(samples, grp):
     samples = [sample for sample in samples if sample_has_modules(sample)]
-    taxa_matrix = proportions(pd.DataFrame.from_dict(
-        {
-            sample.name: parse_taxa_report(
-                sample_module_field(sample, KRAKEN2_NAMES[0], KRAKEN2_NAMES[1])
-            )
-            for sample in samples
-        },
-        orient='index'
-    ).fillna(0))
-    logger('Adding PCA median variable...')
+    taxa_matrix = group_taxa_report(grp)(samples)
+    parsed_sample_names = set(taxa_matrix.index.to_list())
+    samples = [sample for sample in samples if sample.name in parsed_sample_names]
+    logger.info('Adding PCA median variable...')
     pc1_median(samples, taxa_matrix)
-    logger('done.')
-    logger('Adding PCA DBSCAN variable...')
+    logger.info('done.')
+    logger.info('Adding PCA DBSCAN variable...')
     pca_dbscan(samples, taxa_matrix)
-    logger('done.')
+    logger.info('done.')
 
 
-def regularize_metadata(samples, logger):
-    logger('Regularizing metadata...')
+def regularize_metadata(samples):
+    logger.info('Regularizing metadata...')
     meta = pd.DataFrame.from_dict(
         {sample.name: sample.metadata for sample in samples},
         orient='index'
@@ -102,4 +100,4 @@ def regularize_metadata(samples, logger):
             sample.metadata = meta.loc[sample.name].to_dict()
         except KeyError:
             pass
-    logger('done.')
+    logger.info('done.')

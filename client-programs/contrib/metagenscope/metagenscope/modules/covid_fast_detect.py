@@ -61,7 +61,7 @@ def sample_filter(tbl, samples, cat_name, cat_val):
     return my_taxa
 
 
-def process(samples):
+def process(samples, grp):
     metadata_categories = categories_from_metadata(samples)
     out = {}
     for module, field, tool in TOOLS:
@@ -113,13 +113,16 @@ class CovidFastDetectModule(Module):
             sample for sample in grp.get_samples()
             if CovidFastDetectModule.sample_has_required_modules(sample)
         ]
-        values, categories = process(samples)
+        values, categories = process(samples, grp)
         data = {
             'tool_names': [el[2] for el in TOOLS],
             'categories': categories,
             'by_tool': values,
         }
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'alpha_diversity',
             data=data
         )

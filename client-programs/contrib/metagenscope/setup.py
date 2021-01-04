@@ -3,10 +3,10 @@
 
 import setuptools
 
-setuptools
+
 setuptools.setup(
     name='metagenscope',
-    version='3.0.8',
+    version='3.1.0',
     author="David C. Danko",
     author_email='dcdanko@gmail.com',
     packages=setuptools.find_packages(),

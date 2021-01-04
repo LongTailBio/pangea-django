@@ -5,15 +5,26 @@ from pangea_api import (
     SampleGroupAnalysisResultField,
     SampleGroup,
 )
-
+from time import time
 from .exceptions import UnsupportedAnalysisMode
+from .version import VERSION
 
 
 class Module:
 
     @classmethod
     def name(cls) -> str:
-        return f'metagenscope::v3.0.0::{cls._name()}'
+        return f'metagenscope::{cls._name()}'
+
+    @classmethod
+    def group_replicate(cls, n_samples):
+        timestamp = int(time())
+        return f'{VERSION}-{timestamp}-{n_samples}'
+
+    @classmethod
+    def sample_replicate(cls):
+        timestamp = int(time())
+        return f'{VERSION}-{timestamp}'
 
     @classmethod
     def _name(cls) -> str:

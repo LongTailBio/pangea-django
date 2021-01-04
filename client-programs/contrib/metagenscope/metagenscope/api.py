@@ -14,6 +14,8 @@ from .modules import (
     ReadsClassifiedModule,
     CovidFastDetectModule,
 )
+from .version import VERSION, compare_versions
+import logging
 
 GROUP_MODULES = [
     ReadsClassifiedModule,
@@ -33,48 +35,81 @@ SAMPLE_MODULES = [
     TaxaSunburstModule,
 ]
 
-
-def auto_metadata(samples, logger):
-    regularize_metadata(samples, logger)
-    add_taxa_auto_metadata(samples, logger)
+logger = logging.getLogger(__name__)
 
 
-def run_group(grp, logger):
-    already_run = {ar.module_name for ar in grp.get_analysis_results()}
+def auto_metadata(samples, grp):
+    regularize_metadata(samples)
+    add_taxa_auto_metadata(samples, grp)
+
+
+def module_should_be_rerun(module, analysis_result, samples):
+    try:
+        version, timetamp, n_samples = analysis_result.replicate.split('-')
+        timetamp = int(timetamp)
+        n_samples = int(n_samples)
+    except ValueError:
+        return True
+    if compare_versions(VERSION, version) > 0:
+        return True
+    new_n_samples = 0
+    for sample in samples:
+        if module.sample_has_required_modules(sample):
+            new_n_samples += 1
+    if new_n_samples > n_samples:
+        return True
+    return False
+
+
+def run_group(grp, strict=False):
+    already_run = {ar.module_name: ar for ar in grp.get_analysis_results()}
+    samples = list(grp.get_samples())
     for module in GROUP_MODULES:
-        if module.name() in already_run:
-            logger(f'Module {module.name()} has already been run for this group')
+        if module.name() in already_run and not module_should_be_rerun(module, already_run[module.name()], samples):
+            logger.info(f'Module {module.name()} has already been run for this group')
             continue
         if not module.group_has_required_modules(grp):
-            logger(f'Group does not meet requirements for module {module.name()}')
+            logger.info(f'Group does not meet requirements for module {module.name()}')
             continue
-        logger(f'Group meets requirements for module {module.name()}, processing')
-        field = module.process_group(grp)
-        field.idem()
-        logger('done.')
-
-
-def run_sample(sample, logger, strict=False):
-    already_run = {ar.module_name for ar in sample.get_analysis_results()}
-    for module in SAMPLE_MODULES:
-        if module.name() in already_run:
-            logger(f'Module {module.name()} has already been run for this sample')
-            continue
-        if not module.sample_has_required_modules(sample):
-            logger(f'Sample does not meet requirements for module {module.name()}')
-            continue
-        logger(f'Sample meets requirements for module {module.name()}, processing')
+        logger.info(f'Group meets requirements for module {module.name()}, processing')
         try:
-            field = module.process_sample(sample)
-            logger('done.')
+            field = module.process_group(grp)
         except Exception as e:
-            logger(f'[error] failed while running module {module.name()} for sample {sample.name}\nException:\n{e}')
+            logger.warning(f'failed while running module {module.name()} for group {grp.name}\nException:\n{e}')
             if strict:
                 raise
         try:
             field.idem()
-            logger('saved.')
+            logger.info('saved.')
         except Exception as e:
-            logger(f'[error] failed while saving module {module.name()} for sample {sample.name}\nException:\n{e}')
+            logger.warning(f'failed while saving module {module.name()} for group {grp.name}\nException:\n{e}')
             if strict:
                 raise
+    logger.info(f'finished processing modules for group {grp.name}.')
+
+
+def run_sample(sample, strict=False):
+    already_run = {ar.module_name for ar in sample.get_analysis_results()}
+    for module in SAMPLE_MODULES:
+        if module.name() in already_run:
+            logger.info(f'Module {module.name()} has already been run for this sample')
+            continue
+        if not module.sample_has_required_modules(sample):
+            logger.info(f'Sample does not meet requirements for module {module.name()}')
+            continue
+        logger.info(f'Sample meets requirements for module {module.name()}, processing')
+        try:
+            field = module.process_sample(sample)
+            logger.info('done.')
+        except Exception as e:
+            logger.warning(f'failed while running module {module.name()} for sample {sample.name}\nException:\n{e}')
+            if strict:
+                raise
+        try:
+            field.idem()
+            logger.info('saved.')
+        except Exception as e:
+            logger.warning(f'failed while saving module {module.name()} for sample {sample.name}\nException:\n{e}')
+            if strict:
+                raise
+    logger.info(f'finished processing modules for sample {sample.name}.')

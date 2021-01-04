@@ -93,7 +93,10 @@ class TaxaSunburstModule(Module):
     @classmethod
     def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:
         data = trees_from_sample(sample)
-        field = sample.analysis_result(cls.name()).field(
+        field = sample.analysis_result(
+            cls.name(),
+            replicate=cls.sample_replicate()
+        ).field(
             'sunburst',
             data=data
         )

@@ -16,7 +16,7 @@ from ..data_utils import (
     categories_from_metadata,
 )
 from .constants import KRAKENUNIQ_NAMES
-from .parse_utils import parse_taxa_report, proportions
+from .parse_utils import group_taxa_report, parse_taxa_report, proportions
 
 TOOLS = [KRAKENUNIQ_NAMES]
 MIN_GRP_SIZE = 6
@@ -73,17 +73,10 @@ def scatter(taxa, samples, cat_name, cat_val):
     return pts.to_dict('records'), pvals
 
 
-def process(samples, max_taxa=0):
+def process(samples, taxa_matrix, max_taxa=0):
     metadata_categories = categories_from_metadata(samples)
     out = {}
     for module, field, tool in TOOLS:
-        taxa_matrix = proportions(pd.DataFrame.from_dict(
-            {
-                sample.name: parse_taxa_report(sample_module_field(sample, module, field))
-                for sample in samples
-            },
-            orient='index'
-        ).fillna(0))
         if max_taxa and taxa_matrix.shape[1] > max_taxa:
             taxa = taxa_matrix.mean().sort_values(ascending=False).index.to_list()[:max_taxa]
             taxa_matrix = taxa_matrix[taxa]
@@ -132,14 +125,18 @@ class VolcanoModule(Module):
             sample for sample in grp.get_samples()
             if sample_has_modules(sample)
         ]
-        volcano, cats = process(samples, cls.MAX_TAXA)
+        taxa_matrix = group_taxa_report(grp)(samples)
+        volcano, cats = process(samples, taxa_matrix, cls.MAX_TAXA)
         if not volcano:
             raise VolcanoError('No differentiable group found')
         data = {
             'categories': cats,
             'tools': volcano,
         }
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(taxa_matrix.shape[0])
+        ).field(
             'volcano',
             data=data
         )

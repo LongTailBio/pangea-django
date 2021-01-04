@@ -13,7 +13,7 @@ from ..data_utils import (
     sample_module_field,
 )
 from .constants import KRAKENUNIQ_NAMES
-from .parse_utils import parse_taxa_report
+from .parse_utils import parse_taxa_report, group_taxa_report
 from .alpha_diversity_metrics import (
     shannon_entropy,
     chao1,
@@ -43,26 +43,21 @@ def rank_filter(tbl, rank):
 
 
 def sample_filter(tbl, samples, cat_name, cat_val):
+    samples_in_tbl = set(tbl.index.to_list())
     my_samples = [
         sample.name
         for sample in samples
-        if cat_name == 'All' or sample.metadata.get(cat_name, '') == cat_val
+        if sample.name in samples_in_tbl and (cat_name == 'All' or sample.metadata.get(cat_name, '') == cat_val)
     ]
     my_taxa = tbl.loc[my_samples]
     return my_taxa
 
 
-def process(samples):
+def process(samples, grp):
     metadata_categories = categories_from_metadata(samples)
     out = {}
     for module, field, tool in TOOLS:
-        taxa_matrix = pd.DataFrame.from_dict(
-            {
-                sample.name: parse_taxa_report(sample_module_field(sample, module, field))
-                for sample in samples
-            },
-            orient='index'
-        ).fillna(0)
+        taxa_matrix = group_taxa_report(grp)(samples)
         tool_tbl = {'taxa_ranks': TAXA_RANKS, 'by_taxa_rank': {}}
         for rank in TAXA_RANKS:
             rank_tbl = {'by_category_name': {}}
@@ -102,13 +97,16 @@ class AlphaDiversityModule(Module):
             sample for sample in grp.get_samples()
             if AlphaDiversityModule.sample_has_required_modules(sample)
         ]
-        values, categories = process(samples)
+        values, categories = process(samples, grp)
         data = {
             'tool_names': [el[2] for el in TOOLS],
             'categories': categories,
             'by_tool': values,
         }
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'alpha_diversity',
             data=data
         )

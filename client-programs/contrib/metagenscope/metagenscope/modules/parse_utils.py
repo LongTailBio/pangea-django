@@ -27,6 +27,25 @@ def parse_generic(report: SampleAnalysisResultField, parser):
     return out
 
 
+def group_taxa_report(pangea_group, module_name='cap2::capalyzer-v0_1_0::kraken2_taxa', field_name='read_counts'):
+    """Return a function that will return a pandas data frame with taxa abundances."""
+    field = pangea_group.analysis_result(module_name).field(field_name).get()
+    filename = field.download_file()
+    taxa_tbl = pd.read_csv(filename, index_col=0)
+    sample_names = set(taxa_tbl.index.to_list())
+
+    def taxa_report(samples, as_proportions=True):
+        """Return a dataframe with taxon abundances for the samples."""
+        my_sample_names = [sample.name for sample in samples if sample.name in sample_names]
+        my_taxa = taxa_tbl.loc[my_sample_names]
+        my_taxa = my_taxa.fillna(0)
+        if as_proportions:
+            my_taxa = proportions(my_taxa)
+        return my_taxa
+
+    return taxa_report
+
+
 def parse_taxa_report(report: SampleAnalysisResultField, proportions=True) -> dict:
     """Return a dict of taxa_name to relative abundance."""
     local_path = report.download_file()

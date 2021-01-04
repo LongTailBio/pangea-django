@@ -17,6 +17,7 @@ from .constants import KRAKENUNIQ_NAMES
 from .parse_utils import (
     parse_taxa_report,
     proportions,
+    group_taxa_report,
 )
 
 COLS = {
@@ -34,14 +35,8 @@ COLS = {
 }
 
 
-def process(samples):
-    taxa_matrix = 100 * proportions(pd.DataFrame.from_dict(
-        {
-            sample.name: parse_taxa_report(sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]))
-            for sample in samples
-        },
-        orient='index'
-    ).fillna(0))
+def process(samples, grp):
+    taxa_matrix = 100 * group_taxa_report(grp)(samples)
     taxa_matrix.columns = [
         el.split('|')[-1].split('__')[1].replace('_', ' ') for el in taxa_matrix.columns
     ]
@@ -81,8 +76,11 @@ class MicrobeDirectoryModule(Module):
             sample for sample in grp.get_samples()
             if cls.sample_has_required_modules(sample)
         ]
-        data = json.loads(json.dumps(process(samples)))
-        field = grp.analysis_result(MicrobeDirectoryModule.name()).field(
+        data = json.loads(json.dumps(process(samples, grp)))
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'md1',
             data={'samples': data}
         )
@@ -91,7 +89,10 @@ class MicrobeDirectoryModule(Module):
     @classmethod
     def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:
         data = json.loads(json.dumps(process([sample])))
-        field = sample.analysis_result(MicrobeDirectoryModule.name()).field(
+        field = sample.analysis_result(
+            cls.name(),
+            replicate=cls.sample_replicate()
+        ).field(
             'md1',
             data={'samples': data}
         )

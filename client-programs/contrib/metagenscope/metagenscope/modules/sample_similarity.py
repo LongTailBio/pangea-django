@@ -20,25 +20,22 @@ from .parse_utils import (
     parse_taxa_report,
     umap,
     proportions,
+    group_taxa_report,
 )
 
 
-def taxa_tool_umap(samples, module, field):
+def taxa_tool_umap(samples, grp, module, field):
     """Run UMAP for tool results stored as 'taxa' property."""
-    samples = pd.DataFrame.from_dict({
-        sample.name: parse_taxa_report(sample_module_field(sample, module, field))
-        for sample in samples
-    }, orient='index').fillna(0)
-    samples = proportions(samples)
-    reduced = umap(samples).to_dict(orient='index')
+    taxa_matrix = group_taxa_report(grp)(samples)
+    reduced = umap(taxa_matrix).to_dict(orient='index')
     return reduced
 
 
-def processor(samples):
+def processor(samples, grp):
     """Combine Sample Similarity components."""
     data_records = []
     sample_map = {sample.name: sample.metadata for sample in samples}
-    for sample_name, coords in taxa_tool_umap(samples, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]).items():
+    for sample_name, coords in taxa_tool_umap(samples, grp, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]).items():
         rec = {
             'name': sample_name,
             f'{KRAKENUNIQ_NAMES[2]}_x': coords['C0'],
@@ -91,9 +88,12 @@ class SampleSimilarityModule(Module):
         ).fillna('Unknown')
         for sample in samples:
             sample.metadata = meta.loc[sample.name].to_dict()
-        return grp.analysis_result(cls.name()).field(
+        return grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'dim_reduce',
-            data=processor(samples),
+            data=processor(samples, grp),
         )
 
     @classmethod

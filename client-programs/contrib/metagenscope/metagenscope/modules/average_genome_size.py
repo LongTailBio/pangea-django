@@ -73,7 +73,10 @@ class AveGenomeSizeModule(Module):
             sample for sample in grp.get_samples()
             if sample_has_modules(sample)
         ]
-        field = grp.analysis_result(cls.name()).field(
+        field = grp.analysis_result(
+            cls.name(),
+            replicate=cls.group_replicate(len(samples))
+        ).field(
             'ags',
             data=processor(samples),
         )
