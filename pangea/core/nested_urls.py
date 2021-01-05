@@ -89,7 +89,7 @@ def to_uuid(**kwargs):
             filter_args['module_name__iexact'] = kwargs[uuid_key]
             if kwargs.get('replicate'):
                 filter_args['replicate'] = kwargs.get('replicate')
-        parent = model.objects.filter(**filter_args).order_by('updated_at')
+        parent = model.objects.filter(**filter_args).order_by('-updated_at')
         if not parent.exists():
             raise ObjectDoesNotExist()
         parent = parent[0]
