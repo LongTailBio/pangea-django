@@ -842,6 +842,26 @@ class SampleGroupMembershipTests(APITestCase):
         samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
         self.assertEqual(samples_queryset.count(), 3)
 
+    def test_authorized_remove_sample_from_group(self):
+        self.client.force_authenticate(user=self.org_user)
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {
+            'sample_uuid': self.sample.pk,
+            'sample_uuids': [self.sample2.pk, self.sample3.pk]
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        url = reverse('sample-group-samples', kwargs={'group_pk': self.sample_group.pk})
+        data = {
+            'sample_uuid': self.sample.pk,
+            'sample_uuids': [self.sample2.pk]
+        }
+        response = self.client.delete(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
+        self.assertEqual(samples_queryset.count(), 1)
+
     def test_get_sample_group_samples(self):
         self.sample_group.sample_set.add(self.sample)
 
