@@ -27,7 +27,7 @@ def parse_generic(report: SampleAnalysisResultField, parser):
     return out
 
 
-def group_taxa_report(pangea_group, module_name='cap2::capalyzer-v0_1_0::kraken2_taxa', field_name='read_counts'):
+def group_taxa_report(pangea_group, module_name='cap2::capalyzer::kraken2_taxa', field_name='read_counts'):
     """Return a function that will return a pandas data frame with taxa abundances."""
     field = pangea_group.analysis_result(module_name).field(field_name).get()
     filename = field.download_file()
