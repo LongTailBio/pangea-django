@@ -202,7 +202,8 @@ def get_sample_ar_counts_in_tag(request, pk):
     tag = Tag.objects.get(pk=pk)
     perm = SamplePermission()
     blob = {'n_samples': 0}
-    for sample in tag.tagged_samples.all():
+    for sample_rel in tag.tagged_samples.all():
+        sample = sample_rel.sample
         if not perm.has_object_permission(request, None, sample):
             continue
         blob['n_samples'] += 1
@@ -219,7 +220,8 @@ def get_sample_group_ar_counts_in_tag(request, pk):
     tag = Tag.objects.get(pk=pk)
     perm = SampleGroupPermission()
     blob = {'n_groups': 0}
-    for group in tag.tagged_sample_groups.all():
+    for group_rel in tag.tagged_sample_groups.all():
+        group = group_rel.sample_group
         if not perm.has_object_permission(request, None, group):
             continue
         blob['n_groups'] += 1
