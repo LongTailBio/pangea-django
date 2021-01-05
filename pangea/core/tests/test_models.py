@@ -126,6 +126,18 @@ class TestSampleModel(TestCase):
         self.assertEqual(original.name, duplicate.name)
         self.assertNotEqual(original.library, duplicate.library)
 
+    def test_change_library(self):
+        """Ensure duplicate sample names in different libraries are allowed."""
+        org = Organization.objects.create(name='an_org HJK')
+        lib1 = org.create_sample_group(name='LBRY_01 HJK', is_library=True)
+        lib2 = org.create_sample_group(name='LBRY_02 HJK', is_library=True)
+        sample = lib1.create_sample(name='SMPL_01 HJK')
+        sample.library = lib2.library
+        sample.save()
+
+        sample = Sample.objects.get(pk=sample.uuid)
+        self.assertEqual(sample.library, lib2.library)
+
 
 class TestProject(TestCase):
     """Test suite for Project model."""

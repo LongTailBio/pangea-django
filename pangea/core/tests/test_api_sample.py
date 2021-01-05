@@ -137,6 +137,30 @@ class SampleTests(APITestCase):
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
         self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
 
+    def test_modify_sample_library(self):
+        """Ensure authorized user can move sample to another library."""
+        group = self.organization.create_sample_group(
+            name='GRP_01 KYDJAH',
+            is_public=True,
+            is_library=True,
+        )
+        sample = group.create_sample(name='SMPL_01 KYDJAH')
+        sample_library = self.organization.create_sample_group(name='Test Library KYDJAH', is_library=True)
+
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('sample-details', kwargs={'pk': sample.uuid})
+        data = {'library': sample_library.pk}
+        response = self.client.patch(url, data, format='json')
+
+        sample = Sample.objects.get(pk=sample.uuid)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertNotEqual(sample.library.group.uuid, group.uuid)
+        self.assertEqual(sample.library.group.uuid, sample_library.uuid)
+        self.assertTrue(sample_library.sample_set.filter(pk=sample.uuid).exists())
+        self.assertFalse(group.sample_set.filter(pk=sample.uuid).exists())
+
     def test_create_sample_with_description(self):
         """Ensure authorized user can create sample group."""
         self.organization.users.add(self.user)

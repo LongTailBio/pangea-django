@@ -113,6 +113,21 @@ class SampleSerializer(serializers.ModelSerializer):
         read_only_fields = ('created_at', 'updated_at', 'library_obj')
 
 
+    def update(self, sample, validated_data):
+        """Update the sample model
+
+        slight modification of the default update method
+        https://github.com/encode/django-rest-framework/blob/3db88778893579e1d7609b584ef35409c8aa5a22/rest_framework/serializers.py#L968
+        """
+        old_library = sample.library
+        super().update(sample, validated_data)
+        new_library = sample.library
+        if old_library != new_library:
+            old_library.group.sample_set.remove(sample)
+            new_library.group.add_sample(sample)
+        return sample
+
+
 class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
     sample_obj = SampleSerializer(source='sample', read_only=True)
