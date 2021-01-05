@@ -90,7 +90,7 @@ class ReadsClassifiedModule(Module):
     def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:
         field = sample.analysis_result(
             cls.name(),
-            cls.sample_replicate(len(samples))
+            cls.sample_replicate()
         ).field(
             'json',
             data={'samples': {sample.name: parse_sample(sample)}}
