@@ -13,6 +13,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.decorators import api_view, authentication_classes
 
 from pangea.core.views.utils import PermissionedListCreateAPIView
+from pangea.core.param_auth import TokenParamAuthentication
 from .models import (
     Tag,
     SampleGroup,
@@ -192,3 +193,37 @@ def get_random_samples_in_tag(request, tag_pk):
     ]
     samples = [SampleSerializer(sample).data for sample in samples]
     return Response({'results': samples})
+
+
+@api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
+def get_sample_ar_counts_in_tag(request, pk):
+    """Reply with counts for all types of sample analysis results in the group."""
+    tag = Tag.objects.get(pk=pk)
+    perm = SamplePermission()
+    blob = {'n_samples': 0}
+    for sample in tag.tagged_samples.all():
+        if not perm.has_object_permission(request, None, sample):
+            continue
+        blob['n_samples'] += 1
+        for module_name in {ar.module_name for ar in sample.analysis_result_set.all()}:
+            blob[module_name] = 1 + blob.get(module_name, 0)
+
+    return Response(blob)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
+def get_sample_group_ar_counts_in_tag(request, pk):
+    """Reply with counts for all types of sample analysis results in the group."""
+    tag = Tag.objects.get(pk=pk)
+    perm = SampleGroupPermission()
+    blob = {'n_groups': 0}
+    for group in tag.tagged_sample_groups.all():
+        if not perm.has_object_permission(request, None, group):
+            continue
+        blob['n_groups'] += 1
+        for module_name in {ar.module_name for ar in group.analysis_result_set.all()}:
+            blob[module_name] = 1 + blob.get(module_name, 0)
+
+    return Response(blob)
