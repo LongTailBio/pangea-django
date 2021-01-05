@@ -198,7 +198,7 @@ def get_random_samples_in_tag(request, tag_pk):
 @api_view(['GET'])
 @authentication_classes([TokenParamAuthentication])
 def get_sample_ar_counts_in_tag(request, pk):
-    """Reply with counts for all types of sample analysis results in the group."""
+    """Reply with counts for analysis results in samples in this tag."""
     tag = Tag.objects.get(pk=pk)
     perm = SamplePermission()
     blob = {'n_samples': 0}
@@ -216,7 +216,7 @@ def get_sample_ar_counts_in_tag(request, pk):
 @api_view(['GET'])
 @authentication_classes([TokenParamAuthentication])
 def get_sample_group_ar_counts_in_tag(request, pk):
-    """Reply with counts for all types of sample analysis results in the group."""
+    """Reply with counts for analysis results in groups in this tag."""
     tag = Tag.objects.get(pk=pk)
     perm = SampleGroupPermission()
     blob = {'n_groups': 0}
