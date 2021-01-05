@@ -6,7 +6,7 @@ import setuptools
 
 setuptools.setup(
     name='metagenscope',
-    version='3.1.0',
+    version='3.1.1',
     author="David C. Danko",
     author_email='dcdanko@gmail.com',
     packages=setuptools.find_packages(),
