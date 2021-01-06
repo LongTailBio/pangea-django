@@ -125,6 +125,18 @@ class Knex:
         )
         return self._handle_response(response, **kwargs)
 
+    def patch(self, url, json={}, **kwargs):
+        url = self._clean_url(url)
+        d = self._logging_info(url=url, auth_token=self.auth, json=json)
+        logger.debug(f'Sending PATCH request. {d}')
+        response = requests.patch(
+            f'{self.endpoint_url}/{url}',
+            headers=self.headers,
+            auth=self.auth,
+            json=json
+        )
+        return self._handle_response(response, **kwargs)
+
     def delete(self, url, **kwargs):
         url = self._clean_url(url)
         d = self._logging_info(url=url, auth_token=self.auth)

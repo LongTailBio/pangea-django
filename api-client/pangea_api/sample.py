@@ -19,6 +19,7 @@ class Sample(RemoteObject):
         super().__init__(self)
         self.knex = knex
         self.lib = lib
+        self.new_lib = None
         self.name = name
         self.metadata = metadata
         self._get_result_cache = []
@@ -26,14 +27,25 @@ class Sample(RemoteObject):
     def nested_url(self):
         return self.lib.nested_url() + f'/samples/{self.name}'
 
+    def change_library(self, new_lib):
+        self.new_lib = new_lib
+        self._modified = True
+
     def _save(self):
         data = {
             field: getattr(self, field)
             for field in self.remote_fields if hasattr(self, field)
         }
         data['library'] = self.lib.uuid
+        if self.new_lib:
+            if isinstance(self.new_lib, RemoteObject):
+                data['library'] = self.new_lib.uuid
+            else:
+                data['library'] = self.new_lib
         url = f'samples/{self.uuid}'
         self.knex.put(url, json=data)
+        self.lib = self.new_lib
+        self.new_lib = None
 
     def _get(self):
         """Fetch the result from the server."""
