@@ -27,6 +27,7 @@ class SampleGroup(RemoteObject):
         self.name = name
         self.is_library = is_library
         self._sample_cache = []
+        self._deleted_sample_cache = []
         self._get_sample_cache = []
         self._get_result_cache = []
 
@@ -43,15 +44,29 @@ class SampleGroup(RemoteObject):
         self.knex.put(url, json=data)
 
     def _save_sample_list(self):
+        sample_uuids = []
         for sample in self._sample_cache:
             sample.idem()
+            sample_uuids.append(sample.uuid)
+        if sample_uuids:
             url = f'sample_groups/{self.uuid}/samples'
-            self.knex.post(url, json={'sample_uuid': sample.uuid})
+            self.knex.post(url, json={'sample_uuids': sample_uuids})
         self._sample_cache = []
+
+    def _delete_sample_list(self):
+        sample_uuids = []
+        for sample in self._deleted_sample_cache:
+            sample.idem()
+            sample_uuids.append(sample.uuid)
+        if sample_uuids:
+            url = f'sample_groups/{self.uuid}/samples'
+            self.knex.delete(url, json={'sample_uuids': sample_uuids})
+        self._deleted_sample_cache = []
 
     def _save(self):
         self._save_group_obj()
         self._save_sample_list()
+        self._delete_sample_list()
 
     def _get(self):
         """Fetch the result from the server."""
@@ -79,6 +94,15 @@ class SampleGroup(RemoteObject):
         Do not contact server until `.save()` is called on this group.
         """
         self._sample_cache.append(sample)
+        self._modified = True
+        return self
+
+    def remove_sample(self, sample):
+        """Return this group and remove a sample to this group.
+
+        Do not contact server until `.save()` is called on this group.
+        """
+        self._deleted_sample_cache.append(sample)
         self._modified = True
         return self
 
