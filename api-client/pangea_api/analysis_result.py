@@ -31,7 +31,7 @@ class AnalysisResult(RemoteObject):
     def _get(self):
         """Fetch the result from the server."""
         self.parent.idem()
-        logger.info(f'Getting AnalysisResult.')
+        logger.debug(f'Getting AnalysisResult.')
         blob = self.get_cached_blob()
         if not blob:
             url = self.nested_url()
@@ -74,7 +74,7 @@ class SampleAnalysisResult(AnalysisResult):
         data['sample'] = self.sample.uuid
         url = f'sample_ars/{self.uuid}'
         d = {'data': data, 'url': url, 'sample_ar': self}
-        logger.info(f'Saving SampleAnalysisResult. {d}')
+        logger.debug(f'Saving SampleAnalysisResult. {d}')
         self.knex.put(url, json=data)
 
     def _create(self):
@@ -86,13 +86,13 @@ class SampleAnalysisResult(AnalysisResult):
         if self.replicate:
             data['replicate'] = self.replicate
         d = {'data': data, 'sample_ar': self}
-        logger.info(f'Creating SampleAnalysisResult. {d}')
+        logger.debug(f'Creating SampleAnalysisResult. {d}')
         blob = self.knex.post(f'sample_ars?format=json', json=data)
         self.load_blob(blob)
 
     def field(self, field_name, data={}):
         d = {'data': data, 'field_name': field_name, 'sample_ar': self}
-        logger.info(f'Creating SampleAnalysisResultField for SampleAnalysisResult. {d}')
+        logger.debug(f'Creating SampleAnalysisResultField for SampleAnalysisResult. {d}')
         return SampleAnalysisResultField(self.knex, self, field_name, data=data)
 
     def get_fields(self, cache=True):
@@ -102,7 +102,7 @@ class SampleAnalysisResult(AnalysisResult):
                 yield field
             return
         url = f'sample_ar_fields?analysis_result_id={self.uuid}'
-        logger.info(f'Fetching SampleAnalysisResultFields. {self}')
+        logger.debug(f'Fetching SampleAnalysisResultFields. {self}')
         result = self.knex.get(url)
         for result_blob in result['results']:
             result = self.field(result_blob['name'])
