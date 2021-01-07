@@ -72,7 +72,7 @@ def process(samples, grp):
                         'by_metric': {
                             metric: my_taxa.apply(func, axis=1).quantile(
                                 [0.1, 0.25, 0.5, 0.75, 0.9]
-                            ).to_list()
+                            ).fillna(0).to_list()
                             for metric, func in METRICS
                         }
                     })

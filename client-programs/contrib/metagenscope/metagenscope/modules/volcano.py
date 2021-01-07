@@ -126,6 +126,8 @@ class VolcanoModule(Module):
             if sample_has_modules(sample)
         ]
         taxa_matrix = group_taxa_report(grp)(samples)
+        sample_names_in_taxa_matrix = set(taxa_matrix.index.to_list())
+        samples = [s for s in samples if s.name in sample_names_in_taxa_matrix]
         volcano, cats = process(samples, taxa_matrix, cls.MAX_TAXA)
         if not volcano:
             raise VolcanoError('No differentiable group found')

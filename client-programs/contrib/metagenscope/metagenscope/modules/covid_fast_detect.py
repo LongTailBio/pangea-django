@@ -89,7 +89,7 @@ def process(samples, grp):
                         'by_metric': {
                             'SARS-CoV-2': my_taxa.apply(covid_read_count, axis=1).quantile(
                                 [0.1, 0.25, 0.5, 0.75, 0.9]
-                            ).to_list()
+                            ).fillna(0).to_list()
                         }
                     })
                 rank_tbl['by_category_name'][cat_name] = category_list
