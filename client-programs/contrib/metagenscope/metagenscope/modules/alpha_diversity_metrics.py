@@ -9,6 +9,8 @@ def shannon_entropy(row, rarefy=0):
     the param for consistency.
     """
     row_sum, H = sum(row), 0
+    if row_sum == 0:
+        return 0
     for val in row:
         val = val / row_sum
         if val == 0:
@@ -24,6 +26,8 @@ def richness(row, rarefy=0, count=False):
     if count:
         return sum(row > 0)
     row_sum, R = sum(row), 0
+    if row_sum == 0:
+        return 0
     for val in row:
         prob_success = val / row_sum
         prob_fail = 1 - prob_success
@@ -38,6 +42,8 @@ def richness(row, rarefy=0, count=False):
 def chao1(row, rarefy=0):
     """Return richnes of an iterable"""
     row_sum, R, S, D = sum(row), 0, 0, 0.0000001
+    if row_sum == 0:
+        return 0
     num_reads = MIL if math.isclose(row_sum, 1) else row_sum  # default to 1M reads if compositional
     num_reads = rarefy if rarefy > 0 else num_reads  # if rarefy is set use that as read count
 

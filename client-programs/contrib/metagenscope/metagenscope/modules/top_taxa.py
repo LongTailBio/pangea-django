@@ -23,7 +23,9 @@ def filter_taxa_by_kingdom(taxa_matrix, kingdom, n=20):
         taxa_matrix = taxa_matrix[cols_to_keep]
         taxa_matrix.columns = [col.split('|s__')[-1].split('|')[0] for col in taxa_matrix.columns]
         n = min(n, taxa_matrix.shape[1])
-        thresh = sorted(list(taxa_matrix.mean()), reverse=True)[n - 1]
+        thresh = 0
+        if n > 0:
+            thresh = sorted(list(taxa_matrix.mean()), reverse=True)[n - 1]
         taxa_matrix = taxa_matrix[taxa_matrix.mean()[taxa_matrix.mean() >= thresh].index]
         return taxa_matrix
     raise ValueError(f'Kingdom {kingdom} not found.')
