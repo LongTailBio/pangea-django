@@ -127,7 +127,7 @@ class SampleAdmin(admin.ModelAdmin):
 
 @admin.register(VersionedMetadata)
 class VersionedMetadataAdmin(admin.ModelAdmin):
-    list_display = ('sample', 'updated_at')
+    list_display = ('sample', 'updated_at', 'created_at')
     list_filter = (
         ('sample__library__group__organization', admin.RelatedOnlyFieldListFilter),
         ('sample__library', admin.RelatedOnlyFieldListFilter),
