@@ -20,6 +20,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(blank=True, db_index=True, null=True)),
                 ('updated_at', models.DateTimeField(blank=True, db_index=True, null=True)),
                 ('metadata', django.contrib.postgres.fields.jsonb.JSONField(blank=True, default=dict)),
+                ('sample', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='versioned_metadata', to='core.Sample')),
             ],
             options={
                 'abstract': False,

@@ -16,9 +16,4 @@ class Migration(migrations.Migration):
             model_name='sample',
             name='metadata',
         ),
-        migrations.AddField(
-            model_name='versionedmetadata',
-            name='sample',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='versioned_metadata', to='core.Sample'),
-        ),
     ]
