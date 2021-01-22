@@ -15,3 +15,4 @@ from .exceptions import (
     AnalysisResultFieldError,
 )
 from .project import Project
+from .versioned_metadata import VersionedMetadata

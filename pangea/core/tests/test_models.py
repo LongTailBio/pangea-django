@@ -139,6 +139,50 @@ class TestSampleModel(TestCase):
         self.assertEqual(sample.library, lib2.library)
 
 
+class TestVersionedMetadataModel(TestCase):
+
+    def test_alter_metadata(self):
+        """Ensure metadata can be updated."""
+        org = Organization.objects.create(name='an_org JHHFDGSHJG')
+        grp = SampleGroup.factory(
+            organization=org,
+            name='library JHHFDGSHJG',
+            is_library=True,
+        )
+        sample = Sample.objects.create(
+            name='SMPL_01 JHHFDGSHJG',
+            library=grp.library,
+            metadata={'foo': 'bar'}
+        )
+        self.assertEqual(sample.metadata['foo'], 'bar')
+
+        sample.metadata = {'foo': 'bizz'}
+        sample.save()
+        self.assertEqual(sample.metadata['foo'], 'bizz')
+
+    def test_revert_metadata(self):
+        """Ensure metadata can be reverted."""
+        org = Organization.objects.create(name='an_org KASGJ')
+        grp = SampleGroup.factory(
+            organization=org,
+            name='library KASGJ',
+            is_library=True,
+        )
+        sample = Sample.objects.create(
+            name='SMPL_01 KASGJ',
+            library=grp.library,
+            metadata={'foo': 'bar'}
+        )
+        self.assertEqual(sample.metadata['foo'], 'bar')
+
+        sample.metadata = {'foo': 'bizz'}
+        sample.save()
+        self.assertEqual(sample.metadata['foo'], 'bizz')
+
+        sample.save_revert_metadata(1)
+        self.assertEqual(sample.metadata['foo'], 'bar')
+
+
 class TestProject(TestCase):
     """Test suite for Project model."""
 
