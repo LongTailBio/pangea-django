@@ -54,7 +54,7 @@ def categories_from_metadata(samples, min_size=2):
 
     # Gather categories and values
     for sample in samples:
-        for prop, val in sample.metadata.items():
+        for prop, val in sample.mgs_metadata.items():
             if not val:
                 continue
             if prop not in categories:
@@ -103,6 +103,6 @@ def group_samples_by_metadata(samples, min_size=2, group_apply=lambda x: x):
         for cat_val in category_values:
             grouped_samples[category_name][cat_val] = group_apply([
                 sample for sample in samples
-                if category_name == 'All' or sample.metadata.get(category_name, None) == cat_val
+                if category_name == 'All' or sample.mgs_metadata.get(category_name, None) == cat_val
             ])
     return categories, grouped_samples

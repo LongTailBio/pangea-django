@@ -88,7 +88,7 @@ class MultiAxisModule(Module):
         ]
         meta = {}
         for sample in samples:
-            meta[sample.name] = sample.metadata
+            meta[sample.name] = sample.mgs_metadata
             meta[sample.name]['All'] = 'All'
         data = {
             'axes': make_axes(samples, grp),

@@ -47,7 +47,7 @@ def sample_filter(tbl, samples, cat_name, cat_val):
     my_samples = [
         sample.name
         for sample in samples
-        if sample.name in samples_in_tbl and (cat_name == 'All' or sample.metadata.get(cat_name, '') == cat_val)
+        if sample.name in samples_in_tbl and (cat_name == 'All' or sample.mgs_metadata.get(cat_name, '') == cat_val)
     ]
     my_taxa = tbl.loc[my_samples]
     return my_taxa

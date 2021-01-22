@@ -1,5 +1,5 @@
 
-VERSION = 'v3.1.0'
+VERSION = 'v3.2.0'
 
 
 def version_to_ints(a):

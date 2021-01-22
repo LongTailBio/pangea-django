@@ -34,7 +34,7 @@ def pc1_median(samples, taxa_matrix):
             pcval = 'Above PC1 Median'
         elif pc1[sample.name] < pc1.median():
             pcval = 'Below PC1 Median'
-        sample.metadata['MGS - PC1'] = pcval
+        sample.mgs_metadata['MGS - PC1'] = pcval
 
 
 def pca_dbscan(samples, taxa_matrix):
@@ -45,7 +45,7 @@ def pca_dbscan(samples, taxa_matrix):
         label = f'Cluster {label_val}'
         if label_val < 0:
             label = f'Noise'
-        sample.metadata['MGS - PCA-DBSCAN'] = label
+        sample.mgs_metadata['MGS - PCA-DBSCAN'] = label
 
 
 def add_taxa_auto_metadata(samples, grp):
@@ -97,7 +97,7 @@ def regularize_metadata(samples):
     meta = meta.fillna('Unknown')
     for sample in samples:
         try:
-            sample.metadata = meta.loc[sample.name].to_dict()
+            setattr(sample, 'mgs_metadata', meta.loc[sample.name].to_dict())
         except KeyError:
             pass
     logger.info('done.')

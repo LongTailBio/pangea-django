@@ -56,7 +56,7 @@ def pval_hist(pvals, bin_width=0.05):
 def scatter(taxa, samples, cat_name, cat_val):
     cat1_samples = {
         sample.name for sample in samples
-        if sample.metadata.get(cat_name, '') == cat_val
+        if sample.mgs_metadata.get(cat_name, '') == cat_val
     }
     cat2_samples = {
         sample.name for sample in samples

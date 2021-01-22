@@ -34,7 +34,7 @@ def taxa_tool_umap(samples, grp, module, field):
 def processor(samples, grp):
     """Combine Sample Similarity components."""
     data_records = []
-    sample_map = {sample.name: sample.metadata for sample in samples}
+    sample_map = {sample.name: sample.mgs_metadata for sample in samples}
     for sample_name, coords in taxa_tool_umap(samples, grp, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1]).items():
         rec = {
             'name': sample_name,
@@ -83,11 +83,11 @@ class SampleSimilarityModule(Module):
             if sample_has_modules(sample)
         ]
         meta = pd.DataFrame.from_dict(
-            {sample.name: sample.metadata for sample in samples},
+            {sample.name: sample.mgs_metadata for sample in samples},
             orient='index'
         ).fillna('Unknown')
         for sample in samples:
-            sample.metadata = meta.loc[sample.name].to_dict()
+            sample.mgs_metadata = meta.loc[sample.name].to_dict()
         return grp.analysis_result(
             cls.name(),
             replicate=cls.group_replicate(len(samples))
