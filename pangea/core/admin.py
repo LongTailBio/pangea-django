@@ -17,6 +17,7 @@ from .models import (
     SampleGroupAnalysisResultField,
     SampleAnalysisResult,
     SampleAnalysisResultField,
+    VersionedMetadata,
 )
 
 
@@ -122,6 +123,21 @@ class SampleAdmin(admin.ModelAdmin):
 
     def member_of_groups(self, obj):
         return ", ".join([group.name for group in obj.sample_groups.only('name')])
+
+
+@admin.register(VersionedMetadata)
+class VersionedMetadataAdmin(admin.ModelAdmin):
+    list_display = ('sample', 'updated_at')
+    list_filter = (
+        ('sample__library__group__organization', admin.RelatedOnlyFieldListFilter),
+        ('sample__library', admin.RelatedOnlyFieldListFilter),
+    )
+
+    def lookup_allowed(self, lookup, value):
+        return lookup in [
+            'sample__library__group__organization__uuid__exact',
+            'sample__library__group__exact',
+        ]
 
 
 @admin.register(SampleAnalysisResult)
