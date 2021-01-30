@@ -78,6 +78,13 @@ class RemoteObject:
                     ))
             setattr(self, field, new)
 
+    def exists(self):
+        try:
+            self.get()
+            return True
+        except HTTPError:
+            return False
+
     def get(self):
         """Fetch the object from the server."""
         if self._deleted:
