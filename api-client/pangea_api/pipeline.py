@@ -17,6 +17,8 @@ class Pipeline(RemoteObject):
         super().__init__(self)
         self.knex = knex
         self.name = name
+        self.description = ''
+        self.long_description = ''
 
     def _save(self):
         data = {
@@ -85,6 +87,8 @@ class PipelineModule(RemoteObject):
         self.name = name
         self.version = version
         self.metadata = metadata
+        self.description = ''
+        self.long_description = ''
 
     def _save(self):
         data = {
@@ -113,7 +117,7 @@ class PipelineModule(RemoteObject):
             'description': self.description,
             'long_description': self.long_description,
         }
-        url = 'pipeline_modules/?format=json'
+        url = 'pipeline_modules?format=json'
         blob = self.knex.post(url, json=data)
         self.load_blob(blob)
 
@@ -124,4 +128,4 @@ class PipelineModule(RemoteObject):
         return f'<Pangea::PipelineModule "{self.name}" "{self.version}" {self.uuid} />'
 
     def pre_hash(self):
-        return 'PIPELINE_MODULE' + self.name + self.pip.pre_hash()
+        return 'PIPELINE_MODULE' + self.name + self.version + self.pip.pre_hash()
