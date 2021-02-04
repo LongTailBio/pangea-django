@@ -17,6 +17,8 @@ from ..models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
     Project,
+    Pipeline,
+    PipelineModule,
 )
 
 
@@ -84,6 +86,23 @@ class TestS3ApiKeyModel(TestCase):
         self.assertIn('AWSAccessKeyId=', url)
         self.assertIn('Signature=', url)
         self.assertIn('Expires=', url)
+
+
+class TestPipelineModels(TestCase):
+    """Test suite for pipeline and pipeline module."""
+
+    def test_add_pipeline(self):
+        pipeline = Pipeline.objects.create(name='my_pipe KJHDS')
+        self.assertTrue(pipeline.uuid)
+        self.assertEqual(pipeline.name, 'my_pipe KJHDS')
+        self.assertTrue(pipeline.created_at)
+
+    def test_add_pipeline_module(self):
+        pipeline = Pipeline.objects.create(name='my_pipe SHDJ')
+        pm = pipeline.create_module(name='my_module SHDJ', version='vSHDJ')
+        self.assertTrue(pm.created_at)
+        self.assertTrue(pm.uuid)
+        self.assertEqual(pm.pipeline.uuid, pipeline.uuid)
 
 
 class TestSampleModel(TestCase):

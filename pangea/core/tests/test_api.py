@@ -17,6 +17,8 @@ from pangea.core.models import (
     Sample,
     SampleGroupAnalysisResult,
     SampleAnalysisResult,
+    Pipeline,
+    PipelineModule,
 )
 
 from .constants import (
@@ -306,6 +308,54 @@ class OrganizationMembershipTests(APITestCase):
         self.assertEqual(response.data['count'], 2)
         self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
 
+
+class PipelineTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.pipeline = Pipeline.objects.create(name='Test Pipeline')
+        cls.module = cls.pipeline.create_module(name='Test Module', version='vTEST')
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
+
+    def test_pipeline_read(self):
+        """Test retireve pipeline."""
+        url = reverse('pipeline-details', kwargs={'pk': self.pipeline.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pipeline_module_read(self):
+        """Test retrieve pipeline module."""
+        url = reverse('pipeline-module-details', kwargs={'pk': self.module.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pipeline_create(self):
+        """Test create pipeline."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('pipeline-create')
+        data = {'name': 'Test Pipeline HKLUKD'}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Pipeline.objects.count(), 2)
+
+    def test_pipeline_module_create(self):
+        """Test create pipeline module."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('pipeline-module-create')
+        data = {
+            'pipeline': self.pipeline.uuid,
+            'name': 'Test Module YJKAGJD',
+            'version': 'vYJKAGJD'
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(PipelineModule.objects.count(), 2)
+        self.assertEqual(self.pipeline.modules.count(), 2)
 
 class ProjectTests(APITestCase):
 

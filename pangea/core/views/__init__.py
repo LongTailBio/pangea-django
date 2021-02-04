@@ -42,3 +42,9 @@ from .analysis_result_views import (
     post_sample_group_ar_upload_url,
     post_sample_group_ar_complete_multipart_upload_url,
 )
+from .pipeline_views import (
+    PipelineCreateView,
+    PipelineDetailsView,
+    PipelineModuleCreateView,
+    PipelineModuleDetailsView,
+)

@@ -19,6 +19,8 @@ from .views import (
     post_sample_ar_upload_url, post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url, post_sample_group_ar_complete_multipart_upload_url,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
+    PipelineCreateView, PipelineDetailsView,
+    PipelineModuleCreateView, PipelineModuleDetailsView,
 )
 from .search import SearchList
 
@@ -37,6 +39,10 @@ urlpatterns = {
     path('projects/<uuid:pk>', ProjectDetailsView.as_view(), name="project-details"),
     path('projects/<uuid:project_pk>/sample_groups', ProjectSampleGroupsView.as_view(), name="project-sample-groups"),
 
+    path('pipelines', PipelineCreateView.as_view(), name="pipeline-create"),
+    path('pipelines/<uuid:pk>', PipelineDetailsView.as_view(), name="pipeline-details"),
+    path('pipeline_modules', PipelineModuleCreateView.as_view(), name="pipeline-module-create"),
+    path('pipeline_modules/<uuid:pk>', PipelineModuleDetailsView.as_view(), name="pipeline-module-details"),
 
     path('sample_groups', SampleGroupCreateView.as_view(), name="sample-group-create"),
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="sample-group-details"),

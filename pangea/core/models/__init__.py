@@ -16,3 +16,5 @@ from .exceptions import (
 )
 from .project import Project
 from .versioned_metadata import VersionedMetadata
+from .pipeline import Pipeline
+from .pipeline_module import PipelineModule

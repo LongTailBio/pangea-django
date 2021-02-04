@@ -15,6 +15,8 @@ from .models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
     Project,
+    Pipeline,
+    PipelineModule,
 )
 
 logger = structlog.get_logger(__name__)
@@ -80,6 +82,30 @@ class SampleGroupSerializer(serializers.ModelSerializer):
 
 class SampleGroupAddSampleSerializer(serializers.Serializer):
     sample_uuid = serializers.UUIDField()
+
+
+class PipelineSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Pipeline
+        fields = (
+            'uuid', 'name', 'description', 'long_description',
+            'updated_at', 'created_at',
+        )
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class PipelineModuleSerializer(serializers.ModelSerializer):
+
+    pipeline_obj = PipelineSerializer(source='pipeline', read_only=True)
+
+    class Meta:
+        model = PipelineModule
+        fields = (
+            'uuid', 'name', 'version', 'description', 'long_description',
+            'updated_at', 'created_at', 'metadata', 'pipeline', 'pipeline_obj',
+        )
+        read_only_fields = ('created_at', 'updated_at', 'pipeline_obj')
 
 
 class ProjectSerializer(serializers.ModelSerializer):
