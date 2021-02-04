@@ -55,8 +55,17 @@ class Pipeline(RemoteObject):
     def pre_hash(self):
         return 'PIPELINE' + self.name
 
+    def module(self, name, version, metadata={}):
+        return PipelineModule(
+            self.knex,
+            self,
+            name,
+            version,
+            metadata=metadata,
+        )
 
-class PipelineModules:
+
+class PipelineModule(RemoteObject):
     remote_fields = [
         'uuid',
         'created_at',
