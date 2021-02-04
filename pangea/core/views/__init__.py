@@ -47,4 +47,6 @@ from .pipeline_views import (
     PipelineDetailsView,
     PipelineModuleCreateView,
     PipelineModuleDetailsView,
+    PipelineNameDetailsView,
+    get_module_in_pipeline,
 )

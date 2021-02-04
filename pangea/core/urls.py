@@ -19,8 +19,8 @@ from .views import (
     post_sample_ar_upload_url, post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url, post_sample_group_ar_complete_multipart_upload_url,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
-    PipelineCreateView, PipelineDetailsView,
-    PipelineModuleCreateView, PipelineModuleDetailsView,
+    PipelineCreateView, PipelineDetailsView, PipelineNameDetailsView,
+    PipelineModuleCreateView, PipelineModuleDetailsView, get_module_in_pipeline,
 )
 from .search import SearchList
 
@@ -41,6 +41,9 @@ urlpatterns = {
 
     path('pipelines', PipelineCreateView.as_view(), name="pipeline-create"),
     path('pipelines/<uuid:pk>', PipelineDetailsView.as_view(), name="pipeline-details"),
+    path('pipelines/name/<name>', PipelineNameDetailsView.as_view(), name="pipeline-name-details"),
+
+    path('pipelines/<uuid:pk>/modules/<name>/<version>', get_module_in_pipeline, name="pipeline-modules-by-name"),
     path('pipeline_modules', PipelineModuleCreateView.as_view(), name="pipeline-module-create"),
     path('pipeline_modules/<uuid:pk>', PipelineModuleDetailsView.as_view(), name="pipeline-module-details"),
 

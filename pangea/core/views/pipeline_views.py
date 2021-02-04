@@ -32,6 +32,24 @@ class PipelineDetailsView(generics.RetrieveUpdateDestroyAPIView):
     """This class handles the http GET, PUT and DELETE requests."""
     queryset = Pipeline.objects.all()
     serializer_class = PipelineSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
+class PipelineNameDetailsView(generics.RetrieveUpdateDestroyAPIView):
+    """This class handles the http GET, PUT and DELETE requests."""
+    queryset = Pipeline.objects.all()
+    serializer_class = PipelineSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    lookup_field = 'name'
+
+
+@api_view(['GET'])
+def get_module_in_pipeline(request, pk, name, version):
+    """Reply with counts for all types of sample analysis results in the group."""
+    pipeline = Pipeline.objects.get(pk=pk)
+    pm = PipelineModule.objects.get(pipeline=pipeline, name=name, version=version)
+    blob = PipelineModuleSerializer(pm).data
+    return Response(blob)
 
 
 class PipelineModuleCreateView(generics.ListCreateAPIView):
