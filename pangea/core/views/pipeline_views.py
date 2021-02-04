@@ -1,6 +1,7 @@
 import structlog
 
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import generics
 from rest_framework.decorators import api_view, authentication_classes
@@ -46,8 +47,14 @@ class PipelineNameDetailsView(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['GET'])
 def get_module_in_pipeline(request, pk, name, version):
     """Reply with counts for all types of sample analysis results in the group."""
-    pipeline = Pipeline.objects.get(pk=pk)
-    pm = PipelineModule.objects.get(pipeline=pipeline, name=name, version=version)
+    try:
+        pipeline = Pipeline.objects.get(pk=pk)
+    except:  # TODO broad except
+        raise ObjectDoesNotExist(_(f'Pipeline with uuid {pk} not found'))
+    try:
+        pm = PipelineModule.objects.get(pipeline=pipeline, name=name, version=version)
+    except:  # TODO broad except
+        raise ObjectDoesNotExist(_(f'PipelineModule with name {name} and version {version} not found in pipeline {pipeline.name}'))
     blob = PipelineModuleSerializer(pm).data
     return Response(blob)
 
