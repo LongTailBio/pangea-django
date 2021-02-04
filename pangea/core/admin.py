@@ -18,6 +18,8 @@ from .models import (
     SampleAnalysisResult,
     SampleAnalysisResultField,
     VersionedMetadata,
+    Pipeline,
+    PipelineModule,
 )
 
 
@@ -34,6 +36,19 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'organization',)
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
+    )
+
+
+@admin.register(Pipeline)
+class PipelineAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(PipelineModule)
+class PipelineModuleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'version', 'pipeline',)
+    list_filter = (
+        ('pipeline', admin.RelatedOnlyFieldListFilter),
     )
 
 
