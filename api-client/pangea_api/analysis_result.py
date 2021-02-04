@@ -105,6 +105,9 @@ class AnalysisResult(RemoteObject):
         key += self.replicate if self.replicate else ''
         return key
 
+    def __str__(self):
+        return f'<Pangea::Sample {self.module_name} {self.replicate} {self.uuid} />'
+
 
 class SampleAnalysisResult(AnalysisResult):
     parent_field = 'sample'

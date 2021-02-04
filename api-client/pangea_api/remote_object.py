@@ -106,6 +106,7 @@ class RemoteObject:
             raise RemoteObjectError('This object has been deleted.')
         if not self._already_fetched:
             logger.debug(f'Creating RemoteBlob. {self}')
+            self.cache.clear_blob(self)
             self._create()
             self._already_fetched = True
             self._modified = False
