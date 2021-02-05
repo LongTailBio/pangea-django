@@ -50,6 +50,7 @@ class PipelineModuleAdmin(admin.ModelAdmin):
     list_filter = (
         ('pipeline', admin.RelatedOnlyFieldListFilter),
     )
+    filter_horizontal = ('dependencies',)
 
 
 @admin.register(S3Bucket)
