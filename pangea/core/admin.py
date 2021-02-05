@@ -26,6 +26,7 @@ from .models import (
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name', 'members',)
+    filter_horizontal = ('users',)
 
     def members(self, obj):
         return obj.users.count()
@@ -91,6 +92,7 @@ class SampleGroupAdmin(admin.ModelAdmin):
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )
+    filter_horizontal = ('guest_users',)
 
     def lookup_allowed(self, lookup, value):
         return lookup in [

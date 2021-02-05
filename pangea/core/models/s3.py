@@ -89,7 +89,7 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
         return out
 
     def __str__(self):
-        return f'{self.uuid}'
+        return f'<S3ApiKey uuid="{self.uuid}" public_key="{self.public_key}">'
 
     def __repr__(self):
         return f'<S3ApiKey uuid="{self.uuid}" public_key="{self.public_key}">'
@@ -187,3 +187,9 @@ class S3Bucket(AutoCreatedUpdatedMixin):
 
     def presign_completion_url(self, s3_url, upload_id, parts, **kwargs):
         return self.api_key.presign_completion_url(self.endpoint_url, s3_url, upload_id, parts, **kwargs)
+
+    def __str__(self):
+        return f'<S3Bucket name="{self.name}" uuid="{self.uuid}">'
+
+    def __repr__(self):
+        return f'<S3Bucket name="{self.name}" uuid="{self.uuid}">'
