@@ -104,6 +104,13 @@ class TestPipelineModels(TestCase):
         self.assertTrue(pm.uuid)
         self.assertEqual(pm.pipeline.uuid, pipeline.uuid)
 
+    def test_module_dependencies(self):
+        pipeline = Pipeline.objects.create(name='my_pipe HJFGMV')
+        pm1 = pipeline.create_module(name='my_module 1 HJFGMV', version='vHJFGMV')
+        pm2 = pipeline.create_module(name='my_module 2 HJFGMV', version='vHJFGMV')
+        pm1.dependencies.add(pm2)
+        self.assertEqual(pm2.downstreams.count(), 1)
+
 
 class TestSampleModel(TestCase):
     """Test suite for Sample model."""

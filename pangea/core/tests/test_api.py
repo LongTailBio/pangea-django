@@ -373,6 +373,23 @@ class PipelineTests(APITestCase):
         self.assertEqual(PipelineModule.objects.count(), 2)
         self.assertEqual(self.pipeline.modules.count(), 2)
 
+    def test_pipeline_module_create_with_dependencies(self):
+        """Test create pipeline module."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('pipeline-module-create')
+        data = {
+            'pipeline': self.pipeline.uuid,
+            'name': 'Test Module YJKAGJD',
+            'version': 'vYJKAGJD',
+            'dependencies': [self.module.uuid],
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.module.downstreams.count(), 1)
+
+
 class ProjectTests(APITestCase):
 
     @classmethod

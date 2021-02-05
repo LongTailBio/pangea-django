@@ -63,7 +63,7 @@ class PipelineModuleCreateView(generics.ListCreateAPIView):
     queryset = PipelineModule.objects.all().order_by('created_at')
     serializer_class = PipelineModuleSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
-    filterset_fields = ['uuid', 'name']
+    filterset_fields = ['uuid', 'name', 'pipeline']
 
 
 class PipelineModuleDetailsView(generics.RetrieveUpdateDestroyAPIView):
