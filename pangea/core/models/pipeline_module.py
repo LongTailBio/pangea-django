@@ -19,6 +19,7 @@ class PipelineModule(AutoCreatedUpdatedMixin):
     description = models.TextField(blank=False, default='')
     long_description = models.TextField(blank=True, default='')
     metadata = JSONField(blank=True, default=dict)
+    dependencies = models.ManyToManyField('PipelineModule', related_name='downstreams', null=True, blank=True)
 
     class Meta:
         unique_together = (('pipeline', 'name', 'version'),)

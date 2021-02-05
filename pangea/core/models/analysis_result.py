@@ -68,6 +68,10 @@ class SampleAnalysisResult(AnalysisResult):
     sample = models.ForeignKey(
         'Sample', on_delete=models.CASCADE, related_name='analysis_result_set'
     )
+    pipeline_module = models.ForeignKey('PipelineModule',
+                                        on_delete=models.SET_NULL,
+                                        related_name='sample_analysis_results',
+                                        null=True)
 
     class Meta:
         unique_together = (('module_name', 'replicate', 'sample'),)
@@ -104,6 +108,10 @@ class SampleGroupAnalysisResult(AnalysisResult):
     sample_group = models.ForeignKey(
         'SampleGroup', on_delete=models.CASCADE, related_name='analysis_result_set'
     )
+    pipeline_module = models.ForeignKey('PipelineModule',
+                                        on_delete=models.SET_NULL,
+                                        related_name='sample_group_analysis_results',
+                                        null=True)
 
     class Meta:
         unique_together = (('module_name', 'replicate', 'sample_group'),)

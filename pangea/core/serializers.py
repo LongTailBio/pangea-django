@@ -104,6 +104,7 @@ class PipelineModuleSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'name', 'version', 'description', 'long_description',
             'updated_at', 'created_at', 'metadata', 'pipeline', 'pipeline_obj',
+            'dependencies',
         )
         read_only_fields = ('created_at', 'updated_at', 'pipeline_obj')
 
