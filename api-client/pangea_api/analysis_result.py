@@ -83,6 +83,7 @@ class AnalysisResult(RemoteObject):
         'metadata',
         'description',
         'is_private',
+        'pipeline_module',
     ]
 
     def _get(self):

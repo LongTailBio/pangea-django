@@ -44,7 +44,7 @@ class Pipeline(RemoteObject):
             'description': self.description,
             'long_description': self.long_description,
         }
-        url = 'pipelines/?format=json'
+        url = 'pipelines?format=json'
         blob = self.knex.post(url, json=data)
         self.load_blob(blob)
 
@@ -65,6 +65,18 @@ class Pipeline(RemoteObject):
             version,
             metadata=metadata,
         )
+
+    def get_modules(self):
+        url = f'pipeline_modules?pipeline={self.uuid}'
+        result = self.knex.get(url)
+        for result_blob in result['results']:
+            result = self.module(result_blob['name'], result_blob['version'])
+            result.load_blob(result_blob)
+            # We just fetched from the server so we change the RemoteObject
+            # meta properties to reflect that
+            result._already_fetched = True
+            result._modified = False
+            yield result
 
 
 class PipelineModule(RemoteObject):

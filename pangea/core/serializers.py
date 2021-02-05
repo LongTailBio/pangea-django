@@ -172,6 +172,7 @@ class SampleSerializer(serializers.ModelSerializer):
 class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
     sample_obj = SampleSerializer(source='sample', read_only=True)
+    pipeline_module_obj = PipelineModuleSerializer(source='pipeline_module', read_only=True)
 
     class Meta:
         model = SampleAnalysisResult
@@ -179,14 +180,15 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
             'sample_obj', 'description', 'metadata',
-            'is_private', 'pipeline_module',
+            'is_private', 'pipeline_module', 'pipeline_module_obj',
         )
-        read_only_fields = ('created_at', 'updated_at', 'sample_obj')
+        read_only_fields = ('created_at', 'updated_at', 'sample_obj', 'pipeline_module_obj')
 
 
 class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
 
     sample_group_obj = SampleGroupSerializer(source='sample_group', read_only=True)
+    pipeline_module_obj = PipelineModuleSerializer(source='pipeline_module', read_only=True)
 
     class Meta:
         model = SampleGroupAnalysisResult
@@ -194,9 +196,9 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
             'sample_group_obj', 'description', 'metadata',
-            'is_private', 'pipeline_module',
+            'is_private', 'pipeline_module', 'pipeline_module_obj',
         )
-        read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
+        read_only_fields = ('created_at', 'updated_at', 'sample_group_obj', 'pipeline_module_obj')
 
 
 def presign_ar_field_stored_data_if_appropriate(ret, grp):
