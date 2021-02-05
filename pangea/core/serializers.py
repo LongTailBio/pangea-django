@@ -98,21 +98,28 @@ class PipelineSerializer(serializers.ModelSerializer):
 class PipelineModuleSerializer(serializers.ModelSerializer):
 
     pipeline_obj = PipelineSerializer(source='pipeline', read_only=True)
-    dependency_names = serializers.SerializerMethodField()
+    dependency_modules = serializers.SerializerMethodField()
+    downstream_modules = serializers.SerializerMethodField()
 
     class Meta:
         model = PipelineModule
         fields = (
             'uuid', 'name', 'version', 'description', 'long_description',
             'updated_at', 'created_at', 'metadata', 'pipeline', 'pipeline_obj',
-            'dependencies', 'dependency_names',
+            'dependencies', 'dependency_modules', 'downstream_modules',
         )
         read_only_fields = ('created_at', 'updated_at', 'pipeline_obj')
 
-    def get_dependency_names(self, obj):
+    def get_dependency_modules(self, obj):
         return [
-            [depends.name, depends.version]
+            [depends.uuid, depends.name, depends.version]
             for depends in obj.dependencies.all()
+        ]
+
+    def get_downstream_modules(self, obj):
+        return [
+            [downstream.uuid, downstream.name, downstream.version]
+            for downstream in obj.downstreams.all()
         ]
 
 
