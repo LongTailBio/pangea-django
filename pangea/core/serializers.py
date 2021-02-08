@@ -153,17 +153,20 @@ class SampleSerializer(serializers.ModelSerializer):
             'library', 'metadata', 'library_obj', 'description',
             'versioned_metadata_objs',
         )
-        read_only_fields = ('created_at', 'updated_at', 'library_obj',)
+        read_only_fields = ('created_at', 'updated_at', 'library_obj', 'versioned_metadata_objs',)
 
     def get_versioned_metadata_objs(self, obj):
-        return [
-            {
-                'created_at': vm.created_at,
-                'updated_at': vm.updated_at,
-                'metadata': vm.metadata,
-            }
-            for vm in obj.versioned_metadata.all()
-        ]
+        try:
+            return [
+                {
+                    'created_at': vm.created_at,
+                    'updated_at': vm.updated_at,
+                    'metadata': vm.metadata,
+                }
+                for vm in obj.versioned_metadata.all()
+            ]
+        except AttributeError:
+            return []
 
     def update(self, sample, validated_data):
         """Update the sample model
@@ -177,6 +180,9 @@ class SampleSerializer(serializers.ModelSerializer):
         if old_library != new_library:
             old_library.group.sample_set.remove(sample)
             new_library.group.add_sample(sample)
+        if 'metadata' in self.initial_data:
+            sample.metadata = self.initial_data['metadata']
+            sample.save()
         return sample
 
 

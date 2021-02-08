@@ -46,6 +46,8 @@ class SampleCreateView(PermissionedListCreateAPIView):
         sample = serializer.save()
         sample_group = serializer.validated_data.get('library').group
         sample.sample_groups.add(sample_group)
+        sample.metadata = self.request.data.get('metadata', {})
+        sample.save()
 
 
 class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
