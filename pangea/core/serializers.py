@@ -144,15 +144,26 @@ class ProjectAddSampleGroupSerializer(serializers.Serializer):
 class SampleSerializer(serializers.ModelSerializer):
 
     library_obj = SampleGroupSerializer(source='library.group', read_only=True)
+    versioned_metadata_objs = serializers.SerializerMethodField()
 
     class Meta:
         model = Sample
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
-            'library', 'metadata', 'library_obj', 'description'
+            'library', 'metadata', 'library_obj', 'description',
+            'versioned_metadata_objs',
         )
-        read_only_fields = ('created_at', 'updated_at', 'library_obj')
+        read_only_fields = ('created_at', 'updated_at', 'library_obj',)
 
+    def get_versioned_metadata_objs(self, obj):
+        return [
+            {
+                'created_at': vm.created_at,
+                'updated_at': vm.updated_at,
+                'metadata': vm.metadata,
+            }
+            for vm in obj.versioned_metadata.all()
+        ]
 
     def update(self, sample, validated_data):
         """Update the sample model
