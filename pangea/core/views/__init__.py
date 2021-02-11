@@ -27,6 +27,7 @@ from .sample_views import (
     SampleCreateView,
     SampleDetailsView,
     get_sample_manifest,
+    get_sample_metadata,
 )
 from .analysis_result_views import (
     SampleAnalysisResultCreateView,

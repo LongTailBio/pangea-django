@@ -12,7 +12,7 @@ from .views import (
     get_sample_ar_counts_in_group, get_sample_metadata_in_group,
     get_sample_data_in_group,
     SampleCreateView, SampleDetailsView,
-    get_sample_manifest,
+    get_sample_manifest, get_sample_metadata,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
@@ -58,6 +58,7 @@ urlpatterns = {
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
     path('samples/<uuid:pk>/manifest', get_sample_manifest, name="sample-manifest"),
+    path('samples/<uuid:pk>/metadata', get_sample_metadata, name="sample-versioned-metadata"),
 
     path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="sample-ars-create"),
     path('sample_ars/<uuid:pk>', SampleAnalysisResultDetailsView.as_view(), name="sample-ars-details"),
