@@ -6,6 +6,40 @@ from rest_framework import permissions
 logger = structlog.get_logger(__name__)
 
 
+class PangeaUserPermission(permissions.BasePermission):
+    """Require organization membership in order to modify organization."""
+
+    def has_object_permission(self, request, view, obj):
+        # Allow all reads
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        # Require auth for write operations
+        if not bool(request.user and request.user.is_authenticated):
+            logger.info(
+                'user_missing_or_not_authenticated',
+                request={
+                    'method': request.method,
+                    'user': request.user,
+                    'user_is_authenticated': request.user.is_authenticated,
+                }
+            )
+            return False
+
+        # Require logged in user to BE this user to edit/delete
+        if not request.user == obj:
+            logger.info(
+                'required_user_is_user_not_found',
+                request={
+                    'method': request.method,
+                    'user': request.user,
+                    'user_is_authenticated': request.user.is_authenticated,
+                }
+            )
+            return False
+        return True
+
+
 class OrganizationPermission(permissions.BasePermission):
     """Require organization membership in order to modify organization."""
 

@@ -24,10 +24,33 @@ logger = structlog.get_logger(__name__)
 
 class PangeaUserSerializer(serializers.ModelSerializer):
 
+    organization_objs = serializers.SerializerMethodField()
+    saved_sample_group_objs = serializers.SerializerMethodField()
+
     class Meta:
         model = PangeaUser
-        fields = ('email', 'is_staff', 'is_active', 'personal_org_uuid')
+        fields = (
+            'email', 'is_staff', 'is_active',
+            'personal_org_uuid', 'organization_objs',
+            'saved_sample_group_objs',
+
+            'avatar', 'name', 'biography', 'url',
+            'twitter_username', 'github_username',
+            'company', 'location',
+        )
         read_only_fields = ('email', 'personal_org_uuid')
+
+    def get_organization_objs(self, obj):
+        return [
+            {'uuid': org.uuid, 'name': org.name}
+            for org in obj.organization_set.all()
+        ]
+
+    def get_saved_sample_group_objs(self, obj):
+        return [
+            {'uuid': grp.uuid, 'name': grp.name}
+            for grp in obj.saved_sample_groups.all()
+        ]
 
 
 class OrganizationSerializer(serializers.ModelSerializer):

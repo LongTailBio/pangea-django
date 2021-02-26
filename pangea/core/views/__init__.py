@@ -4,6 +4,9 @@ from .s3_views import (
     S3BucketCreateView,
     S3BucketDetailsView,
 )
+from .user_views import (
+    PangeaUserDetailsView,
+)
 from .organization_views import (
     OrganizationCreateView,
     OrganizationUsersView,

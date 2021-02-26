@@ -309,6 +309,40 @@ class OrganizationMembershipTests(APITestCase):
         self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
 
 
+class PangeaUserTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.target_user = PangeaUser.objects.create(email='target_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+
+    def test_get_pangea_user(self):
+        url = reverse('pangea-user-details', kwargs={'uuid': self.org_user.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], 'org_user@domain.com')
+        self.assertEqual(len(response.data['organization_objs']), 1)
+        self.assertEqual(response.data['organization_objs'][0]['uuid'], self.organization.uuid)
+
+    def test_set_pangea_user_name(self):
+        url = reverse('pangea-user-details', kwargs={'uuid': self.target_user.uuid})
+        self.client.force_authenticate(user=self.target_user)
+        response = self.client.patch(url, {'name': 'Pooter Bilbo'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.target_user.refresh_from_db()
+        self.assertEqual(self.target_user.name, 'Pooter Bilbo')
+
+    def test_unauthorized_set_pangea_user_name(self):
+        url = reverse('pangea-user-details', kwargs={'uuid': self.target_user.uuid})
+        response = self.client.patch(url, {'name': 'Booter Pilbo'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.target_user.refresh_from_db()
+        self.assertNotEqual(self.target_user.name, 'Booter Pilbo')
+
+
 class PipelineTests(APITestCase):
 
     @classmethod
