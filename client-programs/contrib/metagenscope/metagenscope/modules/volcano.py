@@ -15,10 +15,10 @@ from ..data_utils import (
     sample_module_field,
     categories_from_metadata,
 )
-from .constants import KRAKENUNIQ_NAMES
+from .constants import KRAKEN2_NAMES, FASTKRAKEN2_NAMES
 from .parse_utils import group_taxa_report, parse_taxa_report, proportions
 
-TOOLS = [KRAKENUNIQ_NAMES]
+TOOLS = [KRAKEN2_NAMES, FASTKRAKEN2_NAMES]
 MIN_GRP_SIZE = 6
 
 
@@ -73,10 +73,11 @@ def scatter(taxa, samples, cat_name, cat_val):
     return pts.to_dict('records'), pvals
 
 
-def process(samples, taxa_matrix, max_taxa=0):
+def process(grp, samples, tools, max_taxa=0):
     metadata_categories = categories_from_metadata(samples)
     out = {}
-    for module, field, tool in TOOLS:
+    for _, _, tool, module, field in tools:
+        taxa_matrix = group_taxa_report(grp, module_name=module, field_name=field)(samples)
         if max_taxa and taxa_matrix.shape[1] > max_taxa:
             taxa = taxa_matrix.mean().sort_values(ascending=False).index.to_list()[:max_taxa]
             taxa_matrix = taxa_matrix[taxa]
@@ -100,13 +101,15 @@ def process(samples, taxa_matrix, max_taxa=0):
 
 
 def sample_has_modules(sample):
-    has_all = True
-    for module_name, field, _ in TOOLS:
+    """Return True iff sample has at least one module."""
+    tool_list = []
+    for tool in TOOLS:
         try:
-            sample_module_field(sample, module_name, field)
+            sample_module_field(sample, tool[0], tool[1])
+            tool_list.append(tool)
         except KeyError:
-            has_all = False
-    return has_all
+            continue
+    return len(tool_list) > 0, sample, tool_list
 
 
 class VolcanoModule(Module):
@@ -121,14 +124,19 @@ class VolcanoModule(Module):
 
     @classmethod
     def process_group(cls, grp: SampleGroup) -> SampleGroupAnalysisResultField:
-        samples = [
-            sample for sample in grp.get_samples()
-            if sample_has_modules(sample)
+        sample_modules = [
+            sample_has_modules(sample)
+            for sample in grp.get_samples()
         ]
-        taxa_matrix = group_taxa_report(grp)(samples)
-        sample_names_in_taxa_matrix = set(taxa_matrix.index.to_list())
-        samples = [s for s in samples if s.name in sample_names_in_taxa_matrix]
-        volcano, cats = process(samples, taxa_matrix, cls.MAX_TAXA)
+        tool_counts, samples = {}, []
+        for has_modules, sample, tools in sample_modules:
+            if not has_modules:
+                continue
+            for tool in tools:
+                tool_counts[tool] = 1 + tool_counts.get(tool, 0)
+            samples.append(sample)
+        tools = [tool for tool, count in tool_counts.items() if count >= cls.MIN_SIZE]
+        volcano, cats = process(grp, samples, tools, cls.MAX_TAXA)
         if not volcano:
             raise VolcanoError('No differentiable group found')
         data = {
@@ -137,7 +145,7 @@ class VolcanoModule(Module):
         }
         field = grp.analysis_result(
             cls.name(),
-            replicate=cls.group_replicate(taxa_matrix.shape[0])
+            replicate=cls.group_replicate(len(samples))
         ).field(
             'volcano',
             data=data
@@ -148,7 +156,7 @@ class VolcanoModule(Module):
     def group_has_required_modules(cls, grp: SampleGroup) -> bool:
         count = 0
         for sample in grp.get_samples():
-            if sample_has_modules(sample):
+            if sample_has_modules(sample)[0]:
                 count += 1
             if count >= cls.MIN_SIZE:
                 return True

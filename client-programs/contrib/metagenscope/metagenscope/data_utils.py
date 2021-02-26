@@ -2,6 +2,11 @@
 import pandas as pd
 
 
+def proportions(tbl):
+    tbl = (tbl.T / tbl.T.sum()).T
+    return tbl
+
+
 def metadata_table(samples):
     """Return a pandas dataframe with metadata from `samples`."""
     pass

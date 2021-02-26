@@ -95,12 +95,13 @@ def cli_process_tag(log_level, endpoint, email, password, tag_name, strict):
 
 
 @run.command('samples')
+@click.option('-l', '--log-level', default=20)
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('-e', '--email', default=environ.get('PANGEA_USER', None))
 @click.option('-p', '--password', default=environ.get('PANGEA_PASS', None))
 @click.argument('org_name')
 @click.argument('grp_name')
-def cli_run_samples(endpoint, email, password, org_name, grp_name):
+def cli_run_samples(log_level, endpoint, email, password, org_name, grp_name):
     """Run MetaGenscope for all samples in a given group."""
     logging.basicConfig(
         level=log_level,

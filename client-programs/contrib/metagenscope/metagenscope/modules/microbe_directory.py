@@ -13,7 +13,7 @@ from ..base_module import Module
 from ..data_utils import (
     sample_module_field,
 )
-from .constants import KRAKENUNIQ_NAMES
+from .constants import KRAKEN2_NAMES, FASTKRAKEN2_NAMES
 from .parse_utils import (
     parse_taxa_report,
     proportions,
@@ -109,7 +109,7 @@ class MicrobeDirectoryModule(Module):
     def sample_has_required_modules(cls, sample: Sample) -> bool:
         """Return True iff this sample can be processed."""
         try:
-            sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1])
+            sample_module_field(sample, KRAKEN2_NAMES[0], KRAKEN2_NAMES[1])
             return True
         except KeyError:
             return False

@@ -11,6 +11,7 @@ from ..base_module import Module
 from ..data_utils import (
     categories_from_metadata,
     sample_module_field,
+    proportions,
 )
 from .constants import COVID_FAST_DETECT_NAMES
 from .parse_utils import parse_taxa_report
@@ -75,6 +76,7 @@ def process(samples, grp):
             },
             orient='index'
         ).fillna(0)
+        taxa_matrix = 1000 * 1000 * proportions(taxa_matrix)
         tool_tbl = {'taxa_ranks': TAXA_RANKS, 'by_taxa_rank': {}}
         for rank in TAXA_RANKS:
             rank_tbl = {'by_category_name': {}}
