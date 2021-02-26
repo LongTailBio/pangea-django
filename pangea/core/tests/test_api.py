@@ -319,6 +319,11 @@ class PangeaUserTests(APITestCase):
         cls.target_user = PangeaUser.objects.create(email='target_user@domain.com', password='Foobar22')
         cls.organization.users.add(cls.org_user)
 
+    def test_list_pangea_users(self):
+        url = reverse('pangea-user-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_get_pangea_user(self):
         url = reverse('pangea-user-details', kwargs={'uuid': self.org_user.uuid})
         response = self.client.get(url, format='json')

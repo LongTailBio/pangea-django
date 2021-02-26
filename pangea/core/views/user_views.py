@@ -21,6 +21,12 @@ from ..serializers import (
 logger = structlog.get_logger(__name__)
 
 
+class PangeaUserListView(generics.ListAPIView):
+    queryset = PangeaUser.objects.all()
+    serializer_class = PangeaUserSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+
+
 class PangeaUserDetailsView(generics.RetrieveUpdateDestroyAPIView):
     """This class handles the http GET, PUT and DELETE requests."""
     lookup_field = 'uuid'  # NB: NOT the PK on PangeaUser objects.
