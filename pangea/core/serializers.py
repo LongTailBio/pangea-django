@@ -30,7 +30,7 @@ class PangeaUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = PangeaUser
         fields = (
-            'email', 'is_staff', 'is_active',
+            'uuid', 'email', 'is_staff', 'is_active',
             'personal_org_uuid', 'organization_objs',
             'saved_sample_group_objs',
 
