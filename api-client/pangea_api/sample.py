@@ -62,9 +62,10 @@ class Sample(RemoteObject):
         assert self.lib.is_library
         self.lib.idem()
         data = {
-            'library': self.lib.uuid,
-            'name': self.name,
+            field: getattr(self, field)
+            for field in self.remote_fields if hasattr(self, field)
         }
+        data['library'] = self.lib.uuid
         url = 'samples?format=json'
         blob = self.knex.post(url, json=data)
         self.load_blob(blob)

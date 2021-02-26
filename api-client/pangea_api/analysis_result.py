@@ -141,9 +141,10 @@ class SampleAnalysisResult(AnalysisResult):
     def _create(self):
         self.sample.idem()
         data = {
-            'sample': self.sample.uuid,
-            'module_name': self.module_name,
+            field: getattr(self, field)
+            for field in self.remote_fields if hasattr(self, field)
         }
+        data['sample'] = self.sample.uuid
         if self.replicate:
             data['replicate'] = self.replicate
         d = {'data': data, 'sample_ar': self}

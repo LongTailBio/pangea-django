@@ -20,7 +20,7 @@ class SampleGroup(RemoteObject):
     ]
     parent_field = 'org'
 
-    def __init__(self, knex, org, name, is_library=False):
+    def __init__(self, knex, org, name, metadata={}, is_library=False):
         super().__init__(self)
         self.knex = knex
         self.org = org
@@ -30,6 +30,7 @@ class SampleGroup(RemoteObject):
         self._deleted_sample_cache = []
         self._get_sample_cache = []
         self._get_result_cache = []
+        self.metadata = metadata
 
     def nested_url(self):
         return self.org.nested_url() + f'/sample_groups/{self.name}'
@@ -85,6 +86,7 @@ class SampleGroup(RemoteObject):
             'organization': self.org.uuid,
             'name': self.name,
             'is_library': self.is_library,
+            'metadata': self.metadata,
         })
         self.load_blob(blob)
 
@@ -112,13 +114,14 @@ class SampleGroup(RemoteObject):
     def analysis_result(self, module_name, replicate=None):
         return SampleGroupAnalysisResult(self.knex, self, module_name, replicate=replicate)
 
-    def get_samples(self, cache=True):
+    def get_samples(self, cache=True, error_handler=None):
         """Yield samples fetched from the server."""
         if cache and self._get_sample_cache:
             for sample in self._get_sample_cache:
                 yield sample
             return
-        for sample_blob in paginated_iterator(self.knex, f'sample_groups/{self.uuid}/samples'):
+        url = f'sample_groups/{self.uuid}/samples'
+        for sample_blob in paginated_iterator(self.knex, url, error_handler=error_handler):
             sample = self.sample(sample_blob['name'])
             sample.load_blob(sample_blob)
             sample.cache_blob(sample_blob)

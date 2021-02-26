@@ -89,6 +89,7 @@ class PipelineModule(RemoteObject):
         'metadata',
         'description',
         'long_description',
+        'dependencies',
     ]
     parent_field = 'pip'
 
@@ -101,6 +102,7 @@ class PipelineModule(RemoteObject):
         self.metadata = metadata
         self.description = ''
         self.long_description = ''
+        self.dependencies = []
 
     def _save(self):
         data = {
@@ -132,6 +134,9 @@ class PipelineModule(RemoteObject):
         url = 'pipeline_modules?format=json'
         blob = self.knex.post(url, json=data)
         self.load_blob(blob)
+
+    def add_dependency(self, upstream):
+        self.dependencies.append(upstream.uuid)
 
     def __str__(self):
         return f'<Pangea::PipelineModule "{self.name}" "{self.version}" {self.uuid} />'
