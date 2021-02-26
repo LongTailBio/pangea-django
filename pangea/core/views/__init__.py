@@ -8,6 +8,7 @@ from .user_views import (
     PangeaUserListView,
     PangeaUserDetailsView,
     get_user_detail_by_djoser_id,
+    get_current_user_detail,
 )
 from .organization_views import (
     OrganizationCreateView,

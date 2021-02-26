@@ -42,3 +42,11 @@ def get_user_detail_by_djoser_id(request, user_id):
     user = PangeaUser.objects.get(id=user_id)
     blob = PangeaUserSerializer(user).data
     return Response(blob)
+
+
+@api_view(['GET'])
+def get_current_user_detail(request):
+    """Reply with a PangeaUser."""
+    user = PangeaUser.objects.get(id=request.user.id)
+    blob = PangeaUserSerializer(user).data
+    return Response(blob)

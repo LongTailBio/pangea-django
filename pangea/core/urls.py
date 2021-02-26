@@ -2,7 +2,8 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import (
-    PangeaUserListView, PangeaUserDetailsView, get_user_detail_by_djoser_id,
+    PangeaUserListView, PangeaUserDetailsView,
+    get_user_detail_by_djoser_id, get_current_user_detail,
     OrganizationCreateView, OrganizationDetailsView,
     OrganizationUsersView,
     S3ApiKeyCreateView, S3ApiKeyDetailsView,
@@ -30,6 +31,7 @@ urlpatterns = {
     path('users', PangeaUserListView.as_view(), name='pangea-user-list'),
     path('users/<uuid:uuid>', PangeaUserDetailsView.as_view(), name='pangea-user-details'),
     path('users/id/<user_id>', get_user_detail_by_djoser_id, name='pangea-user-id-details'),
+    path('users/me', get_current_user_detail, name='pangea-user-me-details'),
 
     path('organizations', OrganizationCreateView.as_view(), name="organization-create"),
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="organization-details"),
