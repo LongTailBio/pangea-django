@@ -26,7 +26,7 @@ logger = structlog.get_logger(__name__)
 class PangeaUser(AbstractUser):
     """Custom Pangea user type."""
     username = None
-    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)  # NB: unlike other models UUID is not PK
+    uuid = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False, unique=True)  # NB: unlike other models UUID is not PK
     email = models.EmailField(_('email address'), unique=True)
     personal_org_uuid = models.UUIDField(blank=True, null=True)
     saved_sample_groups = models.ManyToManyField('SampleGroup')
