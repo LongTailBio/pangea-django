@@ -7,6 +7,7 @@ from .s3_views import (
 from .user_views import (
     PangeaUserListView,
     PangeaUserDetailsView,
+    get_user_detail_by_djoser_id,
 )
 from .organization_views import (
     OrganizationCreateView,

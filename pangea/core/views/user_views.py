@@ -6,6 +6,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import api_view
 
 from ..models import (
     PangeaUser,
@@ -33,3 +34,11 @@ class PangeaUserDetailsView(generics.RetrieveUpdateDestroyAPIView):
     queryset = PangeaUser.objects.all()
     serializer_class = PangeaUserSerializer
     permission_classes = (PangeaUserPermission,)
+
+
+@api_view(['GET'])
+def get_user_detail_by_djoser_id(request, user_id):
+    """Reply with a PangeaUser."""
+    user = PangeaUser.objects.get(id=user_id)
+    blob = PangeaUserSerializer(user).data
+    return Response(blob)

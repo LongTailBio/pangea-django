@@ -332,6 +332,14 @@ class PangeaUserTests(APITestCase):
         self.assertEqual(len(response.data['organization_objs']), 1)
         self.assertEqual(response.data['organization_objs'][0]['uuid'], self.organization.uuid)
 
+    def test_get_pangea_user_by_id(self):
+        url = reverse('pangea-user-id-details', kwargs={'user_id': self.org_user.id})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], 'org_user@domain.com')
+        self.assertEqual(len(response.data['organization_objs']), 1)
+        self.assertEqual(response.data['organization_objs'][0]['uuid'], self.organization.uuid)
+
     def test_set_pangea_user_name(self):
         url = reverse('pangea-user-details', kwargs={'uuid': self.target_user.uuid})
         self.client.force_authenticate(user=self.target_user)
