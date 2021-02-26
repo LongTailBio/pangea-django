@@ -56,6 +56,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='pangeauser',
             name='uuid',
-            field=models.UUIDField(default=uuid.uuid4, editable=False),
+            field=models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
         ),
     ]
