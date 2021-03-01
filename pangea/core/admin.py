@@ -10,6 +10,7 @@ from .models import (
     Project,
     S3ApiKey,
     S3Bucket,
+    S3Provider,
     SampleGroup,
     SampleLibrary,
     Sample,
@@ -84,6 +85,11 @@ class S3ApiKeyAdmin(admin.ModelAdmin):
 
     def organization_name(self, obj):
         return obj.bucket.organization.name
+
+
+@admin.register(S3Provider)
+class S3ProviderAdmin(admin.ModelAdmin):
+    list_display = ('public_key',)
 
 
 @admin.register(SampleGroup)
