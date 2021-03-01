@@ -99,6 +99,7 @@ class SampleGroupSerializer(serializers.ModelSerializer):
             'organization', 'description', 'is_library',
             'is_public', 'theme', 'organization_obj',
             'long_description', 'metadata', 'bucket',
+            'storage_provider_name',
         )
         read_only_fields = ('created_at', 'updated_at', 'organization_obj')
 

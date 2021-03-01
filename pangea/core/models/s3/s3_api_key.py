@@ -17,46 +17,10 @@ from pangea.core.mixins import AutoCreatedUpdatedMixin
 from pangea.core.utils import random_replicate_name
 from pangea.core.encrypted_fields import EncryptedTextField
 
+from .utils import S3MultipartUploadUtil
+
 logger = structlog.get_logger(__name__)
 
-
-class S3MultipartUploadUtil:
-    """AWS S3 Multipart Upload Util"""
-
-    def __init__(self, api_key, s3_file_key):
-        self.api_key = api_key
-        self.s3 = self.api_key.s3
-        self.s3_file_key = s3_file_key
-        res = self.s3.create_multipart_upload(
-            Bucket=self.api_key.bucket.name,
-            Key=self.s3_file_key
-        )
-        self.upload_id = res['UploadId']
-        self.part_no = 1
-
-    def create_presigned_url(self, part_no=None, timeout_hours=24):
-        part_no = self.part_no if part_no is None else part_no
-        signed_url = self.s3.generate_presigned_url(
-            ClientMethod='upload_part',
-            Params={
-                'Bucket': self.api_key.bucket.name,
-                'Key': self.s3_file_key,
-                'UploadId': self.upload_id,
-                'PartNumber': part_no
-            },
-            ExpiresIn=(timeout_hours * 60 * 60)
-        )
-        self.part_no += 1
-        return signed_url
-
-    def create_complete_url(self, upload_id, parts, timeout_hours=24):
-        res = self.s3.complete_multipart_upload(
-            Bucket=self.api_key.bucket.name,
-            Key=self.s3_file_key,
-            MultipartUpload={'Parts': parts},
-            UploadId=upload_id
-        )
-        return {'status': 'success', 'upload_id': upload_id}
 
 class S3ApiKey(AutoCreatedUpdatedMixin):
     """Represent an S3 API Key.
@@ -169,27 +133,3 @@ class S3ApiKey(AutoCreatedUpdatedMixin):
                 timeout_hours=timeout_hours,
             )
             return None
-
-
-class S3Bucket(AutoCreatedUpdatedMixin):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.TextField(blank=False, unique=False)
-    endpoint_url = models.TextField(blank=False)
-    organization = models.ForeignKey('Organization', on_delete=models.CASCADE, null=False)
-
-    def create_s3apikey(self, *args, **kwargs):
-        s3apikey = S3ApiKey(bucket=self, *args, **kwargs)
-        s3apikey.save()
-        return s3apikey
-
-    def presign_url(self, s3_url, **kwargs):
-        return self.api_key.presign_url(self.endpoint_url, s3_url, **kwargs)
-
-    def presign_completion_url(self, s3_url, upload_id, parts, **kwargs):
-        return self.api_key.presign_completion_url(self.endpoint_url, s3_url, upload_id, parts, **kwargs)
-
-    def __str__(self):
-        return f'<S3Bucket name="{self.name}" uuid="{self.uuid}">'
-
-    def __repr__(self):
-        return f'<S3Bucket name="{self.name}" uuid="{self.uuid}">'
