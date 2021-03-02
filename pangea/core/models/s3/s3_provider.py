@@ -86,7 +86,7 @@ class S3Provider(AutoCreatedUpdatedMixin):
         if name == 'custom':
             return None
         elif name == 'default':
-            default_provider = cls.objects.filter(default_provider)
+            default_provider = cls.objects.filter(default_provider=True)
             if default_provider.exists():
                 return default_provider.get()
             else:
