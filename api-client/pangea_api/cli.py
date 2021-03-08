@@ -104,7 +104,7 @@ def _setup_download(email, password, endpoint, sample_manifest, org_name, grp_na
 @click.argument('org_name')
 @click.argument('grp_name')
 @click.argument('sample_names', nargs=-1)
-def cli_download_sample_results(email, password, endpoint, outfile, sample_manifest,
+def cli_download_metadata(email, password, endpoint, outfile, sample_manifest,
                                 org_name, grp_name, sample_names):
     """Download Sample Analysis Results for a set of samples."""
     grp, sample_names = _setup_download(

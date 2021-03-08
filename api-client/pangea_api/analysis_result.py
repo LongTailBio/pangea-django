@@ -142,7 +142,8 @@ class SampleAnalysisResult(AnalysisResult):
         self.sample.idem()
         data = {
             field: getattr(self, field)
-            for field in self.remote_fields if hasattr(self, field)
+            for field in self.remote_fields
+            if hasattr(self, field) and getattr(self, field) is not None
         }
         data['sample'] = self.sample.uuid
         if self.replicate:
