@@ -17,6 +17,10 @@ from .models import (
     Project,
     Pipeline,
     PipelineModule,
+    JobOrder,
+    WorkOrder,
+    JobOrderProto,
+    WorkOrderProto
 )
 
 logger = structlog.get_logger(__name__)
@@ -304,3 +308,40 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
             ret,
             instance.analysis_result.sample_group.organization,
         )
+
+
+class JobOrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = JobOrder
+        fields = ('uuid', 'name', 'status', 'work_order', 'pipeline_module',
+                  'analysis_result', 'resources_used', 'resources_needed',
+                  'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class WorkOrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WorkOrder
+        fields = ('uuid', 'name', 'priority', 'sample',
+                  'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class JobOrderProtoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = JobOrderProto
+        fields = ('uuid', 'name', 'pipeline_module', 'resources_needed',
+                  'work_order_proto', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class WorkOrderProtoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WorkOrderProto
+        fields = ('uuid', 'name', 'created_at', 'updated_at')
+        read_only_fields = ('created_at', 'updated_at')
+
