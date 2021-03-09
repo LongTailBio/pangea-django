@@ -48,7 +48,7 @@ def fuzzy_taxa_search(query):
                         filtered_taxa.value::float as relative_abundance,
                         core_sample.uuid as sample_uuid,
                         core_sample.name as sample_name,
-                        core_sample.library_id as sample_library_uuid,
+                        core_sample.library_id as sample_library_uuid
                     where
                         core_sample.library_id = %s
                     order by
