@@ -15,7 +15,6 @@ logger = structlog.get_logger(__name__)
 @api_view(['GET'])
 def fuzzy_taxa_search(request):
     """Return samples with taxa results that fuzzy match the query."""
-    metadata = str2bool(request.query_params.get('metadata', 'false'))
     query = request.query_params.get('query', None)
     if query is None:
         logger.warn('taxasearch__no_query_param')
@@ -51,7 +50,6 @@ def fuzzy_taxa_search(request):
                         core_sample.uuid as sample_uuid,
                         core_sample.name as sample_name,
                         core_sample.library_id as sample_library_uuid
-                        {', core_sample.metadata as sample_metadata' if metadata else '' }
                     order by
                         core_sample.library_id
                 ) as x)) as samples

@@ -49,7 +49,6 @@ def fuzzy_taxa_search(query):
                         core_sample.uuid as sample_uuid,
                         core_sample.name as sample_name,
                         core_sample.library_id as sample_library_uuid,
-                        core_sample.metadata as sample_metadata
                     where
                         core_sample.library_id = %s
                     order by
