@@ -31,7 +31,7 @@ class JobOrder(AutoCreatedUpdatedMixin):
 class WorkOrder(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, db_index=True)
-    priority = models.IntField(default=100)
+    priority = models.IntegerField(default=100)
     sample = models.ForeignKey('Sample', on_delete=models.CASCADE, related_name='work_orders')
 
     @property
