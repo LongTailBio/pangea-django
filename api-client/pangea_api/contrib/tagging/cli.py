@@ -6,6 +6,11 @@ from ... import (
     User,
     Organization,
 )
+import logging
+
+logger = logging.getLogger(__name__)
+logger.setLevel(10)
+logger.addHandler(logging.StreamHandler())
 
 
 @click.group('tag')

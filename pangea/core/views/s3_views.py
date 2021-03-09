@@ -67,6 +67,7 @@ class S3ApiKeyDetailsView(generics.RetrieveUpdateDestroyAPIView):
 class S3BucketCreateView(generics.ListCreateAPIView):
     serializer_class = S3BucketSerializer
     permission_classes = (IsAuthenticated, S3BucketPermission)
+    filterset_fields = ['organization_id']
 
     def get_queryset(self):
         perm = S3BucketPermission()

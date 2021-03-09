@@ -2,6 +2,8 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from .views import (
+    PangeaUserListView, PangeaUserDetailsView,
+    get_user_detail_by_djoser_id, get_current_user_detail,
     OrganizationCreateView, OrganizationDetailsView,
     OrganizationUsersView,
     S3ApiKeyCreateView, S3ApiKeyDetailsView,
@@ -12,18 +14,25 @@ from .views import (
     get_sample_ar_counts_in_group, get_sample_metadata_in_group,
     get_sample_data_in_group,
     SampleCreateView, SampleDetailsView,
-    get_sample_manifest,
+    get_sample_manifest, get_sample_metadata,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
     post_sample_ar_upload_url, post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url, post_sample_group_ar_complete_multipart_upload_url,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
+    PipelineCreateView, PipelineDetailsView, PipelineNameDetailsView,
+    PipelineModuleCreateView, PipelineModuleDetailsView, get_module_in_pipeline,
 )
 from .search import SearchList
 
 
 urlpatterns = {
+    path('users', PangeaUserListView.as_view(), name='pangea-user-list'),
+    path('users/<uuid:uuid>', PangeaUserDetailsView.as_view(), name='pangea-user-details'),
+    path('users/id/<user_id>', get_user_detail_by_djoser_id, name='pangea-user-id-details'),
+    path('users/me', get_current_user_detail, name='pangea-user-me-details'),
+
     path('organizations', OrganizationCreateView.as_view(), name="organization-create"),
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="organization-details"),
     path('organizations/<uuid:organization_pk>/users', OrganizationUsersView.as_view(), name="organization-users"),
@@ -37,6 +46,13 @@ urlpatterns = {
     path('projects/<uuid:pk>', ProjectDetailsView.as_view(), name="project-details"),
     path('projects/<uuid:project_pk>/sample_groups', ProjectSampleGroupsView.as_view(), name="project-sample-groups"),
 
+    path('pipelines', PipelineCreateView.as_view(), name="pipeline-create"),
+    path('pipelines/<uuid:pk>', PipelineDetailsView.as_view(), name="pipeline-details"),
+    path('pipelines/name/<name>', PipelineNameDetailsView.as_view(), name="pipeline-name-details"),
+
+    path('pipelines/<uuid:pk>/modules/<name>/<version>', get_module_in_pipeline, name="pipeline-modules-by-name"),
+    path('pipeline_modules', PipelineModuleCreateView.as_view(), name="pipeline-module-create"),
+    path('pipeline_modules/<uuid:pk>', PipelineModuleDetailsView.as_view(), name="pipeline-module-details"),
 
     path('sample_groups', SampleGroupCreateView.as_view(), name="sample-group-create"),
     path('sample_groups/<uuid:pk>', SampleGroupDetailsView.as_view(), name="sample-group-details"),
@@ -49,6 +65,7 @@ urlpatterns = {
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
     path('samples/<uuid:pk>/manifest', get_sample_manifest, name="sample-manifest"),
+    path('samples/<uuid:pk>/metadata', get_sample_metadata, name="sample-versioned-metadata"),
 
     path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="sample-ars-create"),
     path('sample_ars/<uuid:pk>', SampleAnalysisResultDetailsView.as_view(), name="sample-ars-details"),

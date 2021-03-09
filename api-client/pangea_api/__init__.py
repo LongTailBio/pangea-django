@@ -12,3 +12,7 @@ from .analysis_result import (
     SampleGroupAnalysisResultField,
 )
 from .remote_object import RemoteObjectError, RemoteObjectOverwriteError
+from .pipeline import (
+    Pipeline,
+    PipelineModule,
+)

@@ -210,3 +210,56 @@ class SampleTests(APITestCase):
         url = reverse('sample-manifest', kwargs={'pk': sample.uuid})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class SampleMetadataTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.lib = cls.organization.create_sample_group(name='Test Library', is_library=True)
+        cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.user)
+
+    def test_update_metadata(self):
+        """Ensure authorized user can create sample group."""
+        self.client.force_authenticate(user=self.user)
+
+        data = {'name': 'Test Sample', 'library': self.lib.pk, 'metadata': {'foo': 1}}
+        response = self.client.post(reverse('sample-create'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        sample_obj = Sample.objects.get()  # should only be one sample
+        self.assertEqual(sample_obj.metadata['foo'], 1)
+
+        data = {'metadata': {'foo': 2}}
+        response = self.client.patch(
+            reverse('sample-details', kwargs={'pk': sample_obj.uuid}),
+            data,
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        sample_obj = Sample.objects.get()  # should only be one sample
+        self.assertEqual(sample_obj.metadata['foo'], 2)
+
+    def test_retrieve_metadata(self):
+        self.client.force_authenticate(user=self.user)
+
+        data = {'name': 'Test Sample GJKJH', 'library': self.lib.pk, 'metadata': {'bar': 1}}
+        response = self.client.post(reverse('sample-create'), data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        sample_obj = Sample.objects.get()  # should only be one sample
+        response = self.client.patch(
+            reverse('sample-details', kwargs={'pk': sample_obj.uuid}),
+            {'metadata': {'bar': 2}},
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.client.get(
+            reverse('sample-versioned-metadata', kwargs={'pk': sample_obj.uuid}),
+            format='json'
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        vm = response.data.get('versioned_metadata', [])
+        self.assertTrue(vm)
+        self.assertEqual(len(vm), 2)

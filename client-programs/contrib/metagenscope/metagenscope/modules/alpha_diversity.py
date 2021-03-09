@@ -12,7 +12,7 @@ from ..data_utils import (
     categories_from_metadata,
     sample_module_field,
 )
-from .constants import KRAKENUNIQ_NAMES
+from .constants import KRAKEN2_NAMES, FASTKRAKEN2_NAMES
 from .parse_utils import parse_taxa_report, group_taxa_report
 from .alpha_diversity_metrics import (
     shannon_entropy,
@@ -27,7 +27,7 @@ METRICS = [
     ('Richness', richness),
     ('Chao1', chao1),
 ]
-TOOLS = [KRAKENUNIQ_NAMES]
+TOOLS = [KRAKEN2_NAMES, FASTKRAKEN2_NAMES]
 
 
 def rank_filter(tbl, rank):
@@ -53,11 +53,11 @@ def sample_filter(tbl, samples, cat_name, cat_val):
     return my_taxa
 
 
-def process(samples, grp):
+def process(samples, grp, tools):
     metadata_categories = categories_from_metadata(samples)
     out = {}
-    for module, field, tool in TOOLS:
-        taxa_matrix = group_taxa_report(grp)(samples)
+    for _, _, tool, module, field in tools:
+        taxa_matrix = group_taxa_report(grp, module_name=module, field_name=field)(samples)
         tool_tbl = {'taxa_ranks': TAXA_RANKS, 'by_taxa_rank': {}}
         for rank in TAXA_RANKS:
             rank_tbl = {'by_category_name': {}}
@@ -82,6 +82,18 @@ def process(samples, grp):
     return out, metadata_categories
 
 
+def sample_has_modules(sample):
+    """Return True iff sample has at least one module."""
+    tool_list = []
+    for tool in TOOLS:
+        try:
+            sample_module_field(sample, tool[0], tool[1])
+            tool_list.append(tool)
+        except KeyError:
+            continue
+    return len(tool_list) > 0, sample, tool_list
+
+
 class AlphaDiversityModule(Module):
     """TopTaxa AnalysisModule."""
     MIN_SIZE = 3
@@ -93,13 +105,21 @@ class AlphaDiversityModule(Module):
 
     @classmethod
     def process_group(cls, grp: SampleGroup) -> SampleGroupAnalysisResultField:
-        samples = [
-            sample for sample in grp.get_samples()
-            if AlphaDiversityModule.sample_has_required_modules(sample)
+        sample_modules = [
+            sample_has_modules(sample)
+            for sample in grp.get_samples()
         ]
-        values, categories = process(samples, grp)
+        tool_counts, samples = {}, []
+        for has_modules, sample, tools in sample_modules:
+            if not has_modules:
+                continue
+            for tool in tools:
+                tool_counts[tool] = 1 + tool_counts.get(tool, 0)
+            samples.append(sample)
+        tools = [tool for tool, count in tool_counts.items() if count > cls.MIN_SIZE]
+        values, categories = process(samples, grp, tools)
         data = {
-            'tool_names': [el[2] for el in TOOLS],
+            'tool_names': [el[2] for el in tools],
             'categories': categories,
             'by_tool': values,
         }
@@ -125,11 +145,7 @@ class AlphaDiversityModule(Module):
     @classmethod
     def sample_has_required_modules(cls, sample: Sample) -> bool:
         """Return True iff this sample can be processed."""
-        try:
-            sample_module_field(sample, KRAKENUNIQ_NAMES[0], KRAKENUNIQ_NAMES[1])
-            return True
-        except KeyError:
-            return False
+        return sample_has_modules(sample)[0]
 
     @classmethod
     def process_sample(cls, sample: Sample) -> SampleAnalysisResultField:

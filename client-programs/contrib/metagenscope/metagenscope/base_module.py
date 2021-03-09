@@ -17,14 +17,18 @@ class Module:
         return f'metagenscope::{cls._name()}'
 
     @classmethod
+    def version(self):
+        return VERSION
+
+    @classmethod
     def group_replicate(cls, n_samples):
         timestamp = int(time())
-        return f'{VERSION}-{timestamp}-{n_samples}'
+        return f'{cls.version()}-{timestamp}-{n_samples}'
 
     @classmethod
     def sample_replicate(cls):
         timestamp = int(time())
-        return f'{VERSION}-{timestamp}'
+        return f'{cls.version()}-{timestamp}'
 
     @classmethod
     def _name(cls) -> str:

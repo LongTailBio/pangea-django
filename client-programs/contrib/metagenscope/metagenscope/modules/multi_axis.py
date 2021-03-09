@@ -14,7 +14,8 @@ from ..data_utils import (
     sample_module_field,
 )
 from .constants import (
-    KRAKENUNIQ_NAMES,
+    KRAKEN2_NAMES,
+    FASTKRAKEN2_NAMES,
     MICROBECENSUS_NAMES,
 )
 from .average_genome_size import parse_mc_file
@@ -31,7 +32,7 @@ from .parse_utils import (
     group_taxa_report,
 )
 
-TOOLS = [KRAKENUNIQ_NAMES] #, MICROBECENSUS_NAMES]
+TOOLS = [KRAKEN2_NAMES, FASTKRAKEN2_NAMES] #, MICROBECENSUS_NAMES]
 
 
 def taxa_axes(samples, grp):
@@ -63,7 +64,7 @@ def make_axes(samples, grp):
 
 def sample_has_modules(sample):
     has_all = True
-    for module_name, field, _ in TOOLS:
+    for module_name, field, _, _, _ in TOOLS:
         try:
             sample_module_field(sample, module_name, field)
         except KeyError:

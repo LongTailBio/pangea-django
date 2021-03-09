@@ -4,7 +4,8 @@ import logging
 from pandas.api.types import is_string_dtype
 from pandas.api.types import is_numeric_dtype
 from sklearn.cluster import dbscan
-from .modules.constants import KRAKEN2_NAMES
+from requests.exceptions import HTTPError
+from .modules.constants import FASTKRAKEN2_NAMES
 from .modules.parse_utils import (
     proportions,
     run_pca,
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def sample_has_modules(sample):
     has_all = True
-    for module_name, field, _ in [KRAKEN2_NAMES]:
+    for module_name, field, _, _, _ in [FASTKRAKEN2_NAMES]:
         try:
             sample_module_field(sample, module_name, field)
         except KeyError:
@@ -50,7 +51,18 @@ def pca_dbscan(samples, taxa_matrix):
 
 def add_taxa_auto_metadata(samples, grp):
     samples = [sample for sample in samples if sample_has_modules(sample)]
-    taxa_matrix = group_taxa_report(grp)(samples)
+    try:
+        taxa_matrix = group_taxa_report(
+            grp,
+            module_name='cap2::capalyzer::kraken2_taxa',
+            field_name='read_counts',
+        )(samples)
+    except HTTPError:
+        taxa_matrix = group_taxa_report(
+            grp,
+            module_name='cap2::capalyzer::fast_kraken2_taxa',
+            field_name='report',
+        )(samples)
     parsed_sample_names = set(taxa_matrix.index.to_list())
     samples = [sample for sample in samples if sample.name in parsed_sample_names]
     logger.info('Adding PCA median variable...')
@@ -97,7 +109,12 @@ def regularize_metadata(samples):
     meta = meta.fillna('Unknown')
     for sample in samples:
         try:
-            setattr(sample, 'mgs_metadata', meta.loc[sample.name].to_dict())
+            sample_meta = meta.loc[sample.name].to_dict()
         except KeyError:
+            sample_meta = {}
+        try:
+            setattr(sample, 'mgs_metadata', sample_meta)
+        except KeyError:
+            raise
             pass
     logger.info('done.')

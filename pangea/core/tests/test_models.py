@@ -17,6 +17,8 @@ from ..models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
     Project,
+    Pipeline,
+    PipelineModule,
 )
 
 
@@ -32,58 +34,28 @@ class TestUserModel(TestCase):
         self.assertIn(user, org.users.all())
 
 
-class TestS3ApiKeyModel(TestCase):
+class TestPipelineModels(TestCase):
+    """Test suite for pipeline and pipeline module."""
 
-    def test_encrypt_on_save(self):
-        org = Organization.objects.create(name='Test Organization')
-        bucket = S3Bucket.objects.create(
-            organization=org,
-            name='test_bucket',
-            endpoint_url='https://sys.foobar.com',                        
-        )
-        key = S3ApiKey(
-            bucket=bucket,
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        key.save()
-        self.assertTrue(key.uuid)
-        retrieved = S3ApiKey.objects.get(pk=key.uuid)
-        self.assertEqual(retrieved.public_key, 'my_public_key')
-        self.assertNotEqual(retrieved.private_key, 'my_private_key')
-        self.assertTrue(isinstance(retrieved.private_key, EncryptedString))
-        self.assertEqual(retrieved.private_key.decrypt(), 'my_private_key')
+    def test_add_pipeline(self):
+        pipeline = Pipeline.objects.create(name='my_pipe KJHDS')
+        self.assertTrue(pipeline.uuid)
+        self.assertEqual(pipeline.name, 'my_pipe KJHDS')
+        self.assertTrue(pipeline.created_at)
 
-    def test_get_presigned_url(self):
-        pubkey = os.environ.get('PANGEA_S3_TESTER_PUBLIC_KEY', None)
-        privkey = os.environ.get('PANGEA_S3_TESTER_PRIVATE_KEY', None)
-        if not (pubkey and privkey):
-            return  # Only run this test if the keys are available
-        org = Organization.objects.create(name='Test Organization')
-        bucket = S3Bucket.objects.create(
-            organization=org,
-            name='pangea.test.bucket',
-            endpoint_url='https://s3.wasabisys.com',
-        )
-        key = S3ApiKey(
-            bucket=bucket,
-            description='KEY_01',
-            public_key=pubkey,
-            private_key=privkey,
-        )
-        key.save()
-        retrieved = S3ApiKey.objects.get(pk=key.uuid)
-        url = retrieved.presign_url(
-            'https://s3.wasabisys.com',
-            's3://pangea.test.bucket/my_private_s3_test_file.txt'
-        )
-        self.assertTrue(
-            url.startswith('https://s3.wasabisys.com/pangea.test.bucket/my_private_s3_test_file.txt')
-        )
-        self.assertIn('AWSAccessKeyId=', url)
-        self.assertIn('Signature=', url)
-        self.assertIn('Expires=', url)
+    def test_add_pipeline_module(self):
+        pipeline = Pipeline.objects.create(name='my_pipe SHDJ')
+        pm = pipeline.create_module(name='my_module SHDJ', version='vSHDJ')
+        self.assertTrue(pm.created_at)
+        self.assertTrue(pm.uuid)
+        self.assertEqual(pm.pipeline.uuid, pipeline.uuid)
+
+    def test_module_dependencies(self):
+        pipeline = Pipeline.objects.create(name='my_pipe HJFGMV')
+        pm1 = pipeline.create_module(name='my_module 1 HJFGMV', version='vHJFGMV')
+        pm2 = pipeline.create_module(name='my_module 2 HJFGMV', version='vHJFGMV')
+        pm1.dependencies.add(pm2)
+        self.assertEqual(pm2.downstreams.count(), 1)
 
 
 class TestSampleModel(TestCase):
@@ -137,6 +109,50 @@ class TestSampleModel(TestCase):
 
         sample = Sample.objects.get(pk=sample.uuid)
         self.assertEqual(sample.library, lib2.library)
+
+
+class TestVersionedMetadataModel(TestCase):
+
+    def test_alter_metadata(self):
+        """Ensure metadata can be updated."""
+        org = Organization.objects.create(name='an_org JHHFDGSHJG')
+        grp = SampleGroup.factory(
+            organization=org,
+            name='library JHHFDGSHJG',
+            is_library=True,
+        )
+        sample = Sample.objects.create(
+            name='SMPL_01 JHHFDGSHJG',
+            library=grp.library,
+            metadata={'foo': 'bar'}
+        )
+        self.assertEqual(sample.metadata['foo'], 'bar')
+
+        sample.metadata = {'foo': 'bizz'}
+        sample.save()
+        self.assertEqual(sample.metadata['foo'], 'bizz')
+
+    def test_revert_metadata(self):
+        """Ensure metadata can be reverted."""
+        org = Organization.objects.create(name='an_org KASGJ')
+        grp = SampleGroup.factory(
+            organization=org,
+            name='library KASGJ',
+            is_library=True,
+        )
+        sample = Sample.objects.create(
+            name='SMPL_01 KASGJ',
+            library=grp.library,
+            metadata={'foo': 'bar'}
+        )
+        self.assertEqual(sample.metadata['foo'], 'bar')
+
+        sample.metadata = {'foo': 'bizz'}
+        sample.save()
+        self.assertEqual(sample.metadata['foo'], 'bizz')
+
+        sample.save_revert_metadata(1)
+        self.assertEqual(sample.metadata['foo'], 'bar')
 
 
 class TestProject(TestCase):

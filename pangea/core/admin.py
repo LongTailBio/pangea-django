@@ -10,6 +10,7 @@ from .models import (
     Project,
     S3ApiKey,
     S3Bucket,
+    S3Provider,
     SampleGroup,
     SampleLibrary,
     Sample,
@@ -17,12 +18,16 @@ from .models import (
     SampleGroupAnalysisResultField,
     SampleAnalysisResult,
     SampleAnalysisResultField,
+    VersionedMetadata,
+    Pipeline,
+    PipelineModule,
 )
 
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
     list_display = ('name', 'members',)
+    filter_horizontal = ('users',)
 
     def members(self, obj):
         return obj.users.count()
@@ -34,6 +39,20 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )
+
+
+@admin.register(Pipeline)
+class PipelineAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(PipelineModule)
+class PipelineModuleAdmin(admin.ModelAdmin):
+    list_display = ('name', 'version', 'pipeline',)
+    list_filter = (
+        ('pipeline', admin.RelatedOnlyFieldListFilter),
+    )
+    filter_horizontal = ('dependencies',)
 
 
 @admin.register(S3Bucket)
@@ -68,12 +87,18 @@ class S3ApiKeyAdmin(admin.ModelAdmin):
         return obj.bucket.organization.name
 
 
+@admin.register(S3Provider)
+class S3ProviderAdmin(admin.ModelAdmin):
+    list_display = ('public_key',)
+
+
 @admin.register(SampleGroup)
 class SampleGroupAdmin(admin.ModelAdmin):
     list_display = ('name', 'organization_name',)
     list_filter = (
         ('organization', admin.RelatedOnlyFieldListFilter),
     )
+    filter_horizontal = ('guest_users',)
 
     def lookup_allowed(self, lookup, value):
         return lookup in [
@@ -122,6 +147,21 @@ class SampleAdmin(admin.ModelAdmin):
 
     def member_of_groups(self, obj):
         return ", ".join([group.name for group in obj.sample_groups.only('name')])
+
+
+@admin.register(VersionedMetadata)
+class VersionedMetadataAdmin(admin.ModelAdmin):
+    list_display = ('sample', 'updated_at', 'created_at')
+    list_filter = (
+        ('sample__library__group__organization', admin.RelatedOnlyFieldListFilter),
+        ('sample__library', admin.RelatedOnlyFieldListFilter),
+    )
+
+    def lookup_allowed(self, lookup, value):
+        return lookup in [
+            'sample__library__group__organization__uuid__exact',
+            'sample__library__group__exact',
+        ]
 
 
 @admin.register(SampleAnalysisResult)

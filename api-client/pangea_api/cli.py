@@ -15,6 +15,7 @@ from . import (
 )
 from .contrib.tagging.cli import tag_main
 from .contrib.tagging.tag import Tag
+from .contrib.ncbi.cli import ncbi_main
 
 
 @click.group()
@@ -23,7 +24,7 @@ def main():
 
 
 main.add_command(tag_main)
-
+main.add_command(ncbi_main)
 
 @main.group('list')
 def cli_list():
@@ -103,7 +104,7 @@ def _setup_download(email, password, endpoint, sample_manifest, org_name, grp_na
 @click.argument('org_name')
 @click.argument('grp_name')
 @click.argument('sample_names', nargs=-1)
-def cli_download_sample_results(email, password, endpoint, outfile, sample_manifest,
+def cli_download_metadata(email, password, endpoint, outfile, sample_manifest,
                                 org_name, grp_name, sample_names):
     """Download Sample Analysis Results for a set of samples."""
     grp, sample_names = _setup_download(
@@ -286,17 +287,19 @@ def cli_upload_reads(email, password, endpoint, overwrite, module_name,
 @cli_upload.command('metadata')
 @click.option('--create/--no-create', default=False)
 @click.option('--overwrite/--no-overwrite', default=False)
+@click.option('--update/--no-update', default=False)
 @click.option('--index-col', default=0)
+@click.option('--encoding', default='utf_8')
 @click.option('--endpoint', default='https://pangea.gimmebio.com')
 @click.option('-e', '--email', envvar='PANGEA_USER')
 @click.option('-p', '--password', envvar='PANGEA_PASS')
 @click.argument('org_name')
 @click.argument('lib_name')
-@click.argument('table', type=click.File('r'))
-def cli_metadata(create, overwrite, endpoint, index_col, email, password, org_name, lib_name, table):
+@click.argument('table', type=click.File('rb'))
+def cli_metadata(create, overwrite, update, endpoint, index_col, encoding, email, password, org_name, lib_name, table):
     knex = Knex(endpoint)
     User(knex, email, password).login()
-    tbl = pd.read_csv(table, index_col=index_col)
+    tbl = pd.read_csv(table, index_col=index_col, encoding=encoding)
     tbl.index = tbl.index.to_series().map(str)
     org = Organization(knex, org_name).get()
     lib = org.sample_group(lib_name).get()
@@ -310,7 +313,13 @@ def cli_metadata(create, overwrite, endpoint, index_col, email, password, org_na
             except Exception as e:
                 click.echo(f'Sample "{sample.name}" not found.', err=True)
                 continue
+        new_meta = json.loads(json.dumps(row.dropna().to_dict())) 
         if overwrite or (not sample.metadata):
-            sample.metadata = json.loads(json.dumps(row.dropna().to_dict()))
+            sample.metadata = new_meta
+            sample.idem()
+        elif update:
+            old_meta = sample.metadata
+            old_meta.update(new_meta)
+            sample.metadata = old_meta
             sample.idem()
         click.echo(sample)

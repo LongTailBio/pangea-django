@@ -83,6 +83,7 @@ class AnalysisResult(RemoteObject):
         'metadata',
         'description',
         'is_private',
+        'pipeline_module',
     ]
 
     def _get(self):
@@ -104,6 +105,9 @@ class AnalysisResult(RemoteObject):
         key = self.module_name + self.parent.pre_hash()
         key += self.replicate if self.replicate else ''
         return key
+
+    def __str__(self):
+        return f'<Pangea::Sample {self.module_name} {self.replicate} {self.uuid} />'
 
 
 class SampleAnalysisResult(AnalysisResult):
@@ -137,9 +141,11 @@ class SampleAnalysisResult(AnalysisResult):
     def _create(self):
         self.sample.idem()
         data = {
-            'sample': self.sample.uuid,
-            'module_name': self.module_name,
+            field: getattr(self, field)
+            for field in self.remote_fields
+            if hasattr(self, field) and getattr(self, field) is not None
         }
+        data['sample'] = self.sample.uuid
         if self.replicate:
             data['replicate'] = self.replicate
         d = {'data': data, 'sample_ar': self}

@@ -30,9 +30,12 @@ def time_since_file_cached(blob_filepath):
 class FileSystemCache:
 
     def __init__(self, timeout=CACHED_BLOB_TIME):
+        self.no_cache = 'false' in os.environ.get('USE_PANGEA_CACHE', 'TRUE').lower()
         self.timeout = timeout
 
     def clear_blob(self, obj):
+        if self.no_cache:
+            return
         blob_filepath, path_exists = self.get_cached_blob_filepath(obj)
         if path_exists:
             logger.debug(f'Clearing cached blob. {blob_filepath}')
@@ -53,6 +56,8 @@ class FileSystemCache:
         return blob_filepath, False
 
     def get_cached_blob(self, obj):
+        if self.no_cache:
+            return None
         logger.debug(f'Getting cached blob. {obj}')
         blob_filepath, path_exists = self.get_cached_blob_filepath(obj)
         if not path_exists:  # cache not found
@@ -72,6 +77,8 @@ class FileSystemCache:
             return None
 
     def cache_blob(self, obj, blob):
+        if self.no_cache:
+            return None
         logger.debug(f'Caching blob. {obj} {blob}')
         blob_filepath, path_exists = self.get_cached_blob_filepath(obj)
         if path_exists:  # save a new cache if an old one exists

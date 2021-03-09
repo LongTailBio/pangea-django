@@ -17,6 +17,8 @@ from pangea.core.models import (
     Sample,
     SampleGroupAnalysisResult,
     SampleAnalysisResult,
+    Pipeline,
+    PipelineModule,
 )
 
 from .constants import (
@@ -52,209 +54,6 @@ class OrganizationTests(APITestCase):
         self.assertEqual(Organization.objects.count(), 1)
         self.assertEqual(Organization.objects.get().name, 'Test Organization')
         self.assertIn(self.user, Organization.objects.get().users.all())
-
-
-class S3ApiKeyTests(APITestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.organization = Organization.objects.create(name='Test Organization')
-        cls.bucket = cls.organization.create_s3bucket(
-            endpoint_url='https://sys.foobar.com',
-            name="test_bucket",
-        )
-        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
-        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
-        cls.organization.users.add(cls.org_user)
-
-    def test_authorized_s3apikey_read(self):
-        """Ensure authorized user can read private sample group."""
-        s3apikey = self.bucket.create_s3apikey(
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        url = reverse('s3apikey-details', kwargs={'pk': s3apikey.uuid})
-        self.client.force_authenticate(user=self.org_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('public_key', response.data)
-        self.assertNotIn('private_key', response.data)
-
-    def test_no_login_s3apikey_read(self):
-        """Ensure 403 error is thrown if trying to illicitly read private group."""
-        s3apikey = self.bucket.create_s3apikey(
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        url = reverse('s3apikey-details', kwargs={'pk': s3apikey.uuid})
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_unauthorized_s3apikey_read(self):
-        """Ensure 403 error is thrown if trying to illicitly read s3apikey."""
-        s3apikey = self.bucket.create_s3apikey(
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        url = reverse('s3apikey-details', kwargs={'pk': s3apikey.uuid})
-        self.client.force_authenticate(user=self.anon_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_authorized_s3apikey_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.bucket.create_s3apikey(
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        url = reverse('s3apikey-create')
-        self.client.force_authenticate(user=self.org_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) >= 1)
-
-    def test_no_login_s3apikey_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.bucket.create_s3apikey(
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        url = reverse('s3apikey-create')
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_unauthorized_s3apikey_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        s3apikey = self.bucket.create_s3apikey(
-            description='KEY_01',
-            public_key='my_public_key',
-            private_key='my_private_key',
-        )
-        url = reverse('s3apikey-create')
-        self.client.force_authenticate(user=self.anon_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 0)
-
-    def test_create_key(self):
-        self.client.force_authenticate(user=self.org_user)
-
-        url = reverse('s3apikey-create')
-        data = {
-            'public_key': 'my_public_key',
-            'private_key': 'my_private_key',
-            'bucket': self.bucket.pk,
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(S3ApiKey.objects.count(), 1)
-        self.assertEqual(S3ApiKey.objects.get().public_key, 'my_public_key')
-        # Test the private-key's value by accessing the model directly
-        retrieved = S3ApiKey.objects.get(pk=response.data['uuid'])
-        self.assertEqual(retrieved.public_key, 'my_public_key')
-        self.assertNotEqual(retrieved.private_key, 'my_private_key')
-        self.assertTrue(isinstance(retrieved.private_key, EncryptedString))
-        self.assertEqual(retrieved.private_key.decrypt(), 'my_private_key')
-
-    def test_unauth_create_key(self):
-        url = reverse('s3apikey-create')
-        data = {
-            'public_key': 'my_public_key',
-            'private_key': 'my_private_key',
-            'bucket': self.bucket.pk,
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_not_in_org_create_key(self):
-        self.client.force_authenticate(user=self.anon_user)
-        url = reverse('s3apikey-create')
-        data = {
-            'public_key': 'my_public_key',
-            'private_key': 'my_private_key',
-            'bucket': self.bucket.pk,
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
-class S3BucketTests(APITestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.organization = Organization.objects.create(name='Test Organization')
-        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
-        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
-        cls.organization.users.add(cls.org_user)
-
-    def test_authorized_s3bucket_read(self):
-        """Ensure authorized user can read private bucket."""
-        bucket = self.organization.create_s3bucket(
-            endpoint_url='https://sys.foobar.com',
-            name="test_bucket",
-        )
-        url = reverse('s3bucket-details', kwargs={'pk': bucket.uuid})
-        self.client.force_authenticate(user=self.org_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('endpoint_url', response.data)
-        self.assertIn('name', response.data)
-
-    def test_authorized_s3bucket_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        bucket = self.organization.create_s3bucket(
-            endpoint_url='https://sys.foobar.com',
-            name="test_bucket",
-        )
-        url = reverse('s3bucket-create')
-        self.client.force_authenticate(user=self.org_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(len(response.data) >= 1)
-
-    def test_no_login_s3bucket_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        bucket = self.organization.create_s3bucket(
-            endpoint_url='https://sys.foobar.com',
-            name="test_bucket",
-        )
-        url = reverse('s3bucket-create')
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_unauthorized_s3bucket_list(self):
-        """Ensure 403 error is thrown if trying to illicitly read api keys."""
-        bucket = self.organization.create_s3bucket(
-            endpoint_url='https://sys.foobar.com',
-            name="test_bucket",
-        )
-        url = reverse('s3bucket-create')
-        self.client.force_authenticate(user=self.anon_user)
-        response = self.client.get(url, format='json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 0)
-
-    def test_create_bucket(self):
-        self.client.force_authenticate(user=self.org_user)
-        url = reverse('s3bucket-create')
-        data = {
-            'endpoint_url': 'https://sys.foobar.com',
-            'name': "test_bucket",
-            'organization': self.organization.pk,
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(S3Bucket.objects.count(), 1)
-        self.assertEqual(S3Bucket.objects.get().endpoint_url, 'https://sys.foobar.com')
-        # Test the private-key's value by accessing the model directly
-        retrieved = S3Bucket.objects.get(pk=response.data['uuid'])
-        self.assertEqual(retrieved.endpoint_url, 'https://sys.foobar.com')
-        self.assertEqual(retrieved.name, 'test_bucket')
 
 
 class OrganizationMembershipTests(APITestCase):
@@ -305,6 +104,141 @@ class OrganizationMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
         self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
+
+
+class PangeaUserTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.org_user = PangeaUser.objects.create(email='org_user@domain.com', password='Foobar22')
+        cls.anon_user = PangeaUser.objects.create(email='anon_user@domain.com', password='Foobar22')
+        cls.target_user = PangeaUser.objects.create(email='target_user@domain.com', password='Foobar22')
+        cls.organization.users.add(cls.org_user)
+
+    def test_list_pangea_users(self):
+        url = reverse('pangea-user-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_pangea_user(self):
+        url = reverse('pangea-user-details', kwargs={'uuid': self.org_user.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], 'org_user@domain.com')
+        self.assertEqual(len(response.data['organization_objs']), 1)
+        self.assertEqual(response.data['organization_objs'][0]['uuid'], self.organization.uuid)
+
+    def test_get_pangea_user_by_id(self):
+        url = reverse('pangea-user-id-details', kwargs={'user_id': self.org_user.id})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], 'org_user@domain.com')
+        self.assertEqual(len(response.data['organization_objs']), 1)
+        self.assertEqual(response.data['organization_objs'][0]['uuid'], self.organization.uuid)
+
+    def test_get_current_pangea_user(self):
+        url = reverse('pangea-user-me-details')
+        self.client.force_authenticate(user=self.target_user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['email'], 'target_user@domain.com')
+
+    def test_set_pangea_user_name(self):
+        url = reverse('pangea-user-details', kwargs={'uuid': self.target_user.uuid})
+        self.client.force_authenticate(user=self.target_user)
+        response = self.client.patch(url, {'name': 'Pooter Bilbo'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.target_user.refresh_from_db()
+        self.assertEqual(self.target_user.name, 'Pooter Bilbo')
+
+    def test_unauthorized_set_pangea_user_name(self):
+        url = reverse('pangea-user-details', kwargs={'uuid': self.target_user.uuid})
+        response = self.client.patch(url, {'name': 'Booter Pilbo'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.target_user.refresh_from_db()
+        self.assertNotEqual(self.target_user.name, 'Booter Pilbo')
+
+
+class PipelineTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.pipeline = Pipeline.objects.create(name='Test Pipeline')
+        cls.module = cls.pipeline.create_module(name='Test Module', version='vTEST')
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
+
+    def test_pipeline_read(self):
+        """Test retireve pipeline."""
+        url = reverse('pipeline-details', kwargs={'pk': self.pipeline.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pipeline_read_by_name(self):
+        """Test retireve pipeline."""
+        url = reverse('pipeline-name-details', kwargs={'name': self.pipeline.name})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pipeline_module_read(self):
+        """Test retrieve pipeline module."""
+        url = reverse('pipeline-module-details', kwargs={'pk': self.module.uuid})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pipeline_module_read_by_name(self):
+        """Test retrieve pipeline module."""
+        url = reverse('pipeline-modules-by-name', kwargs={
+            'pk': self.pipeline.uuid,
+            'name': self.module.name,
+            'version': self.module.version,
+        })
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_pipeline_create(self):
+        """Test create pipeline."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('pipeline-create')
+        data = {'name': 'Test Pipeline HKLUKD'}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Pipeline.objects.count(), 2)
+
+    def test_pipeline_module_create(self):
+        """Test create pipeline module."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('pipeline-module-create')
+        data = {
+            'pipeline': self.pipeline.uuid,
+            'name': 'Test Module YJKAGJD',
+            'version': 'vYJKAGJD'
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(PipelineModule.objects.count(), 2)
+        self.assertEqual(self.pipeline.modules.count(), 2)
+
+    def test_pipeline_module_create_with_dependencies(self):
+        """Test create pipeline module."""
+        self.client.force_authenticate(user=self.user)
+
+        url = reverse('pipeline-module-create')
+        data = {
+            'pipeline': self.pipeline.uuid,
+            'name': 'Test Module YJKAGJD',
+            'version': 'vYJKAGJD',
+            'dependencies': [self.module.uuid],
+        }
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(self.module.downstreams.count(), 1)
 
 
 class ProjectTests(APITestCase):

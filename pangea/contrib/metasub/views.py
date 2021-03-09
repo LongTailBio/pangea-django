@@ -48,8 +48,7 @@ def fuzzy_taxa_search(query):
                         filtered_taxa.value::float as relative_abundance,
                         core_sample.uuid as sample_uuid,
                         core_sample.name as sample_name,
-                        core_sample.library_id as sample_library_uuid,
-                        core_sample.metadata as sample_metadata
+                        core_sample.library_id as sample_library_uuid
                     where
                         core_sample.library_id = %s
                     order by
@@ -97,7 +96,8 @@ def fuzzy_taxa_search_cities(request):
     for taxa_name, vals in results.items():
         city_results[taxa_name] = {}
         for val in vals:
-            city = val['sample_metadata']['city']
+            sample = Sample.objects.get(uuid=val['sample_uuid'])
+            city = sample.metadata['city']
             if city not in city_results[taxa_name]:
                 city_results[taxa_name][city] = {
                     'all_relative_abundances': [],

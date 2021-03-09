@@ -78,6 +78,13 @@ class RemoteObject:
                     ))
             setattr(self, field, new)
 
+    def exists(self):
+        try:
+            self.get()
+            return True
+        except HTTPError:
+            return False
+
     def get(self):
         """Fetch the object from the server."""
         if self._deleted:
@@ -99,6 +106,7 @@ class RemoteObject:
             raise RemoteObjectError('This object has been deleted.')
         if not self._already_fetched:
             logger.debug(f'Creating RemoteBlob. {self}')
+            self.cache.clear_blob(self)
             self._create()
             self._already_fetched = True
             self._modified = False

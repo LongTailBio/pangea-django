@@ -15,6 +15,8 @@ from .models import (
     SampleAnalysisResultField,
     SampleGroupAnalysisResultField,
     Project,
+    Pipeline,
+    PipelineModule,
 )
 
 logger = structlog.get_logger(__name__)
@@ -22,10 +24,33 @@ logger = structlog.get_logger(__name__)
 
 class PangeaUserSerializer(serializers.ModelSerializer):
 
+    organization_objs = serializers.SerializerMethodField()
+    saved_sample_group_objs = serializers.SerializerMethodField()
+
     class Meta:
         model = PangeaUser
-        fields = ('email', 'is_staff', 'is_active', 'personal_org_uuid')
+        fields = (
+            'id', 'uuid', 'email', 'is_staff', 'is_active',
+            'personal_org_uuid', 'organization_objs',
+            'saved_sample_group_objs',
+
+            'avatar', 'name', 'biography', 'url',
+            'twitter_username', 'github_username',
+            'company', 'location',
+        )
         read_only_fields = ('email', 'personal_org_uuid')
+
+    def get_organization_objs(self, obj):
+        return [
+            {'uuid': org.uuid, 'name': org.name}
+            for org in obj.organization_set.all()
+        ]
+
+    def get_saved_sample_group_objs(self, obj):
+        return [
+            {'uuid': grp.uuid, 'name': grp.name}
+            for grp in obj.saved_sample_groups.all()
+        ]
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
@@ -74,12 +99,52 @@ class SampleGroupSerializer(serializers.ModelSerializer):
             'organization', 'description', 'is_library',
             'is_public', 'theme', 'organization_obj',
             'long_description', 'metadata', 'bucket',
+            'storage_provider_name',
         )
         read_only_fields = ('created_at', 'updated_at', 'organization_obj')
 
 
 class SampleGroupAddSampleSerializer(serializers.Serializer):
     sample_uuid = serializers.UUIDField()
+
+
+class PipelineSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Pipeline
+        fields = (
+            'uuid', 'name', 'description', 'long_description',
+            'updated_at', 'created_at',
+        )
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class PipelineModuleSerializer(serializers.ModelSerializer):
+
+    pipeline_obj = PipelineSerializer(source='pipeline', read_only=True)
+    dependency_modules = serializers.SerializerMethodField()
+    downstream_modules = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PipelineModule
+        fields = (
+            'uuid', 'name', 'version', 'description', 'long_description',
+            'updated_at', 'created_at', 'metadata', 'pipeline', 'pipeline_obj',
+            'dependencies', 'dependency_modules', 'downstream_modules',
+        )
+        read_only_fields = ('created_at', 'updated_at', 'pipeline_obj')
+
+    def get_dependency_modules(self, obj):
+        return [
+            [depends.uuid, depends.name, depends.version]
+            for depends in obj.dependencies.all()
+        ]
+
+    def get_downstream_modules(self, obj):
+        return [
+            [downstream.uuid, downstream.name, downstream.version]
+            for downstream in obj.downstreams.all()
+        ]
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -108,10 +173,9 @@ class SampleSerializer(serializers.ModelSerializer):
         model = Sample
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
-            'library', 'metadata', 'library_obj', 'description'
+            'library', 'metadata', 'library_obj', 'description',
         )
-        read_only_fields = ('created_at', 'updated_at', 'library_obj')
-
+        read_only_fields = ('created_at', 'updated_at', 'library_obj',)
 
     def update(self, sample, validated_data):
         """Update the sample model
@@ -125,12 +189,16 @@ class SampleSerializer(serializers.ModelSerializer):
         if old_library != new_library:
             old_library.group.sample_set.remove(sample)
             new_library.group.add_sample(sample)
+        if 'metadata' in self.initial_data:
+            sample.metadata = self.initial_data['metadata']
+            sample.save()
         return sample
 
 
 class SampleAnalysisResultSerializer(serializers.ModelSerializer):
 
     sample_obj = SampleSerializer(source='sample', read_only=True)
+    pipeline_module_obj = PipelineModuleSerializer(source='pipeline_module', read_only=True)
 
     class Meta:
         model = SampleAnalysisResult
@@ -138,14 +206,15 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
             'sample_obj', 'description', 'metadata',
-            'is_private',
+            'is_private', 'pipeline_module', 'pipeline_module_obj',
         )
-        read_only_fields = ('created_at', 'updated_at', 'sample_obj')
+        read_only_fields = ('created_at', 'updated_at', 'sample_obj', 'pipeline_module_obj')
 
 
 class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
 
     sample_group_obj = SampleGroupSerializer(source='sample_group', read_only=True)
+    pipeline_module_obj = PipelineModuleSerializer(source='pipeline_module', read_only=True)
 
     class Meta:
         model = SampleGroupAnalysisResult
@@ -153,9 +222,9 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
             'sample_group_obj', 'description', 'metadata',
-            'is_private',
+            'is_private', 'pipeline_module', 'pipeline_module_obj',
         )
-        read_only_fields = ('created_at', 'updated_at', 'sample_group_obj')
+        read_only_fields = ('created_at', 'updated_at', 'sample_group_obj', 'pipeline_module_obj')
 
 
 def presign_ar_field_stored_data_if_appropriate(ret, grp):

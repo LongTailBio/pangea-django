@@ -36,6 +36,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     is_library = models.BooleanField(blank=False, default=False)
     theme = models.TextField(blank=True)
     bucket = models.ForeignKey('S3Bucket', on_delete=models.SET_NULL, null=True)
+    storage_provider_name = models.TextField(blank=False, default='custom')
     guest_users = models.ManyToManyField(settings.AUTH_USER_MODEL)
 
     def save(self, *args, **kwargs):

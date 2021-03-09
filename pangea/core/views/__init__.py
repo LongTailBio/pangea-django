@@ -4,6 +4,12 @@ from .s3_views import (
     S3BucketCreateView,
     S3BucketDetailsView,
 )
+from .user_views import (
+    PangeaUserListView,
+    PangeaUserDetailsView,
+    get_user_detail_by_djoser_id,
+    get_current_user_detail,
+)
 from .organization_views import (
     OrganizationCreateView,
     OrganizationUsersView,
@@ -27,6 +33,7 @@ from .sample_views import (
     SampleCreateView,
     SampleDetailsView,
     get_sample_manifest,
+    get_sample_metadata,
 )
 from .analysis_result_views import (
     SampleAnalysisResultCreateView,
@@ -41,4 +48,12 @@ from .analysis_result_views import (
     post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url,
     post_sample_group_ar_complete_multipart_upload_url,
+)
+from .pipeline_views import (
+    PipelineCreateView,
+    PipelineDetailsView,
+    PipelineModuleCreateView,
+    PipelineModuleDetailsView,
+    PipelineNameDetailsView,
+    get_module_in_pipeline,
 )

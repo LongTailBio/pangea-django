@@ -1,6 +1,6 @@
 
-KRAKEN2_NAMES = ('cap2::kraken2', 'report', 'Kraken2')
-KRAKENUNIQ_NAMES = KRAKEN2_NAMES # ('cap1::krakenhll_taxonomy_profiling', 'report', 'KrakenUniq')
+KRAKEN2_NAMES = ('cap2::kraken2', 'report', 'Kraken2', 'cap2::capalyzer::kraken2_taxa', 'report')
+FASTKRAKEN2_NAMES = ('cap2::fast_kraken2', 'report', 'FastKraken2', 'cap2::capalyzer::fast_kraken2_taxa', 'report')
 
 MICROBECENSUS_NAMES = ('cap1::microbe_census', 'stats', 'MicrobeCensus')
 HMP_NAMES = ('cap2::hmp_comparison', 'stats', 'MicrobeCensus')

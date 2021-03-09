@@ -21,6 +21,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticate
 from .utils import PermissionedListCreateAPIView
 from ..param_auth import TokenParamAuthentication
 from ..models import (
+    S3Provider,
     SampleGroup,
     Sample,
     SampleAnalysisResult,
@@ -54,6 +55,16 @@ class SampleGroupCreateView(PermissionedListCreateAPIView):
     filterset_fields = ['uuid', 'organization_id', 'name', 'is_public']
     permission = SampleGroupPermission
 
+    def _add_storage(self, group):
+        provider = S3Provider.get_provider_by_name(group.storage_provider_name)
+        if not provider:
+            group.storage_provider_name = 'custom'
+            group.save()
+            return
+        group.storage_provider_name = provider.name
+        group.save()
+        provider.create_bucket(group)
+
     def perform_create(self, serializer):
         """Require organization membership to create sample group."""
         organization = serializer.validated_data.get('organization')
@@ -64,7 +75,8 @@ class SampleGroupCreateView(PermissionedListCreateAPIView):
                 organization={'uuid': organization.pk, 'name': organization.name},
             )
             raise PermissionDenied(_('Organization membership is required to create a sample group.'))
-        serializer.save()
+        group = serializer.save()
+        self._add_storage(group)
 
 
 class SampleGroupDetailsView(generics.RetrieveUpdateDestroyAPIView):

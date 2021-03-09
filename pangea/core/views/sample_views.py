@@ -46,6 +46,8 @@ class SampleCreateView(PermissionedListCreateAPIView):
         sample = serializer.save()
         sample_group = serializer.validated_data.get('library').group
         sample.sample_groups.add(sample_group)
+        sample.metadata = self.request.data.get('metadata', {})
+        sample.save()
 
 
 class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):
@@ -80,5 +82,31 @@ def get_sample_manifest(request, pk):
             del field_blob['analysis_result_obj']
             ar_blob['fields'].append(field_blob)
         blob['analysis_results'].append(ar_blob)
+
+    return Response(blob)
+
+
+@api_view(['GET'])
+def get_sample_metadata(request, pk):
+    """Reply with a sample group manifest."""
+    sample = Sample.objects.get(pk=pk)
+    mygrp = sample.library.group
+    if not mygrp.is_public:
+        try:
+            membership_queryset = request.user.organization_set.filter(pk=mygrp.organization.pk)
+            authorized = membership_queryset.exists()
+        except AttributeError:  # occurs if user is not logged in
+            authorized = False
+        if not authorized:
+            raise PermissionDenied(_('Insufficient permissions to get group manifest.'))
+    blob = SampleSerializer(sample).data
+    blob['versioned_metadata'] = [
+        {
+            'created_at': vm.created_at,
+            'updated_at': vm.updated_at,
+            'metadata': vm.metadata,
+        }
+        for vm in sample.versioned_metadata.all()
+    ]
 
     return Response(blob)
