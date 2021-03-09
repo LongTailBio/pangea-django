@@ -96,7 +96,8 @@ def fuzzy_taxa_search_cities(request):
     for taxa_name, vals in results.items():
         city_results[taxa_name] = {}
         for val in vals:
-            city = val['sample_metadata']['city']
+            sample = Sample.objects.get(uuid=val['sample_uuid'])
+            city = sample.metadata['city']
             if city not in city_results[taxa_name]:
                 city_results[taxa_name][city] = {
                     'all_relative_abundances': [],
