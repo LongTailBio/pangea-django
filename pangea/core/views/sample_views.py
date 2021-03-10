@@ -12,6 +12,7 @@ from .utils import PermissionedListCreateAPIView
 from ..param_auth import TokenParamAuthentication
 from ..models import (
     Sample,
+    SampleGroup
 )
 from ..permissions import (
     SamplePermission,
@@ -48,6 +49,26 @@ class SampleCreateView(PermissionedListCreateAPIView):
         sample.sample_groups.add(sample_group)
         sample.metadata = self.request.data.get('metadata', {})
         sample.save()
+
+
+@api_view(['POST'])
+def bulk_create_samples(request):
+    """Reply with a sample group manifest."""
+    sample_names = request.data['names']
+    library_uuid = request.data['library']
+    library = SampleGroup.objects.get(pk=library_uuid)
+    try:
+        membership_queryset = request.user.organization_set.filter(pk=library.organization.pk)
+        authorized = membership_queryset.exists()
+    except AttributeError:  # occurs if user is not logged in
+        authorized = False
+    if not authorized:
+        raise PermissionDenied(_('Insufficient permissions to get group manifest.'))
+    uuids = []
+    for name in sample_names:
+        sample = library.create_sample(name=name)
+        uuids.append(sample.uuid)
+    return Response({'uuids': uuids}, status=201)
 
 
 class SampleDetailsView(generics.RetrieveUpdateDestroyAPIView):

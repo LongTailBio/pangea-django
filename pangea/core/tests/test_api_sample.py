@@ -137,6 +137,19 @@ class SampleTests(APITestCase):
         self.assertEqual(Sample.objects.get().name, 'Test Sample')
         self.assertTrue(sample_library.sample_set.filter(pk=response.data.get('uuid')).exists())
 
+    def test_bulk_create_sample(self):
+        """Ensure authorized user can create sample group."""
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+
+        sample_library = self.organization.create_sample_group(name='Test Library UIDWGJ', is_library=True)
+        url = reverse('bulk-sample-create')
+        data = {'names': ['Test Sample 1', 'Test Sample 2'], 'library': sample_library.pk}
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Sample.objects.count(), 2)
+
     def test_modify_sample_library(self):
         """Ensure authorized user can move sample to another library."""
         group = self.organization.create_sample_group(

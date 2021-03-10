@@ -13,7 +13,7 @@ from .views import (
     ProjectCreateView, ProjectDetailsView, ProjectSampleGroupsView,
     get_sample_ar_counts_in_group, get_sample_metadata_in_group,
     get_sample_data_in_group,
-    SampleCreateView, SampleDetailsView,
+    SampleCreateView, SampleDetailsView, bulk_create_samples,
     get_sample_manifest, get_sample_metadata,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
@@ -63,6 +63,7 @@ urlpatterns = {
     path('sample_groups/<uuid:group_pk>/samples', SampleGroupSamplesView.as_view(), name="sample-group-samples"),
 
     path('samples', SampleCreateView.as_view(), name="sample-create"),
+    path('bulk_samples', bulk_create_samples, name='bulk-sample-create'),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
     path('samples/<uuid:pk>/manifest', get_sample_manifest, name="sample-manifest"),
     path('samples/<uuid:pk>/metadata', get_sample_metadata, name="sample-versioned-metadata"),

@@ -32,6 +32,7 @@ from .sample_group_views import (
 from .sample_views import (
     SampleCreateView,
     SampleDetailsView,
+    bulk_create_samples,
     get_sample_manifest,
     get_sample_metadata,
 )
