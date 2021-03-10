@@ -42,8 +42,10 @@ class Organization(RemoteObject):
         blob = self.knex.post(f'organizations', json={'name': self.name})
         self.load_blob(blob)
 
-    def sample_group(self, group_name, metadata={}, is_library=False):
-        return SampleGroup(self.knex, self, group_name, is_library=is_library, metadata=metadata)
+    def sample_group(self, group_name, metadata={}, is_library=False, is_public=False):
+        return SampleGroup(self.knex, self, group_name,
+                           is_library=is_library, is_public=is_public,
+                           metadata=metadata)
 
     def get_sample_groups(self):
         """Yield samplegroups fetched from the server."""
