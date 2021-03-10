@@ -24,7 +24,7 @@ def cli_list():
 @use_common_state
 @click.argument('org_name')
 @click.argument('grp_name')
-def cli_list_samples(state, outfile, org_name, grp_name):
+def cli_list_samples(state, org_name, grp_name):
     """Print a list of samples in the specified group."""
     knex = state.get_knex()
     org = Organization(knex, org_name).get()

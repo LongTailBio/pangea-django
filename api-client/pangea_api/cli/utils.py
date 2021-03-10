@@ -21,7 +21,7 @@ pass_state = click.make_pass_decorator(State, ensure=True)
 def email_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.email = value
+        state.email = str(value)
         return value
     return click.option('-e', '--email',
                         envvar='PANGEA_USER',
@@ -33,7 +33,7 @@ def email_option(f):
 def password_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.password = value
+        state.password = str(value)
         return value
     return click.option('-p', '--password',
                         envvar='PANGEA_USER',
@@ -45,7 +45,7 @@ def password_option(f):
 def endpoint_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.endpoint = value
+        state.endpoint = str(value)
         return value
     return click.option('--endpoint',
                         default='https://pangeabio.io',
@@ -57,7 +57,7 @@ def endpoint_option(f):
 def outfile_option(f):
     def callback(ctx, param, value):
         state = ctx.ensure_object(State)
-        state.endpoint = value
+        state.outfile = value
         return value
     return click.option('-o', '--outfile',
                         default='-', type=click.File('w'),
