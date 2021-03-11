@@ -90,14 +90,58 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
-    def test_get_work_order_detail(self):
+    def test_get_work_order_proto_detail(self):
         wop = WorkOrderProto.objects.create(name='test work order')
         url = reverse('work-order-proto-detail', kwargs={'pk': wop.pk})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['uuid'], str(wop.uuid))
 
-    def test_get_job_order_detail(self):
+    def test_get_work_order_detail(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('work-order-detail', kwargs={'pk': wo.pk})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['uuid'], str(wo.uuid))
+
+    def test_get_work_order_detail_extended(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        jop = JobOrderProto.objects.create(
+            name='test job order',
+            work_order_proto=wop,
+        )
+        wo = wop.work_order(self.sample)
+        url = reverse('work-order-detail', kwargs={'pk': wo.pk})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['uuid'], str(wo.uuid))
+        self.assertEqual(response.data['status'], 'pending')
+        self.assertEqual(len(response.data['job_order_objs']), 1)
+
+    def test_get_work_order_detail_unauth(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('work-order-detail', kwargs={'pk': wo.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_work_order_in_sample(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-list-workorder', kwargs={'sample_pk': self.sample.pk})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['uuid'], str(wo.uuid))
+
+    def test_get_job_order_proto_detail(self):
         wop = WorkOrderProto.objects.create(name='test work order')
         jop = JobOrderProto.objects.create(
             name='test job order',
@@ -107,3 +151,24 @@ class WorkOrderTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['uuid'], str(jop.uuid))
+
+    def test_get_job_order_detail_unauth(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        jop = JobOrderProto.objects.create(name='test job order', work_order_proto=wop)
+        wo = wop.work_order(self.sample)
+        jo = wo.jobs.get()
+        url = reverse('job-order-detail', kwargs={'pk': jo.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_job_order_detail(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        jop = JobOrderProto.objects.create(name='test job order', work_order_proto=wop)
+        wo = wop.work_order(self.sample)
+        jo = wo.jobs.get()
+        url = reverse('job-order-detail', kwargs={'pk': jo.pk})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['uuid'], str(jo.uuid))

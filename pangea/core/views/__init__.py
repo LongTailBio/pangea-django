@@ -65,4 +65,5 @@ from .work_order_views import (
     WorkOrderRetrieveView,
     JobOrderDetailView,
     create_new_work_order,
+    SampleWorkOrdersView,
 )

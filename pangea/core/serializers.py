@@ -322,12 +322,28 @@ class JobOrderSerializer(serializers.ModelSerializer):
 
 class WorkOrderSerializer(serializers.ModelSerializer):
 
+    job_order_objs = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    progress_summary = serializers.SerializerMethodField()
+
     class Meta:
         model = WorkOrder
         fields = ('uuid', 'name', 'priority', 'sample',
-                  'created_at', 'updated_at')
+                  'created_at', 'updated_at',
+                  'job_order_objs', 'status', 'progress_summary')
         read_only_fields = ('created_at', 'updated_at')
 
+    def get_status(self, obj):
+        return obj.status
+
+    def get_progress_summary(self, obj):
+        return obj.progress_summary
+
+    def get_job_order_objs(self, obj):
+        return [
+            JobOrderSerializer(job_order).data
+            for job_order in obj.jobs.all()
+        ]
 
 class JobOrderProtoSerializer(serializers.ModelSerializer):
 

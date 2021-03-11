@@ -20,43 +20,58 @@ from ..serializers import (
     WorkOrderSerializer,
     JobOrderSerializer,
 )
-from ..permissions import WorkOrderPermission, JobOrderPermission
+from ..permissions import WorkOrderPermission, JobOrderPermission, SamplePermission
 
 logger = structlog.get_logger(__name__)
 
 
 class WorkOrderProtoListView(generics.ListAPIView):
-    queryset = WorkOrderProto.objects.all()
+    queryset = WorkOrderProto.objects.all().order_by('created_at')
     serializer_class = WorkOrderProtoSerializer
     filterset_fields = ['uuid', 'name']
 
 
 class WorkOrderProtoRetrieveView(generics.RetrieveAPIView):
-    queryset = WorkOrderProto.objects.all()
+    queryset = WorkOrderProto.objects.all().order_by('created_at')
     serializer_class = WorkOrderProtoSerializer
 
 
 class JobOrderProtoListView(generics.ListAPIView):
-    queryset = JobOrderProto.objects.all()
+    queryset = JobOrderProto.objects.all().order_by('created_at')
     serializer_class = JobOrderProtoSerializer
     filterset_fields = ['uuid', 'name']
 
 
 class JobOrderProtoRetrieveView(generics.RetrieveAPIView):
-    queryset = JobOrderProto.objects.all()
+    queryset = JobOrderProto.objects.all().order_by('created_at')
     serializer_class = JobOrderProtoSerializer
 
 
 class WorkOrderRetrieveView(generics.RetrieveAPIView):
-    queryset = WorkOrder.objects.all()
+    queryset = WorkOrder.objects.all().order_by('created_at')
     serializer_class = WorkOrderSerializer
-    permission = WorkOrderPermission
+    permission_classes = (WorkOrderPermission,)
 
 
 class JobOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = JobOrder.objects.all()
+    queryset = JobOrder.objects.all().order_by('created_at')
     serializer_class = JobOrderSerializer
     permission_classes = (JobOrderPermission,)
+
+
+class SampleWorkOrdersView(generics.ListAPIView):
+    """This class handles managing membership of samples within sample groups."""
+    permission_classes = (WorkOrderPermission,)
+    queryset = WorkOrder.objects.all().order_by('created_at')
+    serializer_class = WorkOrderSerializer
+
+    def filter_queryset(self, queryset):
+        sample_uuid = self.kwargs.get('sample_pk')
+        sample = Sample.objects.get(pk=sample_uuid)
+        if not SamplePermission().has_object_permission(self.request, self, sample):
+            raise PermissionDenied(_('Insufficient permissions to view work order for sample.'))
+        work_orders = super().filter_queryset(queryset).filter(sample__pk=sample_uuid)
+        return work_orders.order_by('created_at')
 
 
 @api_view(['POST'])

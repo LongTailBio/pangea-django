@@ -43,14 +43,20 @@ class WorkOrder(AutoCreatedUpdatedMixin):
         return self.prototype.user_is_privileged(user)
 
     @property
-    def status(self):
+    def progress_summary(self):
         statuses = {}
-        for job in self.jobs:
+        for job in self.jobs.all():
             statuses[job.status] = 1 + statuses.get(job.status, 0)
+        statuses['n_jobs'] = self.jobs.count()
+        return statuses
+
+    @property
+    def status(self):
+        statuses = self.progress_summary
         if statuses.get(JobOrderStatus.ERROR, 0) > 0:
             return JobOrderStatus.ERROR
-        if statuses.get(JobOrderStatus.PENDING, 0) == len(self.jobs):
+        if statuses.get(JobOrderStatus.PENDING, 0) == self.jobs.count():
             return JobOrderStatus.PENDING
-        if statuses.get(JobOrderStatus.SUCCESS, 0) == len(self.jobs):
+        if statuses.get(JobOrderStatus.SUCCESS, 0) == self.jobs.count():
             return JobOrderStatus.SUCCESS
         return JobOrderStatus.WORKING
