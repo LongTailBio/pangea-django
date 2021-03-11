@@ -19,7 +19,7 @@ def main():
 @main.command()
 def version():
     """Print the version of the Pangea API being used."""
-    click.echo('0.9.6')  # remember to update setup
+    click.echo('0.9.7')  # remember to update setup
 
 
 main.add_command(tag_main)

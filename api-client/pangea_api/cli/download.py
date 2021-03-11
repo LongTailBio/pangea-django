@@ -76,7 +76,7 @@ def cli_download_sample_results(state,
                     continue
                 if not download:  # download urls to a file, not actual files.
                     try:
-                        print(field.get_download_url(), field.get_referenced_filename(), file=outfile)
+                        print(field.get_download_url(), field.get_referenced_filename(), file=state.outfile)
                     except TypeError:
                         pass
                     continue
