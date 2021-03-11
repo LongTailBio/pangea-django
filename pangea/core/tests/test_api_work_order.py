@@ -17,6 +17,7 @@ from pangea.core.models import (
     JobOrder,
     JobOrderProto,
     PrivilegedUser,
+    SampleAnalysisResult,
 )
 
 from .constants import (
@@ -31,7 +32,7 @@ class WorkOrderTests(APITestCase):
     def setUpTestData(cls):
         cls.organization = Organization.objects.create(name='Test Organization')
         cls.user = PangeaUser.objects.create(email='user@domain.com', password='Foobar22')
-        cls.group = cls.organization.create_sample_group(name='GRP_01', is_library=True)
+        cls.group = cls.organization.create_sample_group(name='GRP_01', is_library=True, is_public=False)
         cls.sample = cls.group.create_sample(name='SMPL_01')
 
     def test_create_work_order(self):
@@ -78,6 +79,26 @@ class WorkOrderTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
+
+    def test_list_work_orders_in_work_order_proto(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('work-order-proto-list-work-orders', kwargs={'pk': wop.pk})
+        PrivilegedUser.objects.create(user=self.user, work_order_proto=wop)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['uuid'], str(wo.uuid))
+
+    def test_list_work_orders_in_work_order_proto_unauth(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('work-order-proto-list-work-orders', kwargs={'pk': wop.pk})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_list_job_order_protos(self):
         wop = WorkOrderProto.objects.create(name='test work order')
@@ -172,3 +193,86 @@ class WorkOrderTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['uuid'], str(jo.uuid))
+
+    def test_privileged_user_retrieve_sample(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-details', kwargs={'pk': self.sample.pk})
+        url += f'?work_order_uuid={wo.uuid}'
+
+        PrivilegedUser.objects.create(user=self.user, work_order_proto=wop)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_privileged_user_can_create_ar(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-ars-create')
+        url += f'?work_order_uuid={wo.uuid}'
+        data = {
+            'module_name': 'taxa',
+            'sample': self.sample.pk,
+            'description': 'short description',
+            'metadata': {'a': 1, 'b': 'foo'},
+        }
+
+        PrivilegedUser.objects.create(user=self.user, work_order_proto=wop)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(SampleAnalysisResult.objects.count(), 1)
+        self.assertEqual(SampleAnalysisResult.objects.get().sample, self.sample)
+        self.assertEqual(SampleAnalysisResult.objects.get().module_name, 'taxa')
+
+    def test_non_privileged_user_cannot_create_ar(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-ars-create')
+        url += f'?work_order_uuid={wo.uuid}'
+        data = {
+            'module_name': 'taxa',
+            'sample': self.sample.pk,
+            'description': 'short description',
+            'metadata': {'a': 1, 'b': 'foo'},
+        }
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_user_in_org_cannot_retrieve_sample_if_they_use_work_order(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-details', kwargs={'pk': self.sample.pk})
+        url += f'?work_order_uuid={wo.uuid}'
+
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_non_privileged_user_cannot_retrieve_sample(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-details', kwargs={'pk': self.sample.pk})
+        url += f'?work_order_uuid={wo.uuid}'
+
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_no_user_cannot_retrieve_sample(self):
+        wop = WorkOrderProto.objects.create(name='test work order')
+        wo = wop.work_order(self.sample)
+        url = reverse('sample-details', kwargs={'pk': self.sample.pk})
+        url += f'?work_order_uuid={wo.uuid}'
+
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

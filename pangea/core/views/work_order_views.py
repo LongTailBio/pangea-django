@@ -59,6 +59,20 @@ class JobOrderDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (JobOrderPermission,)
 
 
+class WorkOrderProtoWorkOrderView(generics.ListAPIView):
+    """This class handles managing membership of samples within sample groups."""
+    queryset = WorkOrder.objects.all().order_by('created_at')
+    serializer_class = WorkOrderSerializer
+
+    def filter_queryset(self, queryset):
+        work_order_proto_uuid = self.kwargs.get('pk')
+        work_order_proto = WorkOrderProto.objects.get(pk=work_order_proto_uuid)
+        if not work_order_proto.user_is_privileged(self.request.user):
+            return []
+        work_orders = super().filter_queryset(queryset).filter(prototype__pk=work_order_proto_uuid)
+        return work_orders.order_by('created_at')
+
+
 class SampleWorkOrdersView(generics.ListAPIView):
     """This class handles managing membership of samples within sample groups."""
     permission_classes = (WorkOrderPermission,)

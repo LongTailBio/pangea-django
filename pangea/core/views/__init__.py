@@ -66,4 +66,5 @@ from .work_order_views import (
     JobOrderDetailView,
     create_new_work_order,
     SampleWorkOrdersView,
+    WorkOrderProtoWorkOrderView,
 )

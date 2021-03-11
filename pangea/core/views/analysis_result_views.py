@@ -20,6 +20,7 @@ from ..permissions import (
     SampleGroupAnalysisResultPermission,
     SampleAnalysisResultFieldPermission,
     SampleGroupAnalysisResultFieldPermission,
+    sample_work_order_permissions,
 )
 from ..serializers import (
     SampleAnalysisResultSerializer,
@@ -32,7 +33,6 @@ from ..serializers import (
 logger = structlog.get_logger(__name__)
 
 
-
 class SampleAnalysisResultCreateView(PermissionedListCreateAPIView):
     queryset = SampleAnalysisResult.objects.all()
     serializer_class = SampleAnalysisResultSerializer
@@ -41,14 +41,20 @@ class SampleAnalysisResultCreateView(PermissionedListCreateAPIView):
     permission = SampleAnalysisResultPermission
 
     def perform_create(self, serializer):
-        organization = serializer.validated_data.get('sample').library.group.organization
+        sample = serializer.validated_data.get('sample')
+        organization = sample.library.group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
-            logger.warning(
-                'attempted_create_sample_analysis_result_without_permission',
-                organization={'uuid': organization.pk, 'name': organization.name},
-            )
-            raise PermissionDenied(_('Organization membership is required to create a sample analysis result.'))
+            work_order_perm = None
+            work_order_uuid = self.request.query_params.get('work_order_uuid', None)
+            if work_order_uuid:
+                work_order_perm = sample_work_order_permissions(self.request, sample, work_order_uuid)
+            if not work_order_perm:
+                logger.warning(
+                    'attempted_create_sample_analysis_result_without_permission',
+                    organization={'uuid': organization.pk, 'name': organization.name},
+                )
+                raise PermissionDenied(_('Organization membership is required to create a sample analysis result.'))
         serializer.save()
 
 
@@ -92,15 +98,20 @@ class SampleAnalysisResultFieldCreateView(PermissionedListCreateAPIView):
     permission = SampleAnalysisResultFieldPermission
 
     def perform_create(self, serializer):
-        organization = serializer.validated_data.get('analysis_result') \
-            .sample.library.group.organization
+        sample = serializer.validated_data.get('analysis_result').sample
+        organization = sample.library.group.organization
         membership_queryset = self.request.user.organization_set.filter(pk=organization.pk)
         if not membership_queryset.exists():
-            logger.warning(
-                'attempted_create_sample_analysis_result_field_without_permission',
-                organization={'uuid': organization.pk, 'name': organization.name},
-            )
-            raise PermissionDenied(_('Organization membership is required to create a sample analysis result field.'))
+            work_order_perm = None
+            work_order_uuid = self.request.query_params.get('work_order_uuid', None)
+            if work_order_uuid:
+                work_order_perm = sample_work_order_permissions(self.request, sample, work_order_uuid)
+            if not work_order_perm:
+                logger.warning(
+                    'attempted_create_sample_analysis_result_field_without_permission',
+                    organization={'uuid': organization.pk, 'name': organization.name},
+                )
+                raise PermissionDenied(_('Organization membership is required to create a sample analysis result field.'))
         serializer.save()
 
 

@@ -26,7 +26,7 @@ from .views import (
     WorkOrderProtoListView, WorkOrderProtoRetrieveView,
     JobOrderProtoListView, JobOrderProtoRetrieveView,
     WorkOrderRetrieveView, JobOrderDetailView, create_new_work_order,
-    SampleWorkOrdersView,
+    SampleWorkOrdersView, WorkOrderProtoWorkOrderView,
 )
 from .search import SearchList
 
@@ -75,6 +75,7 @@ urlpatterns = {
 
     path('work_order_prototypes', WorkOrderProtoListView.as_view(), name='work-order-proto-list'),
     path('work_order_prototypes/<uuid:pk>', WorkOrderProtoRetrieveView.as_view(), name='work-order-proto-detail'),
+    path('work_order_prototypes/<uuid:pk>/work_orders', WorkOrderProtoWorkOrderView.as_view(), name='work-order-proto-list-work-orders'),
     path('work_orders/<uuid:pk>', WorkOrderRetrieveView.as_view(), name='work-order-detail'),
     path('job_order_prototypes', JobOrderProtoListView.as_view(), name='job-order-proto-list'),
     path('job_order_prototypes/<uuid:pk>', JobOrderProtoRetrieveView.as_view(), name='job-order-proto-detail'),
