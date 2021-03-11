@@ -21,6 +21,12 @@ from .models import (
     VersionedMetadata,
     Pipeline,
     PipelineModule,
+
+    WorkOrder,
+    WorkOrderProto,
+    JobOrder,
+    JobOrderProto,
+    PrivilegedUser,
 )
 
 
@@ -90,6 +96,31 @@ class S3ApiKeyAdmin(admin.ModelAdmin):
 @admin.register(S3Provider)
 class S3ProviderAdmin(admin.ModelAdmin):
     list_display = ('public_key',)
+
+
+@admin.register(WorkOrder)
+class WorkOrderAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(JobOrder)
+class JobOrderAdmin(admin.ModelAdmin):
+    list_display = ('name', 'work_order__name')
+
+
+@admin.register(WorkOrderProto)
+class WorkOrderProtoAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(JobOrderProto)
+class JobOrderProtoAdmin(admin.ModelAdmin):
+    list_display = ('name', 'work_order_proto__name')
+
+
+@admin.register(PrivilegedUser)
+class PrivilegedUserAdmin(admin.ModelAdmin):
+    list_display = ('user', 'work_order_proto__name')
 
 
 @admin.register(SampleGroup)
