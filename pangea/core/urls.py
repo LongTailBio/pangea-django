@@ -23,6 +23,9 @@ from .views import (
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
     PipelineCreateView, PipelineDetailsView, PipelineNameDetailsView,
     PipelineModuleCreateView, PipelineModuleDetailsView, get_module_in_pipeline,
+    WorkOrderProtoListView, WorkOrderProtoRetrieveView,
+    JobOrderProtoListView, JobOrderProtoRetrieveView,
+    WorkOrderRetrieveView, JobOrderDetailView, create_new_work_order,
 )
 from .search import SearchList
 
@@ -66,6 +69,14 @@ urlpatterns = {
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
     path('samples/<uuid:pk>/manifest', get_sample_manifest, name="sample-manifest"),
     path('samples/<uuid:pk>/metadata', get_sample_metadata, name="sample-versioned-metadata"),
+    path('samples/<uuid:sample_pk>/work_order/<uuid:wop_pk>', create_new_work_order, name="sample-create-workorder"),
+
+    path('work_order_prototypes', WorkOrderProtoListView.as_view(), name='work-order-proto-list'),
+    path('work_order_prototypes/<uuid:pk>', WorkOrderProtoRetrieveView.as_view(), name='work-order-proto-detail'),
+    path('work_orders/<uuid:pk>', WorkOrderRetrieveView.as_view(), name='work-order-detail'),
+    path('job_order_prototypes', JobOrderProtoListView.as_view(), name='job-order-proto-list'),
+    path('job_order_prototypes/<uuid:pk>', JobOrderProtoRetrieveView.as_view(), name='job-order-proto-detail'),
+    path('job_orders/<uuid:pk>', JobOrderDetailView.as_view(), name='job-order-detail'),
 
     path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="sample-ars-create"),
     path('sample_ars/<uuid:pk>', SampleAnalysisResultDetailsView.as_view(), name="sample-ars-details"),
