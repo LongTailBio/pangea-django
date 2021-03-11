@@ -6,7 +6,7 @@ import setuptools
 
 setuptools.setup(
     name='pangea_api',
-    version='0.9.5',  # remember to update version string in CLI as well
+    version='0.9.6',  # remember to update version string in CLI as well
     author="David C. Danko",
     author_email='dcdanko@gmail.com',
     packages=setuptools.find_packages(),
@@ -15,6 +15,7 @@ setuptools.setup(
         'requests',
         'click',
         'pandas',
+        'biopython',
     ],
     entry_points={
         'console_scripts': [
