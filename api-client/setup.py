@@ -12,6 +12,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     package_dir={'pangea_api': 'pangea_api'},
     install_requires=[
+        'requests',
+        'click',
+        'pandas',
     ],
     entry_points={
         'console_scripts': [
