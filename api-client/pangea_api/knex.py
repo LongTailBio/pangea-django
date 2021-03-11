@@ -7,7 +7,7 @@ from glob import glob
 
 from .file_system_cache import FileSystemCache
 
-DEFAULT_ENDPOINT = 'https://pangea.gimmebio.com'
+DEFAULT_ENDPOINT = 'https://pangeabio.io'
 
 
 logger = logging.getLogger(__name__)  # Same name as calling module
@@ -50,11 +50,18 @@ class Knex:
         base.update(kwargs)
         return base
 
-    def _clean_url(self, url):
+    def _clean_url(self, url, url_options={}):
         url = clean_url(url)
         url = url.replace(self.endpoint_url, '')
         if url[0] == '/':
             url = url[1:]
+        if url_options:
+            opts = [f'{key}={val}' for key, val in url_options.items()]
+            opts = '&'.join(opts)
+            if '?' in url:
+                url += '&' + opts
+            else:
+                url += '?' + opts
         return url
 
     def add_auth_token(self, token):
@@ -90,8 +97,8 @@ class Knex:
             return response.json()
         return response
 
-    def get(self, url, **kwargs):
-        url = self._clean_url(url)
+    def get(self, url, url_options={}, **kwargs):
+        url = self._clean_url(url, url_options=url_options)
         d = self._logging_info(url=url, auth_token=self.auth)
         logger.debug(f'Sending GET request. {d}')
         response = requests.get(
@@ -101,8 +108,8 @@ class Knex:
         )
         return self._handle_response(response, **kwargs)
 
-    def post(self, url, json={}, **kwargs):
-        url = self._clean_url(url)
+    def post(self, url, json={}, url_options={}, **kwargs):
+        url = self._clean_url(url, url_options=url_options)
         d = self._logging_info(url=url, auth_token=self.auth, json=json)
         logger.debug(f'Sending POST request. {d}')
         response = requests.post(
@@ -113,8 +120,8 @@ class Knex:
         )
         return self._handle_response(response, **kwargs)
 
-    def put(self, url, json={}, **kwargs):
-        url = self._clean_url(url)
+    def put(self, url, json={}, url_options={}, **kwargs):
+        url = self._clean_url(url, url_options=url_options)
         d = self._logging_info(url=url, auth_token=self.auth, json=json)
         logger.debug(f'Sending PUT request. {d}')
         response = requests.put(
@@ -125,8 +132,8 @@ class Knex:
         )
         return self._handle_response(response, **kwargs)
 
-    def patch(self, url, json={}, **kwargs):
-        url = self._clean_url(url)
+    def patch(self, url, json={}, url_options={}, **kwargs):
+        url = self._clean_url(url, url_options=url_options)
         d = self._logging_info(url=url, auth_token=self.auth, json=json)
         logger.debug(f'Sending PATCH request. {d}')
         response = requests.patch(
@@ -137,8 +144,8 @@ class Knex:
         )
         return self._handle_response(response, **kwargs)
 
-    def delete(self, url, **kwargs):
-        url = self._clean_url(url)
+    def delete(self, url, url_options={}, **kwargs):
+        url = self._clean_url(url, url_options=url_options)
         d = self._logging_info(url=url, auth_token=self.auth)
         logger.debug(f'Sending DELETE request. {d}')
         response = requests.delete(

@@ -95,7 +95,7 @@ class AnalysisResult(RemoteObject):
             url = self.nested_url()
             if self.replicate:
                 url += f'?replicate={self.replicate}'
-            blob = self.knex.get(url)
+            blob = self.knex.get(url, url_options=self.inherited_url_options)
             self.load_blob(blob)
             self.cache_blob(blob)
         else:
@@ -136,7 +136,7 @@ class SampleAnalysisResult(AnalysisResult):
         url = f'sample_ars/{self.uuid}'
         d = {'data': data, 'url': url, 'sample_ar': self}
         logger.debug(f'Saving SampleAnalysisResult. {d}')
-        self.knex.put(url, json=data)
+        self.knex.put(url, json=data, url_options=self.inherited_url_options)
 
     def _create(self):
         self.sample.idem()
@@ -150,7 +150,7 @@ class SampleAnalysisResult(AnalysisResult):
             data['replicate'] = self.replicate
         d = {'data': data, 'sample_ar': self}
         logger.debug(f'Creating SampleAnalysisResult. {d}')
-        blob = self.knex.post(f'sample_ars?format=json', json=data)
+        blob = self.knex.post(f'sample_ars?format=json', json=data, url_options=self.inherited_url_options)
         self.load_blob(blob)
 
     def field(self, field_name, data={}):
