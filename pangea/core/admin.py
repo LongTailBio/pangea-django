@@ -105,7 +105,7 @@ class WorkOrderAdmin(admin.ModelAdmin):
 
 @admin.register(JobOrder)
 class JobOrderAdmin(admin.ModelAdmin):
-    list_display = ('name', 'work_order__name')
+    list_display = ('name', 'work_order')
 
 
 @admin.register(WorkOrderProto)
@@ -115,12 +115,12 @@ class WorkOrderProtoAdmin(admin.ModelAdmin):
 
 @admin.register(JobOrderProto)
 class JobOrderProtoAdmin(admin.ModelAdmin):
-    list_display = ('name', 'work_order_proto__name')
+    list_display = ('name', 'work_order_proto')
 
 
 @admin.register(PrivilegedUser)
 class PrivilegedUserAdmin(admin.ModelAdmin):
-    list_display = ('user', 'work_order_proto__name')
+    list_display = ('user', 'work_order_proto')
 
 
 @admin.register(SampleGroup)
