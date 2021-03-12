@@ -53,18 +53,25 @@ def get_reads(sample):
 
 
 def _process_fastqc(jo, sample):
+    click.echo('getting reads...', err=True)
     cap_sample = get_reads(sample)
+    click.echo('got reads', err=True)
     try:
+        click.echo('running modules...', err=True)
         run_modules([cap_sample], STAGES['qc'])
+        click.echo('ran modules', err=True)
         report = glob(f'results/{sample.uuid}/{sample.uuid}.cap2::fastqc.*.report.html')[0]
         zip_output = glob(f'results/{sample.uuid}/{sample.uuid}.cap2::fastqc.*.zip_out.zip')[0]
         ar = sample.analysis_result('cap2::fastqc', replicate=f'wo-demo {random_str(4)}').create()
+        click.echo('getting fields...', err=True)
         report_field = ar.field('report').create()
+        zip_field = ar.field('zip_output').create()
+        click.echo('uploading data...', err=True)
         report_field.upload_file(report)
         os.remove(report)
-        zip_field = ar.field('zip_output').create()
         zip_field.upload_file(zip_output)
         os.remove(zip_output)
+        click.echo('done uploading', err=True)
     finally:
         os.remove(cap_sample.r1)
         if cap_sample.r2:
