@@ -316,7 +316,7 @@ class JobOrderSerializer(serializers.ModelSerializer):
         model = JobOrder
         fields = ('uuid', 'name', 'status', 'work_order', 'pipeline_module',
                   'analysis_result', 'resources_used', 'resources_needed',
-                  'created_at', 'updated_at')
+                  'created_at', 'updated_at', 'description')
         read_only_fields = ('created_at', 'updated_at')
 
 
@@ -329,7 +329,7 @@ class WorkOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrder
         fields = ('uuid', 'name', 'priority', 'sample',
-                  'created_at', 'updated_at',
+                  'created_at', 'updated_at', 'description',
                   'job_order_objs', 'status', 'progress_summary')
         read_only_fields = ('created_at', 'updated_at')
 
@@ -350,7 +350,7 @@ class JobOrderProtoSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobOrderProto
         fields = ('uuid', 'name', 'pipeline_module', 'resources_needed',
-                  'work_order_proto', 'created_at', 'updated_at')
+                  'work_order_proto', 'created_at', 'updated_at', 'description')
         read_only_fields = ('created_at', 'updated_at')
 
 
@@ -358,6 +358,6 @@ class WorkOrderProtoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkOrderProto
-        fields = ('uuid', 'name', 'created_at', 'updated_at')
+        fields = ('uuid', 'name', 'created_at', 'updated_at', 'description')
         read_only_fields = ('created_at', 'updated_at')
 
