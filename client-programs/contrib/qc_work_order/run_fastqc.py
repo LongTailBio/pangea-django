@@ -66,9 +66,9 @@ def _process_fastqc(jo, sample):
         zip_field.upload_file(zip_output)
         os.remove(zip_output)
     finally:
-        os.remove(sample.r1)
-        if sample.r2:
-            os.remove(sample.r2)
+        os.remove(cap_sample.r1)
+        if cap_sample.r2:
+            os.remove(cap_sample.r2)
 
 
 def process_fastqc(jo, sample):
