@@ -27,6 +27,7 @@ class JobOrder(AutoCreatedUpdatedMixin):
     )
     resources_used = JSONField(blank=True, default=dict)
     resources_needed = JSONField(blank=True, default=dict)
+    description = models.TextField(blank=True, default='')
 
     def user_is_privileged(self, user):
         return self.prototype.user_is_privileged(user)
@@ -38,6 +39,7 @@ class WorkOrder(AutoCreatedUpdatedMixin):
     priority = models.IntegerField(default=100)
     sample = models.ForeignKey('Sample', on_delete=models.CASCADE, related_name='work_orders')
     prototype = models.ForeignKey('WorkOrderProto', on_delete=models.CASCADE)
+    description = models.TextField(blank=True, default='')
 
     def user_is_privileged(self, user):
         return self.prototype.user_is_privileged(user)

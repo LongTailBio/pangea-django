@@ -17,6 +17,7 @@ class JobOrderProto(AutoCreatedUpdatedMixin):
     work_order_proto = models.ForeignKey(
         'WorkOrderProto', on_delete=models.CASCADE, related_name='job_protos'
     )
+    description = models.TextField(blank=True, default='')
 
     def user_is_privileged(self, user):
         return self.work_order_proto.user_is_privileged(user)
@@ -29,6 +30,7 @@ class JobOrderProto(AutoCreatedUpdatedMixin):
             pipeline_module=self.pipeline_module,
             resources_needed=self.resources_needed,
             prototype=self,
+            description=self.description,
         )
         job.save()
         return job
@@ -37,13 +39,17 @@ class JobOrderProto(AutoCreatedUpdatedMixin):
 class WorkOrderProto(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, db_index=True)
+    description = models.TextField(blank=True, default='')
 
     def user_is_privileged(self, user):
         return self.privileged_users.filter(user__pk=user.pk).exists()
 
     def work_order(self, sample):
         """Return a work order from this prototype and sample."""
-        work = WorkOrder(name=self.name, sample=sample, prototype=self)
+        work = WorkOrder(
+            name=self.name, sample=sample,
+            prototype=self, description=self.description
+        )
         work.save()
         for job_proto in self.job_protos.all():
             job_proto.job_order(work)
