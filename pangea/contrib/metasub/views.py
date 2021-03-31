@@ -78,7 +78,7 @@ def fuzzy_taxa_search_samples(request):
         logger.warn('metasub_taxasearch__no_query_param')
         raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
     results = fuzzy_taxa_search(query)
-    send_metadata = request.query_params.get('metadata', True)
+    send_metadata = request.query_params.get('metadata', False)
     if send_metadata:
         for taxa_name, vals in results.items():
             for val in vals:
