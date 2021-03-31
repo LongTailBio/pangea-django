@@ -48,6 +48,9 @@ class RemoteObject:
             opts.update(parent.inherited_url_options)
         return opts
 
+    def invalidate_cache(self):
+        self.cache.clear_blob(self)
+
     def get_cached_blob(self):
         return self.cache.get_cached_blob(self)
 

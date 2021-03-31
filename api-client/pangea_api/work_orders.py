@@ -23,6 +23,18 @@ class WorkOrderProto(RemoteObject):
         for wo_blob in blob['results']:
             yield WorkOrder.from_blob(self.knex, wo_blob)
 
+    def get_active_work_order_for_sample(self, sample):
+        for wo in self.get_active_work_orders():
+            if wo.sample == sample.uuid:
+                return wo
+        raise KeyError(f'WorkOrder from Proto {self} not found for sample {sample}')
+
+    def create_work_order_for_sample(self, sample):
+        url = f'samples/{sample.uuid}/work_orders/{self.uuid}'
+        response = self.knex.post(url)
+        wo = WorkOrder.from_uuid(self.knex, response['uuid'])
+        return wo
+
     def __str__(self):
         return f'<Pangea::WorkOrderProto {self.name} {self.uuid} />'
 
@@ -35,6 +47,10 @@ class WorkOrderProto(RemoteObject):
         blob = knex.get(f'work_order_prototypes/{uuid}')
         obj.load_blob(blob)
         return obj
+
+    @classmethod
+    def from_name(cls, knex, name):
+        return cls.from_uuid(knex, name)
 
 
 class WorkOrder(RemoteObject):
@@ -67,6 +83,11 @@ class WorkOrder(RemoteObject):
             obj._modified = False
             yield obj
 
+    def get_job_order_by_name(self, name):
+        jos = {jo.name: jo for jo in self.get_job_orders()}
+        jo = jos[name]
+        return jo
+
     def __str__(self):
         return f'<Pangea::WorkOrder {self.name} {self.uuid} />'
 
@@ -76,8 +97,15 @@ class WorkOrder(RemoteObject):
     @classmethod
     def from_blob(cls, knex, blob):
         obj = cls(knex, blob['name'])
+        obj.blob = blob
         obj.load_blob(blob)
         return obj
+
+    @classmethod
+    def from_uuid(cls, knex, uuid):
+        url = f'work_orders/{uuid}'
+        response = knex.get(url)
+        return cls.from_blob(knex, response)
 
 
 class JobOrder(RemoteObject):
@@ -104,6 +132,15 @@ class JobOrder(RemoteObject):
         url = f'job_orders/{self.uuid}'
         self.knex.patch(url, json=data)
 
+    def _get(self):
+        blob = self.get_cached_blob()
+        if not blob:
+            blob = self.knex.get(f'job_orders/{self.uuid}')
+            self.load_blob(blob)
+            self.cache_blob(blob)
+        else:
+            self.load_blob(blob)
+
     def __str__(self):
         return f'<Pangea::JobOrder {self.name} {self.uuid} />'
 
@@ -117,5 +154,12 @@ class JobOrder(RemoteObject):
     @classmethod
     def from_blob(cls, work_order, blob):
         obj = cls(work_order.knex, work_order)
+        obj.blob = blob
         obj.load_blob(blob)
         return obj
+
+    @classmethod
+    def from_uuid(cls, work_order, uuid):
+        url = f'job_orders/{uuid}'
+        response = work_order.knex.get(url)
+        return cls.from_blob(work_order, response)
