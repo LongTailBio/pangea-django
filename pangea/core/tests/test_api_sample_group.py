@@ -356,3 +356,14 @@ class SampleGroupMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertIn('Test Sample', [sample['name'] for sample in response.data['results']])
+
+    def test_get_sample_group_samples(self):
+        self.sample_group.sample_set.add(self.sample)
+
+        url = reverse('sample-group-sample-links', kwargs={'pk': self.sample_group.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['n_samples'], 1)
+        self.assertIn('Test Sample', [sample['name'] for sample in response.data['sample_links']])
+

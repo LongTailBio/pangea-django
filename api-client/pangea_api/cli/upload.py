@@ -49,7 +49,7 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
 
     `sample_names` is a list of samples with one line per sample
     """
-    knex = state.knex()
+    knex = state.get_knex()
     org = Organization(knex, org_name).get()
     lib = org.sample_group(library_name).get()
     tags = [Tag(knex, tag_name).get() for tag_name in tag]
@@ -104,7 +104,7 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
 
     `sample_names` is a list of samples with one line per sample
     """
-    knex = state.knex()
+    knex = state.get_knex()
     org = Organization(knex, org_name).get()
     lib = org.sample_group(library_name).get()
     tags = [Tag(knex, tag_name).get() for tag_name in tag]
@@ -136,9 +136,9 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
 @lib_arg
 @click.argument('table', type=click.File('rb'))
 def cli_metadata(state, overwrite,
-                 create, update, endpoint, index_col, encoding,
+                 create, update, index_col, encoding,
                  org_name, library_name, table):
-    state = state.knex()
+    knex = state.get_knex()
     tbl = pd.read_csv(table, index_col=index_col, encoding=encoding)
     tbl.index = tbl.index.to_series().map(str)
     org = Organization(knex, org_name).get()

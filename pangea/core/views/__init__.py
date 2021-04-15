@@ -24,6 +24,7 @@ from .sample_group_views import (
     SampleGroupCreateView,
     SampleGroupDetailsView,
     SampleGroupSamplesView,
+    get_sample_links_in_group,
     get_sample_metadata_in_group,
     get_sample_ar_counts_in_group,
     get_sample_group_manifest,
