@@ -230,7 +230,7 @@ def _get_grp_check_permissions(request, pk):
 def get_sample_links_in_group(request, pk):
     """Return a list of sample links which contain only the sample name and UUID."""
     grp = _get_grp_check_permissions(request, pk)
-    blob = {'n_samples': 0, 'sample_links': []}
+    blob = {'count': 0, 'links': []}
     for sample in grp.sample_set.all():
         blob['n_samples'] += 1
         blob['sample_links'].append({

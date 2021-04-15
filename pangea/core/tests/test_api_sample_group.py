@@ -364,6 +364,6 @@ class SampleGroupMembershipTests(APITestCase):
         response = self.client.get(url, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['n_samples'], 1)
-        self.assertIn('Test Sample', [sample['name'] for sample in response.data['sample_links']])
+        self.assertEqual(response.data['count'], 1)
+        self.assertIn('Test Sample', [sample['name'] for sample in response.data['links']])
 
