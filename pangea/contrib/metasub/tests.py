@@ -80,6 +80,24 @@ class MetaSUBTests(APITestCase):
         self.assertIn('Test Sample 01', ecoli_names)
         self.assertIn('Test Sample 02', ecoli_names)
 
+    def test_fuzzy_match_samples_with_metadata(self):
+        """Check that a detailed query returns appropriatelylimited results."""
+        url = reverse('metasub-sample-taxa-search')
+        data = {'query': 'e', 'metadata': 'true'}
+        response = self.client.get(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']['enterococcus']), 1)
+        entero_sample = response.data['results']['enterococcus'][0]
+        self.assertEqual(entero_sample['sample_name'], 'Test Sample 01')
+        ecoli_samples = response.data['results']['e. coli']
+        self.assertEqual(len(ecoli_samples), 2)
+        ecoli_names = [sample['sample_name'] for sample in ecoli_samples]
+        self.assertIn('Test Sample 01', ecoli_names)
+        self.assertIn('Test Sample 02', ecoli_names)
+        self.assertIn('sample_metadata', ecoli_samples[0])
+
     def test_detailed_match_cities(self):
         """Check that a detailed query returns appropriatelylimited results."""
         url = reverse('metasub-city-taxa-search')

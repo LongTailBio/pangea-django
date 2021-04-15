@@ -17,6 +17,10 @@ from .models import (
     Project,
     Pipeline,
     PipelineModule,
+    JobOrder,
+    WorkOrder,
+    JobOrderProto,
+    WorkOrderProto
 )
 
 logger = structlog.get_logger(__name__)
@@ -304,3 +308,56 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
             ret,
             instance.analysis_result.sample_group.organization,
         )
+
+
+class JobOrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = JobOrder
+        fields = ('uuid', 'name', 'status', 'work_order', 'pipeline_module',
+                  'analysis_result', 'resources_used', 'resources_needed',
+                  'created_at', 'updated_at', 'description')
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class WorkOrderSerializer(serializers.ModelSerializer):
+
+    job_order_objs = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    progress_summary = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WorkOrder
+        fields = ('uuid', 'name', 'priority', 'sample',
+                  'created_at', 'updated_at', 'description',
+                  'job_order_objs', 'status', 'progress_summary')
+        read_only_fields = ('created_at', 'updated_at')
+
+    def get_status(self, obj):
+        return obj.status
+
+    def get_progress_summary(self, obj):
+        return obj.progress_summary
+
+    def get_job_order_objs(self, obj):
+        return [
+            JobOrderSerializer(job_order).data
+            for job_order in obj.jobs.all()
+        ]
+
+class JobOrderProtoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = JobOrderProto
+        fields = ('uuid', 'name', 'pipeline_module', 'resources_needed',
+                  'work_order_proto', 'created_at', 'updated_at', 'description')
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class WorkOrderProtoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WorkOrderProto
+        fields = ('uuid', 'name', 'created_at', 'updated_at', 'description')
+        read_only_fields = ('created_at', 'updated_at')
+

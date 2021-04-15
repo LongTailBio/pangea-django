@@ -59,3 +59,14 @@ from .pipeline_views import (
     PipelineNameDetailsView,
     get_module_in_pipeline,
 )
+from .work_order_views import (
+    WorkOrderProtoListView,
+    WorkOrderProtoRetrieveView,
+    JobOrderProtoListView,
+    JobOrderProtoRetrieveView,
+    WorkOrderRetrieveView,
+    JobOrderDetailView,
+    create_new_work_order,
+    SampleWorkOrdersView,
+    WorkOrderProtoWorkOrderView,
+)

@@ -130,6 +130,30 @@ class S3BucketPermission(permissions.BasePermission):
         return has_org_membership
 
 
+class WorkOrderPermission(permissions.BasePermission):
+    """Require organization membership in order to write to sample group."""
+
+    def has_object_permission(self, request, view, obj):
+        # Allow all reads if the group is public
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+        group = obj.sample.library.group
+        return group.user_can_access(request.user)
+
+
+class JobOrderPermission(permissions.BasePermission):
+    """Require organization membership in order to write to sample group."""
+
+    def has_object_permission(self, request, view, obj):
+        # Allow all reads if the group is public
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+        if request.method in permissions.SAFE_METHODS:
+            group = obj.work_order.sample.library.group
+            return group.user_can_access(request.user)
+        return obj.user_is_privileged(request.user)
+
+
 class ProjectPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group."""
 
@@ -157,6 +181,14 @@ class SampleGroupPermission(permissions.BasePermission):
         return obj.user_can_access(request.user)
 
 
+def sample_work_order_permissions(request, sample, work_order_uuid):
+    work_order = sample.work_orders.filter(pk=work_order_uuid)
+    if not work_order.exists():
+        return False
+    work_order = work_order.get()
+    return work_order.user_is_privileged(request.user)
+
+
 class SamplePermission(permissions.BasePermission):
     """Require organization membership in order to write to sample."""
 
@@ -165,6 +197,11 @@ class SamplePermission(permissions.BasePermission):
         grp = obj.library.group
         if request.method in permissions.SAFE_METHODS and grp.is_public:
             return True
+
+        work_order_uuid = request.query_params.get('work_order_uuid', None)
+        if work_order_uuid:
+            # if the client requests using a work order we require that they are a privileged user
+            return sample_work_order_permissions(request, obj, work_order_uuid)
 
         # Require auth for write operations
         return obj.user_can_access(request.user)
@@ -179,6 +216,11 @@ class SampleAnalysisResultPermission(permissions.BasePermission):
         is_public = (not obj.is_private) and grp.is_public
         if request.method in permissions.SAFE_METHODS and is_public:
             return True
+
+        work_order_uuid = request.query_params.get('work_order_uuid', None)
+        if work_order_uuid:
+            # if the client requests using a work order we require that they are a privileged user
+            return sample_work_order_permissions(request, obj.sample, work_order_uuid)
 
         # Require auth for write operations
         return obj.user_can_access(request.user)
@@ -207,6 +249,11 @@ class SampleAnalysisResultFieldPermission(permissions.BasePermission):
         # Allow all reads if group is public
         if request.method in permissions.SAFE_METHODS and is_public:
             return True
+
+        work_order_uuid = request.query_params.get('work_order_uuid', None)
+        if work_order_uuid:
+            # if the client requests using a work order we require that they are a privileged user
+            return sample_work_order_permissions(request, obj.analysis_result.sample, work_order_uuid)
 
         # Require auth for write operations
         return obj.user_can_access(request.user)

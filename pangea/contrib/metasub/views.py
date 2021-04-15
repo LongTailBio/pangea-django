@@ -77,8 +77,13 @@ def fuzzy_taxa_search_samples(request):
     if query is None:
         logger.warn('metasub_taxasearch__no_query_param')
         raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
-
     results = fuzzy_taxa_search(query)
+    send_metadata = request.query_params.get('metadata', False)
+    if send_metadata:
+        for taxa_name, vals in results.items():
+            for val in vals:
+                sample = Sample.objects.get(uuid=val['sample_uuid'])
+                val['sample_metadata'] = sample.metadata
     logger.info(f'metasub__responding_to_sample_query', query=query)
     return Response({'results': results})
 
@@ -104,8 +109,8 @@ def fuzzy_taxa_search_cities(request):
                     'city_name': city,
                 }
                 try:
-                    city_results[taxa_name][city]['latitude'] = val['sample_metadata']['city_latitude']
-                    city_results[taxa_name][city]['longitude'] = val['sample_metadata']['city_longitude']
+                    city_results[taxa_name][city]['latitude'] = sample.metadata['city_latitude']
+                    city_results[taxa_name][city]['longitude'] = sample.metadata['city_longitude']
                 except KeyError:
                     pass
             city_results[taxa_name][city]['all_relative_abundances'].append(val['relative_abundance'])
