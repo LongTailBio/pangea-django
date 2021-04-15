@@ -76,6 +76,33 @@ def cli_create_samples(state, sample_name_list, org_name, library_name, sample_n
         print(sample, file=state.outfile)
 
 
+@cli_create.command('sample-with-data')
+@use_common_state
+@click.option('-m', '--module-name', type=click.Choice(['raw::paired_short_reads', 'raw::single_short_reads']))
+@click.argument('org_name')
+@click.argument('library_name')
+@click.argument('sample_name')
+@click.argument('data_files', nargs=-1)
+def cli_create_samples(state, module_name, org_name, library_name, sample_name, data_files):
+    """Create samples in the specified group.
+
+    `sample_names` is a list of samples with one line per sample
+    """
+    knex = state.get_knex()
+    org = Organization(knex, org_name).get()
+    lib = org.sample_group(library_name, is_library=True).get()
+    sample = lib.sample(sample_name).idem()
+    ar = sample.analysis_result(module_name).create()
+    if module_name == 'raw::single_short_reads':
+        r1 = ar.field('reads').create()
+        r1.upload_file(data_files[0])
+    elif module_name == 'raw::paired_short_reads':
+        r1 = ar.field('read_1').create()
+        r1.upload_file(data_files[0])
+        r2 = ar.field('read_2').create()
+        r2.upload_file(data_files[1])
+    click.echo('success', err=True)
+
 @cli_create.command('sample-ar')
 @use_common_state
 @click.option('-r', '--replicate')

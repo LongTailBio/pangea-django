@@ -21,6 +21,7 @@ class RemoteObjectOverwriteError(RemoteObjectError):
 
 class RemoteObject:
     optional_remote_fields = []
+    url_options = {}
 
     def __init__(self, *args, **kwargs):
         self._already_fetched = False
@@ -38,6 +39,14 @@ class RemoteObject:
         if key in self.remote_fields or key == self.parent_field:
             logger.debug(f'Setting RemoteObject modified. key "{key}"')
             super(RemoteObject, self).__setattr__('_modified', True)
+
+    @property
+    def inherited_url_options(self):
+        opts = self.url_options.copy()
+        if self.parent_field:
+            parent = getattr(self, self.parent_field)
+            opts.update(parent.inherited_url_options)
+        return opts
 
     def get_cached_blob(self):
         return self.cache.get_cached_blob(self)
