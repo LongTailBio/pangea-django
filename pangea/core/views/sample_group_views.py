@@ -229,14 +229,18 @@ def _get_grp_check_permissions(request, pk):
 @api_view(['GET'])
 def get_sample_links_in_group(request, pk):
     """Return a list of sample links which contain only the sample name and UUID."""
+    metadata = request.query_params.get('metadata', False)
     grp = _get_grp_check_permissions(request, pk)
     blob = {'count': 0, 'links': []}
     for sample in grp.sample_set.all():
         blob['count'] += 1
-        blob['links'].append({
+        link = {
             'uuid': sample.uuid,
             'name': sample.name,
-        })
+        }
+        if metadata:
+            link['metadata'] = sample.metadata
+        blob['links'].append(link)
     return Response(blob)
 
 @api_view(['GET'])
