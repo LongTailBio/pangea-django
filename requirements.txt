@@ -54,3 +54,4 @@ typing-extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_ext
 uritemplate==3.0.1
 urllib3==1.25.8
 Whoosh==2.7.4
+frictionless==4.7.1

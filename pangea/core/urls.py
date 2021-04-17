@@ -4,15 +4,20 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from .views import (
     PangeaUserListView, PangeaUserDetailsView,
     get_user_detail_by_djoser_id, get_current_user_detail,
+
     OrganizationCreateView, OrganizationDetailsView,
     OrganizationUsersView,
+
     S3ApiKeyCreateView, S3ApiKeyDetailsView,
     S3BucketCreateView, S3BucketDetailsView,
+
     SampleGroupCreateView, SampleGroupDetailsView,
     SampleGroupSamplesView, get_sample_group_manifest,
     ProjectCreateView, ProjectDetailsView, ProjectSampleGroupsView,
     get_sample_ar_counts_in_group, get_sample_metadata_in_group,
     get_sample_data_in_group, get_sample_links_in_group,
+    generate_sample_metadata_schema, validate_sample_metadata_schema,
+
     SampleCreateView, SampleDetailsView, bulk_create_samples,
     get_sample_manifest, get_sample_metadata,
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
@@ -20,9 +25,12 @@ from .views import (
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
     post_sample_ar_upload_url, post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url, post_sample_group_ar_complete_multipart_upload_url,
+
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
+
     PipelineCreateView, PipelineDetailsView, PipelineNameDetailsView,
     PipelineModuleCreateView, PipelineModuleDetailsView, get_module_in_pipeline,
+
     WorkOrderProtoListView, WorkOrderProtoRetrieveView,
     JobOrderProtoListView, JobOrderProtoRetrieveView,
     WorkOrderRetrieveView, JobOrderDetailView, create_new_work_order,
@@ -66,6 +74,8 @@ urlpatterns = {
     path('sample_groups/<uuid:pk>/module_counts', get_sample_ar_counts_in_group, name="sample-group-module-counts"),
     path('sample_groups/<uuid:group_pk>/samples', SampleGroupSamplesView.as_view(), name="sample-group-samples"),
     path('sample_groups/<uuid:pk>/sample_links', get_sample_links_in_group, name="sample-group-sample-links"),
+    path('sample_groups/<uuid:pk>/generate_metadata_schema', generate_sample_metadata_schema, name="sample-group-generate-schema"),
+    path('sample_groups/<uuid:pk>/validate_metadata_schema', validate_sample_metadata_schema, name="sample-group-validate-schema"),
 
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('bulk_samples', bulk_create_samples, name='bulk-sample-create'),
