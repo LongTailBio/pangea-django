@@ -55,6 +55,8 @@ class AnalysisResult(AutoCreatedUpdatedMixin):
 
     # If true treat this AR as if it was private regardless of its parent's status
     is_private = models.BooleanField(blank=False, default=False)
+    # set true if the AR should not be automatically shown on the client. Convenience not privacy.
+    is_hidden = models.BooleanField(blank=False, default=False)
 
     class Meta:
         abstract = True
@@ -148,6 +150,7 @@ class AnalysisResultField(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False)
     stored_data = JSONField(blank=False)
+    description = models.TextField(blank=True, default='')
 
     class Meta:
         abstract = True
