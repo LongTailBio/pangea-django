@@ -16,6 +16,8 @@ from pangea.core.models import (
     WorkOrderProto,
     JobOrder,
     JobOrderProto,
+    GroupWorkOrder,
+    GroupWorkOrderProto,
     PrivilegedUser,
     SampleAnalysisResult,
 )
@@ -36,6 +38,7 @@ class WorkOrderTests(APITestCase):
         cls.sample = cls.group.create_sample(name='SMPL_01')
 
     def test_create_work_order(self):
+        """Test API call to create a work order from a sample and a prototype."""
         wop = WorkOrderProto.objects.create(name='test work order')
         url = reverse(
             'sample-create-workorder',
@@ -47,6 +50,20 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['uuid'])
         self.assertTrue(WorkOrder.objects.exists())
+
+    def test_create_group_work_order(self):
+        """Test API call to create a group work order from a group and a prototype."""
+        gwop = GroupWorkOrderProto.objects.create(name='test groupwork order')
+        url = reverse(
+            'sample-group-create-workorder',
+            kwargs={'sample_group_pk': self.group.pk, 'wop_pk': gwop.pk}
+        )
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.post(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['uuid'])
+        self.assertTrue(GroupWorkOrder.objects.exists())
 
     def test_modify_job_order(self):
         wop = WorkOrderProto.objects.create(name='test work order')
@@ -74,13 +91,23 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_list_work_order_protos(self):
+        """Test that we can list all existing work order prototypes."""
         wop = WorkOrderProto.objects.create(name='test work order')
         url = reverse('work-order-proto-list')
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
 
+    def test_list_group_work_order_protos(self):
+        """Test that we can list all existing group work order prototypes."""
+        gwop = GroupWorkOrderProto.objects.create(name='test group work order')
+        url = reverse('group-work-order-proto-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+
     def test_list_work_orders_in_work_order_proto(self):
+        """Test that we can list the work orders made from a work order prototype."""
         wop = WorkOrderProto.objects.create(name='test work order')
         wo = wop.work_order(self.sample)
         url = reverse('work-order-proto-list-work-orders', kwargs={'pk': wop.pk})
@@ -90,6 +117,23 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['uuid'], str(wo.uuid))
+
+    def test_list_group_work_orders_in_group_work_order_proto(self):
+        """Test that we can list the group work orders made from a group work order prototype."""
+        gwop = GroupWorkOrderProto.objects.create(name='test group work order')
+        wop = WorkOrderProto.objects.create(name='test work order')
+        gwop.work_order_protos.add(wop)
+        gwop.save()
+        gwo = gwop.work_order(self.group)
+
+        url = reverse('group-work-order-proto-list-group-work-orders', kwargs={'pk': gwop.pk})
+        PrivilegedUser.objects.create(user=self.user, work_order_proto=wop)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['uuid'], str(gwo.uuid))
 
     def test_list_work_orders_in_work_order_proto_unauth(self):
         wop = WorkOrderProto.objects.create(name='test work order')
@@ -112,13 +156,23 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(len(response.data['results']), 1)
 
     def test_get_work_order_proto_detail(self):
+        """Test that we can get info for a work order prototype."""
         wop = WorkOrderProto.objects.create(name='test work order')
         url = reverse('work-order-proto-detail', kwargs={'pk': wop.pk})
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['uuid'], str(wop.uuid))
 
+    def test_get_group_work_order_proto_detail(self):
+        """Test that we can get info for a group work order prototype."""
+        gwop = GroupWorkOrderProto.objects.create(name='test group work order')
+        url = reverse('group-work-order-proto-detail', kwargs={'pk': gwop.pk})
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['uuid'], str(gwop.uuid))
+
     def test_get_work_order_detail(self):
+        """Test that we can get info for a work order."""
         wop = WorkOrderProto.objects.create(name='test work order')
         wo = wop.work_order(self.sample)
         url = reverse('work-order-detail', kwargs={'pk': wo.pk})
@@ -127,6 +181,17 @@ class WorkOrderTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['uuid'], str(wo.uuid))
+
+    def test_get_group_work_order_detail(self):
+        """Test that we can get info for a group work order."""
+        gwop = GroupWorkOrderProto.objects.create(name='test group work order')
+        gwo = gwop.work_order(self.group)
+        url = reverse('group-work-order-detail', kwargs={'pk': gwo.pk})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['uuid'], str(gwo.uuid))
 
     def test_get_work_order_detail_extended(self):
         wop = WorkOrderProto.objects.create(name='test work order')
@@ -152,6 +217,7 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_work_order_in_sample(self):
+        """Test that we can access all work orders for a sample."""
         wop = WorkOrderProto.objects.create(name='test work order')
         wo = wop.work_order(self.sample)
         url = reverse('sample-list-workorder', kwargs={'sample_pk': self.sample.pk})
@@ -161,6 +227,18 @@ class WorkOrderTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
         self.assertEqual(response.data['results'][0]['uuid'], str(wo.uuid))
+
+    def test_get_group_work_order_in_sample_group(self):
+        """Test that we can access all group work orders for a smaple group."""
+        gwop = GroupWorkOrderProto.objects.create(name='test group work order')
+        gwo = gwop.work_order(self.group)
+        url = reverse('sample-group-list-workorder', kwargs={'sample_group_pk': self.group.pk})
+        self.organization.users.add(self.user)
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['uuid'], str(gwo.uuid))
 
     def test_get_job_order_proto_detail(self):
         wop = WorkOrderProto.objects.create(name='test work order')

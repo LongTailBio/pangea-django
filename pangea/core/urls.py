@@ -4,29 +4,41 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from .views import (
     PangeaUserListView, PangeaUserDetailsView,
     get_user_detail_by_djoser_id, get_current_user_detail,
+
     OrganizationCreateView, OrganizationDetailsView,
     OrganizationUsersView,
+
     S3ApiKeyCreateView, S3ApiKeyDetailsView,
     S3BucketCreateView, S3BucketDetailsView,
+
     SampleGroupCreateView, SampleGroupDetailsView,
     SampleGroupSamplesView, get_sample_group_manifest,
+
     ProjectCreateView, ProjectDetailsView, ProjectSampleGroupsView,
+
     get_sample_ar_counts_in_group, get_sample_metadata_in_group,
     get_sample_data_in_group,
+
     SampleCreateView, SampleDetailsView,
     get_sample_manifest, get_sample_metadata,
+
     SampleAnalysisResultCreateView, SampleAnalysisResultDetailsView,
     SampleGroupAnalysisResultCreateView, SampleGroupAnalysisResultDetailsView,
     SampleAnalysisResultFieldCreateView, SampleAnalysisResultFieldDetailsView,
     post_sample_ar_upload_url, post_sample_ar_complete_multipart_upload_url,
     post_sample_group_ar_upload_url, post_sample_group_ar_complete_multipart_upload_url,
     SampleGroupAnalysisResultFieldCreateView, SampleGroupAnalysisResultFieldDetailsView,
+
     PipelineCreateView, PipelineDetailsView, PipelineNameDetailsView,
     PipelineModuleCreateView, PipelineModuleDetailsView, get_module_in_pipeline,
+
     WorkOrderProtoListView, WorkOrderProtoRetrieveView,
     JobOrderProtoListView, JobOrderProtoRetrieveView,
-    WorkOrderRetrieveView, JobOrderDetailView, create_new_work_order,
+    GroupWorkOrderProtoListView, GroupWorkOrderProtoRetrieveView,
+    WorkOrderRetrieveView, GroupWorkOrderRetrieveView, JobOrderDetailView,
+    create_new_work_order, create_new_group_work_order,
     SampleWorkOrdersView, WorkOrderProtoWorkOrderView,
+    SampleGroupGroupWorkOrdersView, GroupWorkOrderProtoWorkOrderView,
 )
 from .search import SearchList
 
@@ -65,6 +77,8 @@ urlpatterns = {
     path('sample_groups/<uuid:pk>/downloads/<str:module_name>', get_sample_data_in_group, name="sample-group-download"),
     path('sample_groups/<uuid:pk>/module_counts', get_sample_ar_counts_in_group, name="sample-group-module-counts"),
     path('sample_groups/<uuid:group_pk>/samples', SampleGroupSamplesView.as_view(), name="sample-group-samples"),
+    path('sample_groups/<uuid:sample_group_pk>/work_orders', SampleGroupGroupWorkOrdersView.as_view(), name="sample-group-list-workorder"),
+    path('sample_groups/<uuid:sample_group_pk>/work_orders/<uuid:wop_pk>', create_new_group_work_order, name="sample-group-create-workorder"),
 
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('samples/<uuid:pk>', SampleDetailsView.as_view(), name="sample-details"),
@@ -80,6 +94,10 @@ urlpatterns = {
     path('job_order_prototypes', JobOrderProtoListView.as_view(), name='job-order-proto-list'),
     path('job_order_prototypes/<uuid:pk>', JobOrderProtoRetrieveView.as_view(), name='job-order-proto-detail'),
     path('job_orders/<uuid:pk>', JobOrderDetailView.as_view(), name='job-order-detail'),
+    path('group_work_order_prototypes', GroupWorkOrderProtoListView.as_view(), name='group-work-order-proto-list'),
+    path('group_work_order_prototypes/<uuid:pk>', GroupWorkOrderProtoRetrieveView.as_view(), name='group-work-order-proto-detail'),
+    path('group_work_order_prototypes/<uuid:pk>/work_orders', GroupWorkOrderProtoWorkOrderView.as_view(), name='group-work-order-proto-list-group-work-orders'),
+    path('group_work_orders/<uuid:pk>', GroupWorkOrderRetrieveView.as_view(), name='group-work-order-detail'),
 
     path('sample_ars', SampleAnalysisResultCreateView.as_view(), name="sample-ars-create"),
     path('sample_ars/<uuid:pk>', SampleAnalysisResultDetailsView.as_view(), name="sample-ars-details"),

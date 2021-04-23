@@ -3,7 +3,7 @@ from django.db import models
 import uuid
 from django.contrib.postgres.fields import JSONField
 
-from .work_order import JobOrder, WorkOrder
+from .work_order import JobOrder, WorkOrder, GroupWorkOrder
 
 
 class JobOrderProto(AutoCreatedUpdatedMixin):
@@ -54,3 +54,33 @@ class WorkOrderProto(AutoCreatedUpdatedMixin):
         for job_proto in self.job_protos.all():
             job_proto.job_order(work)
         return work
+
+
+class GroupWorkOrderProto(AutoCreatedUpdatedMixin):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.TextField(blank=False, db_index=True)
+    description = models.TextField(blank=True, default='')
+    work_order_protos = models.ManyToManyField('WorkOrderProto', null=True, blank=True)
+
+    def user_is_privileged(self, user):
+        privileged, empty = True, True
+        for wop in self.work_order_protos.all():
+            empty = False
+            privileged = privileged and wop.user_is_privileged(user)
+        if empty:
+            return False
+        return privileged
+
+    def work_order(self, sample_group):
+        """Return a GroupWorkOrder from this prototype and sample group."""
+        work = GroupWorkOrder(
+            name=self.name, sample_group=sample_group,
+            prototype=self, description=self.description,
+        )
+        for sample in sample_group.sample_set.all():
+            for wop in self.work_order_protos.all():
+                work.work_orders.add(wop.work_order(sample))
+        work.save()
+        return work
+
+
