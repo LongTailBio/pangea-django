@@ -24,6 +24,8 @@ from .models import (
 
     WorkOrder,
     WorkOrderProto,
+    GroupWorkOrder,
+    GroupWorkOrderProto,
     JobOrder,
     JobOrderProto,
     PrivilegedUser,
@@ -103,6 +105,11 @@ class WorkOrderAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
+@admin.register(GroupWorkOrder)
+class GroupWorkOrderAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
 @admin.register(JobOrder)
 class JobOrderAdmin(admin.ModelAdmin):
     list_display = ('name', 'work_order')
@@ -110,6 +117,11 @@ class JobOrderAdmin(admin.ModelAdmin):
 
 @admin.register(WorkOrderProto)
 class WorkOrderProtoAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+
+
+@admin.register(GroupWorkOrderProto)
+class GroupWorkOrderProtoAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
