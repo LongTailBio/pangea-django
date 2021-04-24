@@ -24,4 +24,6 @@ from .work_orders import (
     JobOrderProto,
     WorkOrderProto,
     PrivilegedUser,
+    GroupWorkOrder,
+    GroupWorkOrderProto,
 )

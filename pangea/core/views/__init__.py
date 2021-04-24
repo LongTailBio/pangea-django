@@ -63,12 +63,18 @@ from .pipeline_views import (
 )
 from .work_order_views import (
     WorkOrderProtoListView,
+    GroupWorkOrderProtoListView,
     WorkOrderProtoRetrieveView,
+    GroupWorkOrderProtoRetrieveView,
     JobOrderProtoListView,
     JobOrderProtoRetrieveView,
     WorkOrderRetrieveView,
+    GroupWorkOrderRetrieveView,
     JobOrderDetailView,
     create_new_work_order,
+    create_new_group_work_order,
     SampleWorkOrdersView,
     WorkOrderProtoWorkOrderView,
+    SampleGroupGroupWorkOrdersView,
+    GroupWorkOrderProtoWorkOrderView,
 )

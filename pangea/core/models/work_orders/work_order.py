@@ -62,3 +62,36 @@ class WorkOrder(AutoCreatedUpdatedMixin):
         if statuses.get(JobOrderStatus.SUCCESS, 0) == self.jobs.count():
             return JobOrderStatus.SUCCESS
         return JobOrderStatus.WORKING
+
+
+class GroupWorkOrder(AutoCreatedUpdatedMixin):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.TextField(blank=False, db_index=True)
+    priority = models.IntegerField(default=100)
+    sample_group = models.ForeignKey('SampleGroup', on_delete=models.CASCADE, related_name='work_orders')
+    prototype = models.ForeignKey('GroupWorkOrderProto', on_delete=models.CASCADE)
+    description = models.TextField(blank=True, default='')
+    work_orders = models.ManyToManyField('WorkOrder', null=True, blank=True)
+
+    def user_is_privileged(self, user):
+        return self.prototype.user_is_privileged(user)
+
+    @property
+    def progress_summary(self):
+        statuses = {'n_jobs': 0}
+        for wo in self.work_orders.all():
+            for status, count in wo.progress_summary.items():
+                statuses[status] = count + statuses.get(status, 0)
+                statuses['n_jobs'] += count
+        return statuses
+
+    @property
+    def status(self):
+        statuses = self.progress_summary
+        if statuses.get(JobOrderStatus.ERROR, 0) > 0:
+            return JobOrderStatus.ERROR
+        if statuses.get(JobOrderStatus.PENDING, 0) == statuses['n_jobs']:
+            return JobOrderStatus.PENDING
+        if statuses.get(JobOrderStatus.SUCCESS, 0) == statuses['n_jobs']:
+            return JobOrderStatus.SUCCESS
+        return JobOrderStatus.WORKING

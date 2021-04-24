@@ -28,12 +28,12 @@ itypes==1.2.0
 Jinja2==2.11.3
 jmespath==0.9.5
 MarkupSafe==1.1.1
-numpy @ file:///Users/runner/miniforge3/conda-bld/numpy_1616933195014/work
+numpy==1.20.2 
 oauthlib==3.1.0
 packaging==20.9
 pandas==1.2.4
 Pillow==8.2.0
-psycopg2 @ file:///Users/runner/miniforge3/conda-bld/psycopg2_1614021195568/work
+psycopg2==2.8.6 
 pycparser==2.20
 PyJWT==2.0.1
 pyparsing==2.4.7
@@ -50,7 +50,7 @@ social-auth-app-django==4.0.0
 social-auth-core==4.1.0
 sqlparse==0.3.0
 structlog==20.1.0
-typing-extensions @ file:///home/conda/feedstock_root/build_artifacts/typing_extensions_1602702424206/work
+typing-extensions==3.7.4.3 
 uritemplate==3.0.1
 urllib3==1.25.8
 Whoosh==2.7.4

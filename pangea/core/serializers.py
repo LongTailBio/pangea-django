@@ -19,8 +19,10 @@ from .models import (
     PipelineModule,
     JobOrder,
     WorkOrder,
+    GroupWorkOrder,
     JobOrderProto,
-    WorkOrderProto
+    WorkOrderProto,
+    GroupWorkOrderProto,
 )
 
 logger = structlog.get_logger(__name__)
@@ -345,6 +347,38 @@ class WorkOrderSerializer(serializers.ModelSerializer):
             for job_order in obj.jobs.all()
         ]
 
+
+class GroupWorkOrderSerializer(serializers.ModelSerializer):
+
+    work_order_links = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    progress_summary = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GroupWorkOrder
+        fields = ('uuid', 'name', 'priority', 'sample_group',
+                  'created_at', 'updated_at', 'description',
+                  'work_order_links', 'status', 'progress_summary',
+                  'work_orders',)
+        read_only_fields = ('created_at', 'updated_at')
+
+    def get_status(self, obj):
+        return obj.status
+
+    def get_progress_summary(self, obj):
+        return obj.progress_summary
+
+    def get_work_order_links(self, obj):
+        return [
+            {
+                'name': wo.name,
+                'uuid': wo.uuid,
+                'status': wo.status
+            }
+            for wo in obj.work_orders.all()
+        ]
+
+
 class JobOrderProtoSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -359,5 +393,13 @@ class WorkOrderProtoSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkOrderProto
         fields = ('uuid', 'name', 'created_at', 'updated_at', 'description')
+        read_only_fields = ('created_at', 'updated_at')
+
+
+class GroupWorkOrderProtoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = GroupWorkOrderProto
+        fields = ('uuid', 'name', 'created_at', 'updated_at', 'description', 'work_order_protos')
         read_only_fields = ('created_at', 'updated_at')
 

@@ -154,6 +154,17 @@ class JobOrderPermission(permissions.BasePermission):
         return obj.user_is_privileged(request.user)
 
 
+class GroupWorkOrderPermission(permissions.BasePermission):
+    """Require organization membership in order to write to sample group."""
+
+    def has_object_permission(self, request, view, obj):
+        # Allow all reads if the group is public
+        if not bool(request.user and request.user.is_authenticated):
+            return False
+        group = obj.sample_group
+        return group.user_can_access(request.user)
+
+
 class ProjectPermission(permissions.BasePermission):
     """Require organization membership in order to write to sample group."""
 
