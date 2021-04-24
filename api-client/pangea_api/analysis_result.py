@@ -4,6 +4,7 @@ import json
 import requests
 import time
 import logging
+from pathlib import Path
 from os.path import join, basename, getsize
 
 from .remote_object import RemoteObject, RemoteObjectError
@@ -434,7 +435,8 @@ class AnalysisResultField(RemoteObject):
         return self
 
     def upload_file(self, filepath, multipart_thresh=FIVE_MB, **kwargs):
-        file_size = getsize(filepath)
+        resolved_path = Path(filepath).resolve()
+        file_size = getsize(resolved_path)
         if file_size >= multipart_thresh:
             return self.upload_large_file(filepath, file_size, **kwargs)
         return self.upload_small_file(filepath)

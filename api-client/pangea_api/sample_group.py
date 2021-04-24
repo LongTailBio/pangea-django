@@ -20,12 +20,13 @@ class SampleGroup(RemoteObject):
     ]
     parent_field = 'org'
 
-    def __init__(self, knex, org, name, metadata={}, is_library=False):
+    def __init__(self, knex, org, name, metadata={}, is_library=False, is_public=False):
         super().__init__(self)
         self.knex = knex
         self.org = org
         self.name = name
         self.is_library = is_library
+        self.is_public = is_public
         self._sample_cache = []
         self._deleted_sample_cache = []
         self._get_sample_cache = []

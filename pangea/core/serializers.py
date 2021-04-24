@@ -212,7 +212,7 @@ class SampleAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample', 'created_at', 'updated_at',
             'sample_obj', 'description', 'metadata',
-            'is_private', 'pipeline_module', 'pipeline_module_obj',
+            'is_private', 'is_hidden', 'pipeline_module', 'pipeline_module_obj',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_obj', 'pipeline_module_obj')
 
@@ -228,7 +228,7 @@ class SampleGroupAnalysisResultSerializer(serializers.ModelSerializer):
             'uuid', 'module_name', 'replicate',
             'sample_group', 'created_at', 'updated_at',
             'sample_group_obj', 'description', 'metadata',
-            'is_private', 'pipeline_module', 'pipeline_module_obj',
+            'is_private', 'is_hidden', 'pipeline_module', 'pipeline_module_obj',
         )
         read_only_fields = ('created_at', 'updated_at', 'sample_group_obj', 'pipeline_module_obj')
 
@@ -276,7 +276,7 @@ class SampleAnalysisResultFieldSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
             'stored_data', 'analysis_result',
-            'analysis_result_obj',
+            'analysis_result_obj', 'description',
         )
         read_only_fields = ('created_at', 'updated_at', 'analysis_result_obj')
 
@@ -299,7 +299,7 @@ class SampleGroupAnalysisResultFieldSerializer(serializers.ModelSerializer):
         fields = (
             'uuid', 'name', 'created_at', 'updated_at',
             'stored_data', 'analysis_result',
-            'analysis_result_obj',
+            'analysis_result_obj', 'description',
         )
         read_only_fields = ('created_at', 'updated_at', 'analysis_result_obj')
 
@@ -378,6 +378,7 @@ class GroupWorkOrderSerializer(serializers.ModelSerializer):
             for wo in obj.work_orders.all()
         ]
 
+
 class JobOrderProtoSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -394,9 +395,11 @@ class WorkOrderProtoSerializer(serializers.ModelSerializer):
         fields = ('uuid', 'name', 'created_at', 'updated_at', 'description')
         read_only_fields = ('created_at', 'updated_at')
 
+
 class GroupWorkOrderProtoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = GroupWorkOrderProto
         fields = ('uuid', 'name', 'created_at', 'updated_at', 'description', 'work_order_protos')
         read_only_fields = ('created_at', 'updated_at')
+

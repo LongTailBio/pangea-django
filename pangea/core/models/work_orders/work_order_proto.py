@@ -6,6 +6,7 @@ from django.contrib.postgres.fields import JSONField
 from .work_order import JobOrder, WorkOrder, GroupWorkOrder
 
 
+
 class JobOrderProto(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(blank=False, db_index=True)
@@ -82,5 +83,3 @@ class GroupWorkOrderProto(AutoCreatedUpdatedMixin):
                 work.work_orders.add(wop.work_order(sample))
         work.save()
         return work
-
-

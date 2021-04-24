@@ -2,6 +2,7 @@
 from .organization import Organization
 from .sample_group import SampleGroup
 from .sample import Sample
+from .analysis_result import SampleAnalysisResult
 
 from functools import lru_cache
 
@@ -38,6 +39,18 @@ def sample_from_blob(knex, blob, already_fetched=True, modified=False):
     return sample
 
 
+def sample_ar_from_blob(knex, blob, already_fetched=True, modified=False):
+    sample = sample_from_blob(
+        knex, blob['sample_obj'],
+        already_fetched=already_fetched, modified=modified
+    )
+    ar = SampleAnalysisResult(knex, sample, blob['module_name'], replicate=blob['replicate'], metadata=blob['metadata'])
+    ar.load_blob(blob)
+    ar._already_fetched = already_fetched
+    ar._modified = modified
+    return ar
+
+
 def sample_group_from_uuid(knex, uuid):
     blob = knex.get(f'sample_groups/{uuid}')
     sample = sample_group_from_blob(knex, blob)
@@ -48,3 +61,8 @@ def sample_from_uuid(knex, uuid):
     blob = knex.get(f'samples/{uuid}')
     sample = sample_from_blob(knex, blob)
     return sample
+
+def sample_ar_from_uuid(knex, uuid):
+    blob = knex.get(f'sample_ars/{uuid}')
+    ar = sample_ar_from_blob(knex, blob)
+    return ar

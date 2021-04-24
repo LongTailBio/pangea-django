@@ -1,10 +1,17 @@
 # Pangea
 
-Documentation may be found [here](https://longtailbio.github.io/pangea-django/).
+Pangea is a service to store and analyze bioinformatics data. It helps researchhers to share data and keep track of projects and analyses.
 
-Built with [Django](https://github.com/django/django).
+This repository contains the code to run a Pangea Web Server as well as a Python-based API to interact with that server.
 
-## Getting Started
+You can see a running instance of Pangea [here](https://pangeabio.io/)
+
+## Command Line Interface and Python API
+
+To interact with an existing Pangea instance you can use the [Python API and attached CLI](https://github.com/LongTailBio/pangea-django/tree/master/api-client)
+
+
+## Running a Pangea Server Locally
 
 ```sh
 pyenv virtualenv 3.8.9 pangea-django
@@ -14,21 +21,6 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-## Developing
+Documentation may be found [here](https://longtailbio.github.io/pangea-django/).
 
-### Changes to Dependencies
-
-Changes to Python dependencies should be committed using the following:
-
-```sh
-pip freeze > requirements.txt
-```
-
-### Creating a `contrib` Module
-
-Use the Django CLI to create the module:
-
-```sh
-mkdir ./pangea/contrib/mymodule
-python manage.py startapp mymodule ./pangea/contrib/mymodule
-```
+Built with [Django](https://github.com/django/django).
