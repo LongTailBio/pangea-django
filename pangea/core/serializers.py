@@ -373,6 +373,8 @@ class GroupWorkOrderSerializer(serializers.ModelSerializer):
             {
                 'name': wo.name,
                 'uuid': wo.uuid,
+                'sample_name': wo.sample.name,
+                'sample_uuid': wo.sample.uuid,
                 'status': wo.status
             }
             for wo in obj.work_orders.all()
