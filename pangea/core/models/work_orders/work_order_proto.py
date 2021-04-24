@@ -78,6 +78,7 @@ class GroupWorkOrderProto(AutoCreatedUpdatedMixin):
             name=self.name, sample_group=sample_group,
             prototype=self, description=self.description,
         )
+        work.save()
         for sample in sample_group.sample_set.all():
             for wop in self.work_order_protos.all():
                 work.work_orders.add(wop.work_order(sample))
