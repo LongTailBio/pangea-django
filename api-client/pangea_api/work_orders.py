@@ -1,6 +1,6 @@
 
 from .remote_object import RemoteObject
-from .blob_constructors import sample_from_uuid
+from .blob_constructors import sample_from_uuid, sample_group_from_uuid
 
 
 class WorkOrderProto(RemoteObject):
@@ -163,3 +163,101 @@ class JobOrder(RemoteObject):
         url = f'job_orders/{uuid}'
         response = work_order.knex.get(url)
         return cls.from_blob(work_order, response)
+
+
+class GroupWorkOrderProto(RemoteObject):
+    remote_fields = [
+        'uuid',
+        'created_at',
+        'updated_at',
+        'name',
+    ]
+    parent_field = None
+
+    def __init__(self, knex, uuid):
+        super().__init__(self)
+        self.knex = knex
+        self.uuid = uuid
+
+    def get_active_work_orders(self):
+        url = f'group_work_order_prototypes/{self.uuid}/work_orders'
+        blob = self.knex.get(url)
+        for wo_blob in blob['results']:
+            yield GroupWorkOrder.from_blob(self.knex, wo_blob)
+
+    def get_active_work_order_for_sample_group(self, group):
+        for wo in self.get_active_work_orders():
+            if wo.sample_group == group.uuid:
+                return wo
+        raise KeyError(f'WorkOrder from Proto {self} not found for group {group}')
+
+    def create_work_order_for_sample_group(self, group):
+        url = f'sample_groups/{group.uuid}/work_orders/{self.uuid}'
+        response = self.knex.post(url)
+        wo = GroupWorkOrder.from_uuid(self.knex, response['uuid'])
+        return wo
+
+    def __str__(self):
+        return f'<Pangea::GroupWorkOrderProto {self.name} {self.uuid} />'
+
+    def __repr__(self):
+        return f'<Pangea::GropWorkOrderProto {self.name} {self.uuid} />'
+
+    @classmethod
+    def from_uuid(cls, knex, uuid):
+        obj = cls(knex, uuid)
+        blob = knex.get(f'group_work_order_prototypes/{uuid}')
+        obj.load_blob(blob)
+        return obj
+
+    @classmethod
+    def from_name(cls, knex, name):
+        return cls.from_uuid(knex, name)
+
+
+class GroupWorkOrder(RemoteObject):
+    remote_fields = [
+        'uuid',
+        'created_at',
+        'updated_at',
+        'name',
+        'work_order_links',
+        'priority',
+        'sample_group',
+        'status',
+    ]
+    parent_field = None
+
+    def __init__(self, knex, name):
+        super().__init__(self)
+        self.knex = knex
+        self.name = name
+
+    def get_sample_group(self):
+        obj = sample_group_from_uuid(self.knex, self.sample_group)
+        obj.url_options['work_order_uuid'] = self.uuid
+        return obj
+
+    def get_work_orders(self):
+        for work_order_link in self.work_order_links:
+            obj = WorkOrder.from_uuid(self, self.knex, work_order_link['uuid'])
+            yield obj
+
+    def __str__(self):
+        return f'<Pangea::GroupWorkOrder {self.name} {self.uuid} />'
+
+    def __repr__(self):
+        return f'<Pangea::GroupWorkOrder {self.name} {self.uuid} />'
+
+    @classmethod
+    def from_blob(cls, knex, blob):
+        obj = cls(knex, blob['name'])
+        obj.blob = blob
+        obj.load_blob(blob)
+        return obj
+
+    @classmethod
+    def from_uuid(cls, knex, uuid):
+        url = f'group_work_orders/{uuid}'
+        response = knex.get(url)
+        return cls.from_blob(knex, response)
