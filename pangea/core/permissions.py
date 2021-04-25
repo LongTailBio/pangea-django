@@ -202,7 +202,7 @@ def sample_work_order_permissions(request, sample, work_order_uuid):
                 'user': request.user,
                 'user_is_authenticated': request.user.is_authenticated,
                 'work_order_uuid': work_order_uuid,
-                'sample': sample,
+                'sample_uuid': sample.uuid,
             }
         )
         return False
@@ -216,7 +216,7 @@ def sample_work_order_permissions(request, sample, work_order_uuid):
             'user_is_authenticated': request.user.is_authenticated,
             'work_order_uuid': work_order_uuid,
             'user_is_privileged': privileged,
-            'sample': sample,
+            'sample_uuid': sample.uuid,
         }
     )
     return privileged
