@@ -36,6 +36,26 @@ class TokenAuth(requests.auth.AuthBase):
         return self.token
 
 
+class PangeaGeneralError(requests.exceptions.HTTPError):
+    pass
+
+
+class PangeaNotFoundError(PangeaGeneralError):
+    pass
+
+
+class PangeaForbiddenError(PangeaGeneralError):
+    pass
+
+
+class PangeaInternalError(PangeaGeneralError):
+    pass
+
+
+class PangeaOtherError(PangeaGeneralError):
+    pass
+
+
 class Knex:
 
     def __init__(self, endpoint_url=DEFAULT_ENDPOINT):
@@ -90,7 +110,15 @@ class Knex:
     def _handle_response(self, response, json_response=True):
         try:
             response.raise_for_status()
-        except:
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 403:
+                raise PangeaForbiddenError(e)
+            if response.status_code == 404:
+                raise PangeaNotFoundError(e)
+            if response.status_code == 500:
+                raise PangeaInternalError(e)
+            raise PangeaOtherError(e)
+        except Exception as e:
             logger.debug(f'Request failed. {response}\n{response.content}')
             raise
         if json_response:

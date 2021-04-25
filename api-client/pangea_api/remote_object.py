@@ -21,7 +21,6 @@ class RemoteObjectOverwriteError(RemoteObjectError):
 
 class RemoteObject:
     optional_remote_fields = []
-    url_options = {}
 
     def __init__(self, *args, **kwargs):
         self._already_fetched = False
@@ -30,6 +29,7 @@ class RemoteObject:
         self.blob = None
         self.uuid = None
         self.cache = FileSystemCache()
+        self.url_options = {}
 
     def __setattr__(self, key, val):
         if hasattr(self, 'deleted') and self._deleted:

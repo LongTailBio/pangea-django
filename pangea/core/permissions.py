@@ -193,7 +193,7 @@ class SampleGroupPermission(permissions.BasePermission):
 
 
 def sample_work_order_permissions(request, sample, work_order_uuid):
-    work_order = sample.work_orders.filter(pk=work_order_uuid)
+    work_order = sample.work_orders.filter(uuid=work_order_uuid)
     if not work_order.exists():
         logger.info(
             'supplied_work_order_is_not_found',
