@@ -195,9 +195,29 @@ class SampleGroupPermission(permissions.BasePermission):
 def sample_work_order_permissions(request, sample, work_order_uuid):
     work_order = sample.work_orders.filter(pk=work_order_uuid)
     if not work_order.exists():
+        logger.info(
+            'supplied_work_order_is_not_found',
+            request={
+                'method': request.method,
+                'user': request.user,
+                'user_is_authenticated': request.user.is_authenticated,
+                'work_order_uuid': work_order_uuid,
+            }
+        )
         return False
     work_order = work_order.get()
-    return work_order.user_is_privileged(request.user)
+    privileged = work_order.user_is_privileged(request.user)
+    logger.info(
+        'supplied_work_order',
+        request={
+            'method': request.method,
+            'user': request.user,
+            'user_is_authenticated': request.user.is_authenticated,
+            'work_order_uuid': work_order_uuid,
+            'user_is_privileged': privileged,
+        }
+    )
+    return privileged
 
 
 class SamplePermission(permissions.BasePermission):
