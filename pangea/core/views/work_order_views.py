@@ -110,7 +110,7 @@ class WorkOrderProtoWorkOrderView(generics.ListAPIView):
         else:
             work_orders = work_orders.order_by('created_at')
 
-        max_num = self.request.query_params.get('max_num', 0)
+        max_num = int(self.request.query_params.get('max_num', 0))
         if max_num > 0:
             work_orders = work_orders[:max_num]
 
