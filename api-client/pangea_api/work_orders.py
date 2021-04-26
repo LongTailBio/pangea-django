@@ -17,9 +17,16 @@ class WorkOrderProto(RemoteObject):
         self.knex = knex
         self.uuid = uuid
 
-    def get_active_work_orders(self):
+    def get_active_work_orders(self, max_num=0, random=False, not_status=''):
         url = f'work_order_prototypes/{self.uuid}/work_orders'
-        blob = self.knex.get(url)
+        url_options = {}
+        if max_num > 0:
+            url_options['max_num'] = max_num
+        if random:
+            url_options['random'] = 'random'
+        if not_status:
+            url_options['not_status'] = not_status
+        blob = self.knex.get(url, url_options=url_options)
         for wo_blob in blob['results']:
             yield WorkOrder.from_blob(self.knex, wo_blob)
 
