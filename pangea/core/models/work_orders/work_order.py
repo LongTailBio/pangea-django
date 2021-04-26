@@ -78,11 +78,10 @@ class GroupWorkOrder(AutoCreatedUpdatedMixin):
 
     @property
     def progress_summary(self):
-        statuses = {'n_jobs': 0}
+        statuses = {}
         for wo in self.work_orders.all():
             for status, count in wo.progress_summary.items():
                 statuses[status] = count + statuses.get(status, 0)
-                statuses['n_jobs'] += count
         return statuses
 
     @property
