@@ -97,8 +97,24 @@ class WorkOrderProtoWorkOrderView(generics.ListAPIView):
         work_order_proto = WorkOrderProto.objects.get(pk=work_order_proto_uuid)
         if not work_order_proto.user_is_privileged(self.request.user):
             return []
+        
+        
         work_orders = super().filter_queryset(queryset).filter(prototype__pk=work_order_proto_uuid)
-        return work_orders.order_by('created_at')
+        not_status = self.request.query_params.get('not_status', '')
+        if not_status:
+            work_orders = work_orders.exclude(cached_status=not_status)
+
+        random_order = self.request.query_params.get('random', False)
+        if random_order:
+            work_orders = work_orders.order_by('?')
+        else:
+            work_orders = work_orders.order_by('created_at')
+
+        max_num = self.request.query_params.get('max_num', 0)
+        if max_num > 0:
+            work_orders = work_orders[:max_num]
+
+        return work_orders
 
 
 class SampleWorkOrdersView(generics.ListAPIView):

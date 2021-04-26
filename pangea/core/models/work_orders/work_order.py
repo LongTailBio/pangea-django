@@ -40,6 +40,7 @@ class WorkOrder(AutoCreatedUpdatedMixin):
     sample = models.ForeignKey('Sample', on_delete=models.CASCADE, related_name='work_orders')
     prototype = models.ForeignKey('WorkOrderProto', on_delete=models.CASCADE)
     description = models.TextField(blank=True, default='')
+    cached_status = models.TextField(choices=JobOrderStatus.choices, default=JobOrderStatus.PENDING)
 
     def user_is_privileged(self, user):
         return self.prototype.user_is_privileged(user)
@@ -56,12 +57,16 @@ class WorkOrder(AutoCreatedUpdatedMixin):
     def status(self):
         statuses = self.progress_summary
         if statuses.get(JobOrderStatus.ERROR, 0) > 0:
-            return JobOrderStatus.ERROR
-        if statuses.get(JobOrderStatus.PENDING, 0) == self.jobs.count():
-            return JobOrderStatus.PENDING
-        if statuses.get(JobOrderStatus.SUCCESS, 0) == self.jobs.count():
-            return JobOrderStatus.SUCCESS
-        return JobOrderStatus.WORKING
+            _status = JobOrderStatus.ERROR
+        elif statuses.get(JobOrderStatus.PENDING, 0) == self.jobs.count():
+            _status = JobOrderStatus.PENDING
+        elif statuses.get(JobOrderStatus.SUCCESS, 0) == self.jobs.count():
+            _status = JobOrderStatus.SUCCESS
+        else:
+            _status = JobOrderStatus.WORKING
+        self.cached_status = _status
+        self.save()
+        return _status
 
 
 class GroupWorkOrder(AutoCreatedUpdatedMixin):
@@ -78,7 +83,7 @@ class GroupWorkOrder(AutoCreatedUpdatedMixin):
 
     @property
     def progress_summary(self):
-        statuses = {}
+        statuses = {'n_jobs': 0}
         for wo in self.work_orders.all():
             for status, count in wo.progress_summary.items():
                 statuses[status] = count + statuses.get(status, 0)
