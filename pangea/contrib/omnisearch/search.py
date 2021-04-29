@@ -43,6 +43,7 @@ def omni_search(query):
     for key in ['samples', 'sample_groups', 'organizations']:
         out[key] += keyword_result[key]
 
+    '''
     taxon_result = taxon_search(query)
     if taxon_result:
         taxon = taxon_result.canon_name.name
@@ -51,6 +52,7 @@ def omni_search(query):
             'annotation': taxon_result.annotation,
         })
         out['samples'] += fuzzy_taxa_search(taxon)
+    '''
 
     if is_dna(query):
         dna_result = dna_search(query)
