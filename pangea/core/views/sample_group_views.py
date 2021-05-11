@@ -217,22 +217,18 @@ def validate_sample_metadata_schema(request, pk):
     grp = _get_grp_check_permissions(request, pk)
     schema = grp.sample_metadata_schema
     metadata = grp.sample_metadata()
-    sample_names_to_inds = [{'name': k, 'ind': i + 1}
-                            for i, k in enumerate(metadata.keys())]
-    field_names_to_inds = []
+    sample_names_to_inds = {i + 1: k
+                            for i, k in enumerate(metadata.keys())}
     tbl = []
-    for obj in sample_names_to_inds:
-        sample_name = obj['name']
-        sample_metadata = metadata[obj['name']]
-        for key in sample_metadata.keys():
-            if key not in field_names_to_inds:
-                field_names_to_inds.append({'name': key, 'ind': len(field_names_to_inds)})
-        tbl.append(sample_metadata)
+    for sample_name in sample_names_to_inds.values():
+        tbl.append(metadata[sample_name])
     report = frictionless.validate(tbl, schema=schema)
     errors = report.flatten(["rowPosition", "fieldName", "code", "message"])
+    errors_remapped = []
+    for rowPos, fieldName, code, msg in errors:
+        errors_remapped.append([sample_names_to_inds[rowPos], fieldName, code, msg])
     blob = {
-        'errors': errors,
-        'sample_name_map': sample_names_to_inds,
+        'errors': errors_remapped,
         'stats': report['stats'],
     }
     return Response(blob)
