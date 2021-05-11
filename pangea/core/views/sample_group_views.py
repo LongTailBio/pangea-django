@@ -220,7 +220,7 @@ def validate_sample_metadata_schema(request, pk):
     sample_names_to_inds = [{'name': k, 'ind': i + 1}
                             for i, k in enumerate(metadata.keys())]
     field_names_to_inds = []
-    tbl = {}
+    tbl = []
     for obj in sample_names_to_inds:
         sample_name = obj['name']
         sample_metadata = metadata[obj['name']]
