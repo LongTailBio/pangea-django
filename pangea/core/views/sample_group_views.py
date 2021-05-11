@@ -216,8 +216,12 @@ def validate_sample_metadata_schema(request, pk):
     """Validate samples against the stored schema and return two lists of names and UUIDs"""
     grp = _get_grp_check_permissions(request, pk)
     schema = grp.sample_metadata_schema
-    tbl = pd.DataFrame.from_dict(grp.sample_metadata(), orient='index')
+    metadata = grp.sample_metadata()
+    sample_names_to_inds = [{'name': k, 'ind': i}
+                            for i, k in enumerate(metadata.keys())]
+    tbl = [metadata[obj['name']] for obj in sample_names_to_inds]
     report = frictionless.validate(tbl, schema=schema)
+    report['sample_name_map'] = sample_names_to_inds
     return Response(report)
 
 
