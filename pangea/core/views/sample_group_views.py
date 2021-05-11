@@ -217,7 +217,7 @@ def validate_sample_metadata_schema(request, pk):
     grp = _get_grp_check_permissions(request, pk)
     schema = grp.sample_metadata_schema
     metadata = grp.sample_metadata()
-    sample_names_to_inds = {i + 1: k
+    sample_names_to_inds = {i: k
                             for i, k in enumerate(metadata.keys())}
     tbl = []
     for sample_name in sample_names_to_inds.values():
