@@ -221,7 +221,11 @@ def validate_sample_metadata_schema(request, pk):
                             for i, k in enumerate(metadata.keys())]
     tbl = [metadata[obj['name']] for obj in sample_names_to_inds]
     report = frictionless.validate(tbl, schema=schema)
-    report['sample_name_map'] = sample_names_to_inds
+    errors = report.flatten(["rowPosition", "fieldPosition", "code", "message"])
+    blob = {
+        'errors': errors,
+        'sample_name_map': sample_names_to_inds,
+    }
     return Response(report)
 
 
