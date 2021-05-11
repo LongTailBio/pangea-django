@@ -216,12 +216,10 @@ def validate_sample_metadata_schema(request, pk):
     """Validate samples against the stored schema and return two lists of names and UUIDs"""
     grp = _get_grp_check_permissions(request, pk)
     schema = grp.sample_metadata_schema
-    metadata = grp.sample_metadata()
-    sample_names_to_inds = {i: k
-                            for i, k in enumerate(metadata.keys())}
-    tbl = []
-    for sample_name in sample_names_to_inds.values():
-        tbl.append(metadata[sample_name])
+    tbl, sample_names_to_inds = [], {}
+    for sample_name, metadata in grp.sample_metadata().items():
+        tbl.append(metadata)
+        sample_names_to_inds[len(sample_names_to_inds)] = sample_name
     report = frictionless.validate(tbl, schema=schema)
     errors = report.flatten(["rowPosition", "fieldName", "code", "message"])
     errors_remapped = []
