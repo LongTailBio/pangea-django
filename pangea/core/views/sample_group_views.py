@@ -222,10 +222,10 @@ def validate_sample_metadata_schema(request, pk):
         sample_names_to_inds[len(sample_names_to_inds)] = sample_name
     tbl = pd.DataFrame.from_dict(grp.sample_metadata(), orient='index')
     report = frictionless.validate(tbl, schema=schema)
-    errors = report.flatten(["rowPosition", "fieldName", "code", "message"])
+    errors = report.flatten(["rowPosition", "rowName", "fieldName", "code", "message"])
     errors_remapped = []
-    for rowPos, fieldName, code, msg in errors:
-        errors_remapped.append([sample_names_to_inds.get(rowPos, rowPos), fieldName, code, msg])
+    for rowPos, rowName, fieldName, code, msg in errors:
+        errors_remapped.append([sample_names_to_inds.get(rowPos, rowPos), rowName, fieldName, code, msg])
     blob = {
         'errors': errors_remapped,
         'stats': report['stats'],
