@@ -408,6 +408,12 @@ class SampleGroupWikiTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_get_new_wiki(self):
+        url = reverse('sample-group-wiki', kwargs={'pk': self.grp.pk})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
     def test_create_wiki(self):
         url = reverse('sample-group-wiki', kwargs={'pk': self.grp.pk})
         self.client.force_authenticate(user=self.user)

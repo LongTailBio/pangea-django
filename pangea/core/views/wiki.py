@@ -56,4 +56,8 @@ def get_sample_group_wiki(request, pk):
     grp = SampleGroup.objects.get(pk=pk)
     if not grp.user_can_access(request.user):
         raise PermissionDenied(_('Insufficient permissions to get wiki.'))
-    return Response(WikiSerializer(grp.wiki).data, status=200)
+    status = 200
+    if not hasattr(grp, 'wiki'):
+        SampleGroupWiki.create_wiki(grp, 'Home Page', f'Wiki for Sample Group {grp.name}')
+        status = 201
+    return Response(WikiSerializer(grp.wiki).data, status=status)
