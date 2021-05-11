@@ -221,6 +221,7 @@ def validate_sample_metadata_schema(request, pk):
         tbl.append(metadata)
         sample_names_to_inds[len(sample_names_to_inds)] = sample_name
     tbl = pd.DataFrame.from_dict(grp.sample_metadata(), orient='index')
+    sample_names_to_inds = {i: n for i, n in enumerate(tbl.index.to_list())}
     report = frictionless.validate(tbl, schema=schema)
     errors = report.flatten(["rowPosition", "rowName", "fieldName", "code", "message"])
     errors_remapped = []
