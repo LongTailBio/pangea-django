@@ -82,7 +82,7 @@ def handle_pipeline_wiki(request, pk):
         return edit_wiki(request, pipe.wiki.wiki.uuid)
     status = 200
     if not hasattr(pipe, 'wiki'):
-        PipelineWiki.create_wiki(pipe, 'Home Page', f'Wiki for Pipeline {grp.name}')
+        PipelineWiki.create_wiki(pipe, 'Home Page', f'Wiki for Pipeline {pipe.name}')
         status = 201
     return Response(WikiSerializer(pipe.wiki).data, status=status)
 
