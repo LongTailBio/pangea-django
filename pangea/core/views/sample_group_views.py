@@ -220,14 +220,14 @@ def validate_sample_metadata_schema(request, pk):
     sample_names_to_inds = [{'name': k, 'ind': i}
                             for i, k in enumerate(metadata.keys())]
     field_names_to_inds = []
-    tbl = []
+    tbl = {}
     for obj in sample_names_to_inds:
         sample_name = obj['name']
         sample_metadata = metadata[obj['name']]
         for key in sample_metadata.keys():
             if key not in field_names_to_inds:
                 field_names_to_inds.append({'name': key, 'ind': len(field_names_to_inds)})
-        tbl.append(sample_metadata)
+        tbl[sample_name] = sample_metadata
     report = frictionless.validate(tbl, schema=schema)
     errors = report.flatten(["rowName", "fieldName", "code", "message"])
     blob = {
