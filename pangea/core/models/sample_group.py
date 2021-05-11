@@ -112,10 +112,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         )
         metadata = self.sample_metadata()
         tbl = pd.DataFrame.from_dict(metadata, orient='index')
-        print(tbl)
-        print(tbl['a'].dtype)
         schema = pd.io.json.build_table_schema(tbl, version=False, index=False, primary_key=None)
-        print(schema)
         self.sample_metadata_schema = schema
         self.save()
 
