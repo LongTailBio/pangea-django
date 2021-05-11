@@ -220,6 +220,7 @@ def validate_sample_metadata_schema(request, pk):
     for sample_name, metadata in grp.sample_metadata().items():
         tbl.append(metadata)
         sample_names_to_inds[len(sample_names_to_inds)] = sample_name
+    tbl = pd.DataFrame.from_dict(grp.sample_metadata(), orient='index')
     report = frictionless.validate(tbl, schema=schema)
     errors = report.flatten(["rowPosition", "fieldName", "code", "message"])
     errors_remapped = []
