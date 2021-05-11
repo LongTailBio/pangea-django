@@ -229,7 +229,7 @@ def validate_sample_metadata_schema(request, pk):
                 field_names_to_inds.append({'name': key, 'ind': len(field_names_to_inds)})
         tbl.append(sample_metadata)
     report = frictionless.validate(tbl, schema=schema)
-    errors = report.flatten(["rowPosition", "fieldPosition", "code", "message"])
+    errors = report.flatten(["rowName", "fieldName", "code", "message"])
     blob = {
         'errors': errors,
         'sample_name_map': sample_names_to_inds,
