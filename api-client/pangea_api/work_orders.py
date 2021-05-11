@@ -16,8 +16,11 @@ class WorkOrderProto(RemoteObject):
         super().__init__(self)
         self.knex = knex
         self.uuid = uuid
+        self.cached_active_work_orders = []
 
     def get_active_work_orders(self, max_num=0, random=False, not_status=''):
+        if self.cached_active_work_orders:
+            return self.cached_active_work_orders
         url = f'work_order_prototypes/{self.uuid}/work_orders'
         url_options = {}
         if max_num > 0:
@@ -28,11 +31,17 @@ class WorkOrderProto(RemoteObject):
             url_options['not_status'] = not_status
         blob = self.knex.get(url, url_options=url_options)
         for wo_blob in blob['results']:
-            yield WorkOrder.from_blob(self.knex, wo_blob)
+            self.cached_active_work_orders.append(WorkOrder.from_blob(self.knex, wo_blob))
+        return self.cached_active_work_orders
 
     def get_active_work_order_for_sample(self, sample):
-        for wo in self.get_active_work_orders():
-            if wo.sample == sample.uuid:
+        url = f'samples/{sample.uuid}/work_orders'
+        blob = self.knex.get(url)
+        for wo_blob in blob['results']:
+            if wo_blob['name'] == self.name:  # TODO should be uuid but currently not a field
+                wo = WorkOrder.from_blob(self.knex, wo_blob)
+                wo._already_fetched = True
+                wo._modified = False
                 return wo
         raise KeyError(f'WorkOrder from Proto {self} not found for sample {sample}')
 

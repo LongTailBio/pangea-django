@@ -1,5 +1,5 @@
 
-from .organization import Organization, PangeaUser
+from .organization import Organization, PangeaUser, SiteAdmin
 from .s3 import S3ApiKey, S3Bucket, S3Provider
 from .sample_group import SampleGroup, SampleLibrary
 from .sample import Sample
@@ -26,4 +26,10 @@ from .work_orders import (
     PrivilegedUser,
     GroupWorkOrder,
     GroupWorkOrderProto,
+)
+from .wiki import (
+    WikiPage,
+    Wiki,
+    SiteWiki,
+    SampleGroupWiki,
 )

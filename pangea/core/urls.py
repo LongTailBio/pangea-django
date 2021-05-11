@@ -41,6 +41,8 @@ from .views import (
     create_new_work_order, create_new_group_work_order,
     SampleWorkOrdersView, WorkOrderProtoWorkOrderView,
     SampleGroupGroupWorkOrdersView, GroupWorkOrderProtoWorkOrderView,
+
+    handle_sample_group_wiki,
 )
 from .search import SearchList
 
@@ -79,6 +81,7 @@ urlpatterns = {
     path('sample_groups/<uuid:pk>/downloads/<str:module_name>', get_sample_data_in_group, name="sample-group-download"),
     path('sample_groups/<uuid:pk>/module_counts', get_sample_ar_counts_in_group, name="sample-group-module-counts"),
     path('sample_groups/<uuid:group_pk>/samples', SampleGroupSamplesView.as_view(), name="sample-group-samples"),
+    path('sample_groups/<uuid:pk>/wiki', handle_sample_group_wiki, name="sample-group-wiki"),
 
     path('sample_groups/<uuid:sample_group_pk>/work_orders', SampleGroupGroupWorkOrdersView.as_view(), name="sample-group-list-workorder"),
     path('sample_groups/<uuid:sample_group_pk>/work_orders/<uuid:wop_pk>', create_new_group_work_order, name="sample-group-create-workorder"),

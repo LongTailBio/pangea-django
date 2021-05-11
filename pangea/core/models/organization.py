@@ -65,6 +65,15 @@ class PangeaUser(AbstractUser):
             return org
 
 
+class SiteAdminStatus(models.TextChoices):
+    SITE = 'full site', _('full site')
+
+
+class SiteAdmin(AutoCreatedUpdatedMixin):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    status = models.TextField(choices=SiteAdminStatus.choices, default=SiteAdminStatus.SITE)
+
+
 class Organization(AutoCreatedUpdatedMixin):
     """This class represents the organization model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

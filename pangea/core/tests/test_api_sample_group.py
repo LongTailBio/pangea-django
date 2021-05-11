@@ -17,6 +17,7 @@ from pangea.core.models import (
     Sample,
     SampleGroupAnalysisResult,
     SampleAnalysisResult,
+    SampleGroupWiki,
 )
 
 from .constants import (
@@ -388,3 +389,61 @@ class SampleGroupMembershipTests(APITestCase):
         self.assertEqual(response.data['count'], 1)
         self.assertIn('Test Sample', [sample['name'] for sample in response.data['links']])
 
+
+class SampleGroupWikiTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.organization = Organization.objects.create(name='Test Organization')
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
+        cls.organization.users.add(cls.user)
+        cls.grp = cls.organization.create_sample_group(name='Test Group', is_library=False)
+        cls.grp_with_wiki = cls.organization.create_sample_group(name='Test Group with Wiki', is_library=False)
+        SampleGroupWiki.create_wiki(cls.grp_with_wiki)
+
+    def test_get_wiki(self):
+        url = reverse('sample-group-wiki', kwargs={'pk': self.grp_with_wiki.pk})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_wiki(self):
+        url = reverse('sample-group-wiki', kwargs={'pk': self.grp.pk})
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'title': 'title',
+            'text': 'body',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.grp.wiki)
+        self.assertEqual(self.grp.wiki.wiki.pages.count(), 1)
+        self.assertEqual(self.grp.wiki.wiki.home_page.title, 'title')
+
+    def test_add_page(self):
+        url = reverse('sample-group-wiki', kwargs={'pk': self.grp_with_wiki.pk})
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'title': 'title',
+            'text': 'body',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.grp_with_wiki.wiki)
+        self.assertEqual(self.grp_with_wiki.wiki.pages.count(), 2)
+
+    def test_modify_page(self):
+        url = reverse('sample-group-wiki', kwargs={'pk': self.grp_with_wiki.pk})
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'uuid': self.grp_with_wiki.wiki.wiki.home_page.uuid,
+            'title': 'title 2',
+            'text': 'body',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.grp_with_wiki.refresh_from_db()
+        self.assertTrue(self.grp_with_wiki.wiki)
+        self.assertEqual(self.grp_with_wiki.wiki.pages.count(), 1)
+        self.assertEqual(self.grp_with_wiki.wiki.home_page.title, 'title 2')

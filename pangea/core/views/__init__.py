@@ -78,3 +78,6 @@ from .work_order_views import (
     SampleGroupGroupWorkOrdersView,
     GroupWorkOrderProtoWorkOrderView,
 )
+from .wiki import (
+    handle_sample_group_wiki,
+)

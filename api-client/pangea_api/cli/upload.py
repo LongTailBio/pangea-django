@@ -20,11 +20,11 @@ from .utils import use_common_state
 def cli_upload():
     pass
 
-
-overwrite_option = click.option('--overwrite/--no-overwrite', default=False)
-module_option = lambda x: click.option('-m', '--module-name', default=x)
-private_option = click.option('--private/--public', default=True)
-tag_option = click.option('-t', '--tag', multiple=True)
+dryrun_option = click.option('--dryrun/--wetrun', default=False, help='Print what will be created without actually creating it')
+overwrite_option = click.option('--overwrite/--no-overwrite', default=False, help='Overwrite existing samples and data')
+module_option = lambda x: click.option('-m', '--module-name', default=x, help='Name for the module that will store the data')
+private_option = click.option('--private/--public', default=True, help='Make the reads private.')
+tag_option = click.option('-t', '--tag', multiple=True, help='Add tags to newly created samples.')
 
 org_arg = click.argument('org_name')
 lib_arg = click.argument('library_name')
@@ -36,18 +36,28 @@ lib_arg = click.argument('library_name')
 @private_option
 @tag_option
 @module_option('raw::raw_reads')
-@click.option('-d', '--delim', default=None, help='Split sample name on this character')
+@click.option('-d', '--delim', default=None, help='Split sample name on this string')
 @click.option('-1', '--ext-1', default='.R1.fastq.gz')
 @click.option('-2', '--ext-2', default='.R2.fastq.gz')
 @org_arg
 @lib_arg
 @click.argument('file_list', type=click.File('r'))
-def cli_upload_reads(state, overwrite, private, tag, module_name,
+def cli_upload_pe_reads(state, overwrite, private, tag, module_name,
                      delim, ext_1, ext_2,
                      org_name, library_name, file_list):
-    """Create samples in the specified group.
+    """Upload paired end reads to Pangea.
 
-    `sample_names` is a list of samples with one line per sample
+    This command will upload paired end reads to the specified
+    sample library.
+
+    Sample names will be automatically generated from the names
+    of the fastq files for each pair of reads. Sample names will
+    be determined by removing extensions from each file or, if
+    a delimiter string is set by taking everything before that
+    string. Both reads in a pair must resolve to the same sample
+    name. 
+
+    `file_list` is a file with a list of fastq filepaths, one per line
     """
     knex = state.get_knex()
     org = Organization(knex, org_name).get()
@@ -58,9 +68,11 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
         if ext_1 in filepath:
             sname = filepath.split(ext_1)[0]
             key = 'read_1'
-        if ext_2 in filepath:
+        elif ext_2 in filepath:
             sname = filepath.split(ext_2)[0]
             key = 'read_2'
+        else:
+            continue
         sname = sname.split('/')[-1]
         if delim:
             sname = sname.split(delim)[0]
@@ -91,18 +103,37 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
 @use_common_state
 @overwrite_option
 @private_option
+@dryrun_option
 @tag_option
-@module_option('raw::raw_single_ended_reads')
+@module_option('raw::single_short_reads')
+@click.option('-f', '--field-name', default='reads', help='Name for the field that will store the data')
 @click.option('-e', '--ext', default='.fastq.gz')
 @org_arg
 @lib_arg
 @click.argument('file_list', type=click.File('r'))
-def cli_upload_reads(state, overwrite, private, tag, module_name,
-                     ext,
+def cli_upload_se_reads(state, overwrite, private, dryrun, tag, module_name,
+                     field_name, ext,
                      org_name, library_name, file_list):
-    """Create samples in the specified group.
+    """Upload single ended reads to Pangea, including nanopore reads.
 
-    `sample_names` is a list of samples with one line per sample
+    This command will upload single reads to the specified
+    sample library.
+
+    Sample names will be automatically generated from the names
+    of the fastq files. Sample names will be determined by removing
+    extensions from each file or, if a delimiter string is set by
+    taking everything before that string.
+
+    In most cases `--module-name` should be one of:
+     - `raw::single_short_reads`
+     - `raw::basecalled_nanopore_reads`
+
+    In most cases `--field-name` should be one of:
+     - `reads`
+     - `fast5`
+
+
+    `file_list` is a file with a list of fastq filepaths, one per line
     """
     knex = state.get_knex()
     org = Organization(knex, org_name).get()
@@ -111,6 +142,8 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
     for filepath in (l.strip() for l in file_list):
         assert ext in filepath
         sname = filepath.split('/')[-1].split(ext)[0]
+        if dryrun:
+            click.echo(f'Sample: {sname} {filepath}')
         sample = lib.sample(sname).idem()
         for tag in tags:
             tag(sample)
@@ -118,10 +151,11 @@ def cli_upload_reads(state, overwrite, private, tag, module_name,
         try:
             if overwrite:
                 raise HTTPError()
-            reads = ar.field('reads').get()
+            reads = ar.field(field_name).get()
         except HTTPError:
             ar.is_private = private
-            reads = ar.field('reads').idem().upload_file(filepath, logger=lambda x: click.echo(x, err=True))
+            reads = ar.field(field_name).idem()
+            reads.upload_file(filepath, logger=lambda x: click.echo(x, err=True))
         print(sample, ar, reads, file=outfile)
 
 
