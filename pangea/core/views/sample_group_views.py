@@ -219,12 +219,22 @@ def validate_sample_metadata_schema(request, pk):
     metadata = grp.sample_metadata()
     sample_names_to_inds = [{'name': k, 'ind': i}
                             for i, k in enumerate(metadata.keys())]
-    tbl = [metadata[obj['name']] for obj in sample_names_to_inds]
+    field_names_to_inds = []
+    tbl = []
+    for obj in sample_names_to_inds:
+        sample_name = obj['name']
+        sample_metadata = metadata[obj['name']]
+        for key in sample_metadata.keys():
+            if key not in field_names_to_inds:
+                field_names_to_inds.append({'name': key, 'ind': len(field_names_to_inds)})
+        tbl.append(sample_metadata)
     report = frictionless.validate(tbl, schema=schema)
     errors = report.flatten(["rowPosition", "fieldPosition", "code", "message"])
     blob = {
         'errors': errors,
         'sample_name_map': sample_names_to_inds,
+        'field_names_map': field_names_to_inds,
+        'stats': report['stats'],
     }
     return Response(blob)
 
