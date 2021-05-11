@@ -32,4 +32,6 @@ from .wiki import (
     Wiki,
     SiteWiki,
     SampleGroupWiki,
+    OrganizationWiki,
+    PipelineWiki,
 )

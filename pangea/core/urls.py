@@ -42,7 +42,8 @@ from .views import (
     SampleWorkOrdersView, WorkOrderProtoWorkOrderView,
     SampleGroupGroupWorkOrdersView, GroupWorkOrderProtoWorkOrderView,
 
-    handle_sample_group_wiki,
+    handle_sample_group_wiki, handle_organization_wiki,
+    handle_pipeline_wiki, handle_site_wiki,
 )
 from .search import SearchList
 
@@ -55,6 +56,7 @@ urlpatterns = {
 
     path('organizations', OrganizationCreateView.as_view(), name="organization-create"),
     path('organizations/<uuid:pk>', OrganizationDetailsView.as_view(), name="organization-details"),
+    path('organizations/<uuid:pk>/wiki', handle_organization_wiki, name="organization-wiki"),
     path('organizations/<uuid:organization_pk>/users', OrganizationUsersView.as_view(), name="organization-users"),
 
     path('s3_api_keys', S3ApiKeyCreateView.as_view(), name='s3apikey-create'),
@@ -68,6 +70,7 @@ urlpatterns = {
 
     path('pipelines', PipelineCreateView.as_view(), name="pipeline-create"),
     path('pipelines/<uuid:pk>', PipelineDetailsView.as_view(), name="pipeline-details"),
+    path('pipelines/<uuid:pk>/wiki', handle_pipeline_wiki, name="pipeline-wiki"),
     path('pipelines/name/<name>', PipelineNameDetailsView.as_view(), name="pipeline-name-details"),
 
     path('pipelines/<uuid:pk>/modules/<name>/<version>', get_module_in_pipeline, name="pipeline-modules-by-name"),
@@ -88,7 +91,6 @@ urlpatterns = {
     path('sample_groups/<uuid:pk>/sample_links', get_sample_links_in_group, name="sample-group-sample-links"),
     path('sample_groups/<uuid:pk>/generate_metadata_schema', generate_sample_metadata_schema, name="sample-group-generate-schema"),
     path('sample_groups/<uuid:pk>/validate_metadata_schema', validate_sample_metadata_schema, name="sample-group-validate-schema"),
-
 
     path('samples', SampleCreateView.as_view(), name="sample-create"),
     path('bulk_samples', bulk_create_samples, name='bulk-sample-create'),
@@ -128,6 +130,8 @@ urlpatterns = {
     path('sample_group_ar_fields/<uuid:pk>', SampleGroupAnalysisResultFieldDetailsView.as_view(), name="sample-group-ar-fields-details"),
 
     path('search', SearchList.as_view(), name="search"),
+    path('wiki/site', handle_site_wiki, name="site-wiki"),
+
 }
 
 urlpatterns = format_suffix_patterns(urlpatterns)

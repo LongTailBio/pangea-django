@@ -414,19 +414,6 @@ class SampleGroupWikiTests(APITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    def test_create_wiki(self):
-        url = reverse('sample-group-wiki', kwargs={'pk': self.grp.pk})
-        self.client.force_authenticate(user=self.user)
-        data = {
-            'title': 'title',
-            'text': 'body',
-        }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertTrue(self.grp.wiki)
-        self.assertEqual(self.grp.wiki.wiki.pages.count(), 1)
-        self.assertEqual(self.grp.wiki.wiki.home_page.title, 'title')
-
     def test_add_page(self):
         url = reverse('sample-group-wiki', kwargs={'pk': self.grp_with_wiki.pk})
         self.client.force_authenticate(user=self.user)

@@ -104,6 +104,13 @@ class Organization(AutoCreatedUpdatedMixin):
         s3bucket.save()
         return s3bucket
 
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this group."""
+        if not user.is_authenticated:
+            return False
+        user_is_in_org = user.organization_set.filter(pk=self.pk).exists()
+        return user_is_in_org
+
     @property
     def _core_sample_group_name(self):
         return f'Default Sample Group for Organization {self.name}'

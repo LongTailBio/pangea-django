@@ -58,24 +58,6 @@ class Wiki(AutoCreatedUpdatedMixin):
 class ObjectWiki(AutoCreatedUpdatedMixin):
     wiki = models.OneToOneField('Wiki', on_delete=models.CASCADE)
 
-    class Meta:
-        abstract = True
-
-    def add_page(self, title, text):
-        return self.wiki.add_page(title, text)
-
-    def modify_page(self, uuid, title, text):
-        return self.wiki.modify_page(uuid, title, text)
-
-
-class SiteWiki(ObjectWiki):
-    pass
-
-
-class SampleGroupWiki(ObjectWiki):
-    sample_group = models.OneToOneField('SampleGroup', on_delete=models.CASCADE, related_name='wiki', primary_key=True)
-    wiki = models.OneToOneField('Wiki', on_delete=models.CASCADE)
-
     @property
     def pages(self):
         return self.wiki.pages
@@ -88,8 +70,51 @@ class SampleGroupWiki(ObjectWiki):
     def sidebar(self):
         return self.wiki.sidebar
 
+    class Meta:
+        abstract = True
+
+    def add_page(self, title, text):
+        return self.wiki.add_page(title, text)
+
+    def modify_page(self, uuid, title, text):
+        return self.wiki.modify_page(uuid, title, text)
+
+
+class SiteWiki(ObjectWiki):
+
+    @classmethod
+    def create_wiki(cls, title='', text=''):
+        wiki = Wiki.create_with_home_page(title, text)
+        grp_wiki = cls.objects.create(wiki=wiki)
+        return grp_wiki
+
+
+class SampleGroupWiki(ObjectWiki):
+    sample_group = models.OneToOneField('SampleGroup', on_delete=models.CASCADE, related_name='wiki', primary_key=True)
+
     @classmethod
     def create_wiki(cls, grp, title='', text=''):
         wiki = Wiki.create_with_home_page(title, text)
         grp_wiki = cls.objects.create(sample_group=grp, wiki=wiki)
         return grp_wiki
+
+
+class OrganizationWiki(ObjectWiki):
+    organization = models.OneToOneField('Organization', on_delete=models.CASCADE, related_name='wiki', primary_key=True)
+
+    @classmethod
+    def create_wiki(cls, org, title='', text=''):
+        wiki = Wiki.create_with_home_page(title, text)
+        org_wiki = cls.objects.create(organization=org, wiki=wiki)
+        return org_wiki
+
+
+class PipelineWiki(ObjectWiki):
+    pipeline = models.OneToOneField('Pipeline', on_delete=models.CASCADE, related_name='wiki', primary_key=True)
+
+    @classmethod
+    def create_wiki(cls, pipeline, title='', text=''):
+        wiki = Wiki.create_with_home_page(title, text)
+        pipeline_wiki = cls.objects.create(pipeline=pipeline, wiki=wiki)
+        return pipeline_wiki
+

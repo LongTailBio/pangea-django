@@ -29,6 +29,8 @@ from .models import (
     JobOrder,
     JobOrderProto,
     PrivilegedUser,
+
+    SiteAdmin,
 )
 
 
@@ -52,6 +54,11 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(Pipeline)
 class PipelineAdmin(admin.ModelAdmin):
     list_display = ('name',)
+
+
+@admin.register(SiteAdmin)
+class SiteAdminAdmin(admin.ModelAdmin):
+    list_display = ('user',)
 
 
 @admin.register(PipelineModule)
