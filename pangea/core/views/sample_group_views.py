@@ -226,7 +226,7 @@ def validate_sample_metadata_schema(request, pk):
     errors = report.flatten(["rowPosition", "fieldName", "code", "message"])
     errors_remapped = []
     for rowPos, fieldName, code, msg in errors:
-        errors_remapped.append([sample_names_to_inds[rowPos], fieldName, code, msg])
+        errors_remapped.append([sample_names_to_inds.get(rowPos, rowPos), fieldName, code, msg])
     blob = {
         'errors': errors_remapped,
         'stats': report['stats'],
