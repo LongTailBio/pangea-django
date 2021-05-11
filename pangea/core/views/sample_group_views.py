@@ -227,12 +227,13 @@ def validate_sample_metadata_schema(request, pk):
     errors_remapped = []
     for rowPos, fieldName, code, msg in errors:
         errors_remapped.append([sample_names_to_inds.get(rowPos, rowPos), fieldName, code, msg])
+    report['flat_errors'] = errors_remapped
     blob = {
         'errors': errors_remapped,
         'stats': report['stats'],
         'full_report': report,
     }
-    return Response(blob)
+    return Response(report)
 
 
 @api_view(['GET'])
