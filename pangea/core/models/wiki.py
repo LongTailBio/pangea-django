@@ -14,7 +14,7 @@ logger = structlog.get_logger(__name__)
 
 class WikiPage(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.TextField(blank=False, unique=True)
+    title = models.TextField(blank=False, unique=False)
     text = models.TextField(blank=True, default='')
     wiki = models.ForeignKey('Wiki', on_delete=models.CASCADE, related_name='pages')
 
