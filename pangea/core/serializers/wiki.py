@@ -30,7 +30,7 @@ class WikiSerializer(serializers.ModelSerializer):
     class Meta:
         model = Wiki
         fields = (
-            'uuid', 'pages', 'home_page', 'sidebar',
+            'uuid', 'pages',
             'created_at', 'updated_at', 'page_objs', 'home_page_obj', 'sidebar_obj',
         )
         read_only_fields = (
