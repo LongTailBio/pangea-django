@@ -226,7 +226,7 @@ def validate_sample_metadata_schema(request, pk):
         'errors': errors,
         'sample_name_map': sample_names_to_inds,
     }
-    return Response(report)
+    return Response(blob)
 
 
 @api_view(['GET'])
