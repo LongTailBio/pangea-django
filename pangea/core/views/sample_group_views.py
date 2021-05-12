@@ -219,7 +219,7 @@ def validate_sample_metadata_schema(request, pk):
     tbl, sample_names_to_inds = [], {}
     for sample_name, metadata in grp.sample_metadata().items():
         tbl.append(metadata)
-        sample_names_to_inds[len(sample_names_to_inds)] = sample_name
+        sample_names_to_inds[len(sample_names_to_inds) + 2] = sample_name
     # tbl = pd.DataFrame.from_dict(grp.sample_metadata(), orient='index')
     # sample_names_to_inds = {i: n for i, n in enumerate(tbl.index.to_list())}
     report = frictionless.validate(tbl, schema=schema)
@@ -230,7 +230,6 @@ def validate_sample_metadata_schema(request, pk):
     blob = {
         'errors': errors_remapped,
         'stats': report['stats'],
-        'map': sample_names_to_inds,
     }
     return Response(blob)
 
