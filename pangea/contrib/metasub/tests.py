@@ -24,22 +24,20 @@ class MetaSUBTests(APITestCase):
         organization = Organization.objects.create(name=METASUB_ORG_NAME)
         sample_group = organization.create_sample_group(name=METASUB_GRP_NAME, is_library=True)
         sample_library = sample_group.library
-        sample_01 = Sample.objects.create(name='Test Sample 01',
+        sample_01 = sample_library.create_sample(name='Test Sample 01',
                                           metadata={
                                             'city': 'new_york_city',
                                             'city_latitude': -30.1,
                                             'city_longitude': 50.2,
-                                          },
-                                          library=sample_library)
-        sample_02 = Sample.objects.create(name='Test Sample 02',
+                                          })
+        sample_02 = sample_library.create_sample(name='Test Sample 02',
                                           metadata={
                                             'city': 'hong_kong',
                                             'city_latitude': 20.0,
                                             'city_longitude': -10.9,
-                                          },
-                                          library=sample_library)
-        analysis_result_01 = SampleAnalysisResult.objects.create(module_name='taxa', sample=sample_01)
-        analysis_result_02 = SampleAnalysisResult.objects.create(module_name='taxa', sample=sample_02)
+                                          })
+        analysis_result_01 = SampleAnalysisResult.objects.create(module_name='pangea::metasub::krakenhll_taxa_abundances', sample=sample_01)
+        analysis_result_02 = SampleAnalysisResult.objects.create(module_name='pangea::metasub::krakenhll_taxa_abundances', sample=sample_02)
         stored_data_01 = {"e. coli": 0.32, "enterococcus": 0.79}
         stored_data_02 = {"e. coli": 0.56}
         taxa_field_01 = SampleAnalysisResultField.objects.create(name='relative_abundance',

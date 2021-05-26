@@ -3,6 +3,7 @@ import structlog
 from django.db import connection
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
+from functools import lru_cache
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -12,7 +13,7 @@ from pangea.core.utils import str2bool
 from pangea.core.models import Sample, SampleAnalysisResultField
 from pangea.contrib.treeoflife.taxa_tree import TaxaTree
 
-from .constants import METASUB_LIBRARY_UUID
+from .constants import METASUB_LIBRARY_UUID, METASUB_LIBRARY
 
 logger = structlog.get_logger(__name__)
 
@@ -69,7 +70,7 @@ def fuzzy_taxa_search(query):
         results = {row[0]: row[1] for row in cursor.fetchall()}
     return results
 
-
+'''
 @api_view(['GET'])
 def fuzzy_taxa_search_samples(request):
     """Return samples with taxa results that fuzzy match the query."""
@@ -84,6 +85,59 @@ def fuzzy_taxa_search_samples(request):
             for val in vals:
                 sample = Sample.objects.get(uuid=val['sample_uuid'])
                 val['sample_metadata'] = sample.metadata
+    logger.info(f'metasub__responding_to_sample_query', query=query)
+    return Response({'results': results})
+'''
+
+@lru_cache(maxsize=512)
+def _search_samples(query, all_samples=False, metadata=False):
+    query = query.lower()
+    grp = METASUB_LIBRARY()
+    results, hits = {}, set()
+    for sample in grp.sample_set.all():
+        kraken = sample.analysis_result_set.filter(module_name='pangea::metasub::krakenhll_taxa_abundances')
+        if not kraken.exists():
+            continue
+        kraken = kraken.first().fields.filter(name='relative_abundance')
+        if not kraken.exists():
+            continue
+        kraken = kraken.first()
+        for key, val in kraken.stored_data.items():
+            if query not in key:
+                continue
+            if key not in results:
+                results[key] = []
+            results[key].append({
+                'relative_abundance': val,
+                'sample_uuid': sample.uuid,
+                'sample_name': sample.name,
+                'sample_metadata': sample.metadata if metadata else {}
+            })
+            hits.add((key, sample.uuid))
+    if all_samples:  # add samples with 0 abundance to output
+        for sample in grp.sample_set.all():
+            for key in results.keys():
+                if (key, sample.uuid) not in hits:
+                    results[key].append({
+                        'relative_abundance': 0,
+                        'sample_uuid': sample.uuid,
+                        'sample_name': sample.name,
+                        'sample_metadata': sample.metadata if metadata else {}
+                    })
+    return results     
+
+
+
+@api_view(['GET'])
+def fuzzy_taxa_search_samples(request):
+    """Return samples with taxa results that fuzzy match the query."""
+    query = request.query_params.get('query', None)
+    if query is None:
+        logger.warn('metasub_taxasearch__no_query_param')
+        raise ValidationError(_('Must provide URL-encoded `query` query parameter.'))
+    metadata = request.query_params.get('metadata', False)
+    all_samples = request.query_params.get('all_samples', False)
+    results = _search_samples(query, all_samples=all_samples, metadata=metadata)
     logger.info(f'metasub__responding_to_sample_query', query=query)
     return Response({'results': results})
 
