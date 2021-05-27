@@ -48,9 +48,11 @@ def edit_wiki(request, pk):
 def handle_sample_group_wiki(request, pk):
     """"""
     grp = SampleGroup.objects.get(pk=pk)
-    if not grp.user_can_access(request.user):
-        raise PermissionDenied(_('Insufficient permissions to get wiki.'))
+    if not grp.user_can_view(request.user):
+        raise PermissionDenied(_('Insufficient permissions to view wiki.'))
     if request.method == 'POST':
+        if not grp.user_can_access(request.user):
+            raise PermissionDenied(_('Insufficient permissions to edit wiki.'))
         return edit_wiki(request, grp.wiki.wiki.uuid)
     status = 200
     if not hasattr(grp, 'wiki'):
@@ -63,9 +65,11 @@ def handle_sample_group_wiki(request, pk):
 def handle_organization_wiki(request, pk):
     """"""
     org = Organization.objects.get(pk=pk)
-    if not org.user_can_access(request.user):
-        raise PermissionDenied(_('Insufficient permissions to get wiki.'))
+    if not org.user_can_view(request.user):
+        raise PermissionDenied(_('Insufficient permissions to view wiki.'))
     if request.method == 'POST':
+        if not org.user_can_access(request.user):
+            raise PermissionDenied(_('Insufficient permissions to edit wiki.'))
         return edit_wiki(request, org.wiki.wiki.uuid)
     status = 200
     if not hasattr(org, 'wiki'):

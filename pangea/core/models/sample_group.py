@@ -61,6 +61,16 @@ class SampleGroup(AutoCreatedUpdatedMixin):
         )
         return out
 
+    def user_can_view(self, user):
+        """Return True iff `user` can perform read-only operation on this group."""
+        if self.is_public:
+            return True
+        if not user.is_authenticated:
+            return False
+        user_is_in_org = user.organization_set.filter(pk=self.organization.pk).exists()
+        user_is_guest = user in self.guest_users.all()
+        return user_is_in_org or user_is_guest
+
     def user_can_access(self, user):
         """Return True iff `user` can perform any operation on this group."""
         if not user.is_authenticated:

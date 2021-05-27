@@ -104,6 +104,10 @@ class Organization(AutoCreatedUpdatedMixin):
         s3bucket.save()
         return s3bucket
 
+    def user_can_view(self, user):
+        """Return True iff `user` can perform read-only operations on this group."""
+        return True
+
     def user_can_access(self, user):
         """Return True iff `user` can perform any operation on this group."""
         if not user.is_authenticated:
