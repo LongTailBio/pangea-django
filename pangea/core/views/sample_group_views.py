@@ -258,6 +258,8 @@ def get_sample_links_in_group(request, pk):
     grp = _get_grp_check_permissions(request, pk)
     blob = {'count': 0, 'links': []}
     for sample in grp.sample_set.all():
+        if not sample.user_can_view(request.user):
+            continue
         blob['count'] += 1
         link = {
             'uuid': sample.uuid,
