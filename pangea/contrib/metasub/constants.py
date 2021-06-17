@@ -6,3 +6,6 @@ METASUB_GRP_NAME = 'MetaSUB'
 
 METASUB_LIBRARY = lambda: SampleGroup.objects.get(name=METASUB_GRP_NAME)
 METASUB_LIBRARY_UUID = lambda: METASUB_LIBRARY().uuid
+
+
+CITY_INFO_PATH = join(dirname(__file__), 'metasub_city_info.csv')

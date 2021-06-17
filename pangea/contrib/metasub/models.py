@@ -56,7 +56,7 @@ def get_project(text):
 
 
 def get_or_create_city(name):
-    name = name.lower()
+    name = name.lower().replace(' ', '_')
     obj = MetaSUBCity.objects.filter(name=name)
     if obj.exists():
         return obj.get()
