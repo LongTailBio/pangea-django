@@ -11,7 +11,7 @@ from .models import (
 
 @admin.register(KoboAsset)
 class KoboAssetAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'city',)
 
 
 @admin.register(MetaSUBCity)
