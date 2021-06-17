@@ -318,14 +318,32 @@ def all_taxa(request):
     })
 
 
+KOBO_METADATA_KEYS = [
+    'sampling_type',
+    'location_type',
+    'location',
+    'setting',
+    'sampling_place',
+    'surface_material',
+    'ground_level',
+]
+
+
+def to_title_case(el):
+    el = el.replace('_', ' ')
+    tkns = el.split()
+    tkns = [tkn[0].upper() + tkn[1:].lower() for tkn in tkns]
+    el = ' '.join(tkns)
+    return el
+
+
 @api_view(['GET'])
-@lru_cache(maxsize=16)
 def get_kobo_map_data(request):
     project = request.query_params.get('project', '')
     assets = KoboAsset.objects
     if project:
         assets = assets.filter(project=project)
-    citiesData = {}
+    citiesData, metadata = {}, {}
     for asset in assets.all():
         try:
             cityData = citiesData[asset.city.name]
@@ -341,10 +359,20 @@ def get_kobo_map_data(request):
             }
         for result in asset.kobo_results.all():
             resData = {}
+            for category in KOBO_METADATA_KEYS:
+                val = result.data.get(category, 'unknown')
+                metadata_el = {
+                    'category': category,
+                    'type': val,
+                    'type_label': to_title_case(val) if category != 'surface_material' else to_title_case(normalize_surface(val)),
+                    'category_label': to_title_case(category), 
+                }
+                metadata[(category, val)] = metadata_el
+                resData[category] = val
             resData['_geolocation'] = result.data['_geolocation']
             cityData['features'].append(resData)
         citiesData[asset.city.name] = cityData
-    out = {'metadata': [], 'citiesData': list(citiesData.values())}
+    out = {'metadata': list(metadata.values()), 'citiesData': list(citiesData.values())}
     return Response(out)
 
 
