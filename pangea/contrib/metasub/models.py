@@ -85,14 +85,13 @@ class KoboUser(AutoCreatedUpdatedMixin):
         response.raise_for_status()
         blob = response.json()
         for asset_blob in blob['results']:
-            print(asset_blob)
             asset = KoboAsset(
-                kobo_id=blob['uid'],
-                name=blob['name'],
-                description=blob['settings']['description'],
+                kobo_id=asset_blob['uid'],
+                name=asset_blob['name'],
+                description=asset_blob['settings']['description'],
                 kobo_user=self,
-                project=get_project(blob['name']),
-                city=get_or_create_city(blob['name'].split('_')[-1]),
+                project=get_project(asset_blob['name']),
+                city=get_or_create_city(asset_blob['name'].split('_')[-1]),
             )
             asset.save()
 
