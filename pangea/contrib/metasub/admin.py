@@ -11,7 +11,7 @@ from .models import (
 
 @admin.register(KoboAsset)
 class KoboAssetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city', 'result_count')
+    list_display = ('name', 'project', 'city', 'result_count')
 
     def result_count(self, obj):
         return obj.kobo_results.count()
