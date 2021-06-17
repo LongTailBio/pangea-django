@@ -38,14 +38,19 @@ class KoboAsset(AutoCreatedUpdatedMixin):
             )
             result.save()
 
+    def __str__(self):
+        return f'<KoboAsset name={self.name} kobo_id={self.kobo_id} />'
+
 
 class MetaSUBCity(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(unique=True)
-    display_name = models.TextField()
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    display_name = models.TextField(blank=True)
+    latitude = models.FloatField(blank=True)
+    longitude = models.FloatField(blank=True)
 
+    def __str__(self):
+        return f'<MetaSUBCity name={self.name} />'
 
 def get_project(text):
     text = text.lower()
@@ -94,6 +99,9 @@ class KoboUser(AutoCreatedUpdatedMixin):
                 city=get_or_create_city(asset_blob['name'].split('_')[-1]),
             )
             asset.save()
+
+    def __str__(self):
+        return f'<KoboUser username={self.username} />'
 
 
 class KoboResult(AutoCreatedUpdatedMixin):
