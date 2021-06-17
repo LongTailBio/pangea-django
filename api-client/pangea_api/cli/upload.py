@@ -14,6 +14,7 @@ from .. import (
     Organization,
 )
 from .utils import use_common_state
+from .constants import *
 
 
 @click.group('upload')
@@ -35,7 +36,7 @@ lib_arg = click.argument('library_name')
 @overwrite_option
 @private_option
 @tag_option
-@module_option('raw::raw_reads')
+@module_option(PAIRED_END)
 @click.option('-d', '--delim', default=None, help='Split sample name on this string')
 @click.option('-1', '--ext-1', default='.R1.fastq.gz')
 @click.option('-2', '--ext-2', default='.R2.fastq.gz')
@@ -105,7 +106,7 @@ def cli_upload_pe_reads(state, overwrite, private, tag, module_name,
 @private_option
 @dryrun_option
 @tag_option
-@module_option('raw::single_short_reads')
+@module_option(SINGLE_END)
 @click.option('-f', '--field-name', default='reads', help='Name for the field that will store the data')
 @click.option('-e', '--ext', default='.fastq.gz')
 @org_arg
