@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(cls, *args, **kwargs):
     	tbl2 = pd.read_csv(CITY_INFO_2_PATH)
     	names = set()
-    	for i, row, in tbl.iterrows():
+    	for i, row, in tbl2.iterrows():
     		city = MetaSUBCity(
     			name=row['name'],
     			display_name=row['name_full'],
