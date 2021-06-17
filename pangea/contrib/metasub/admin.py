@@ -11,12 +11,18 @@ from .models import (
 
 @admin.register(KoboAsset)
 class KoboAssetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'city',)
+    list_display = ('name', 'city', 'result_count')
+
+	def result_count(self, obj):
+        return obj.kobo_results.count()
 
 
 @admin.register(MetaSUBCity)
 class MetaSUBCityAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name', 'display_name', 'latitude', 'asset_count')
+
+	def asset_count(self, obj):
+        return obj.kobo_assets.count()
 
 
 @admin.register(KoboUser)
