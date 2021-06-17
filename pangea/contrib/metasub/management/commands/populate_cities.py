@@ -11,7 +11,7 @@ class Command(BaseCommand):
     help = 'Populate cities for MetaSUB'
 
     def handle(cls, *args, **kwargs):
-    	tbl = pd.read_csv(city_info_path)
+    	tbl = pd.read_csv(CITY_INFO_PATH)
     	for i, row, in tbl.iterrows():
     		city = MetaSUBCity(
     			name=row['City'].lower().replace(' ', '_'),
