@@ -54,7 +54,7 @@ class MetaSUBCity(AutoCreatedUpdatedMixin):
 
 def get_project(text):
     text = text.lower()
-    for x in ['gcsd16', 'gcsd17', 'gcsd18', 'gcsd19', 'gcsd20', 'gcsd21']:
+    for x in ['gcsd2016', 'gcsd2017', 'gcsd2018', 'gcsd2019', 'gcsd2020', 'gcsd2021']:
         if x in text:
             return x
     return 'unknown'
@@ -93,7 +93,7 @@ class KoboUser(AutoCreatedUpdatedMixin):
             asset = KoboAsset(
                 kobo_id=asset_blob['uid'],
                 name=asset_blob['name'],
-                description=asset_blob['settings']['description'],
+                description=asset_blob.get('settings', {}).get('description', ''),
                 kobo_user=self,
                 project=get_project(asset_blob['name']),
                 city=get_or_create_city(asset_blob['name'].split('_')[-1]),
