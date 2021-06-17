@@ -24,7 +24,7 @@ class Command(BaseCommand):
     		names.add(row['name'])
     	tbl = pd.read_csv(CITY_INFO_PATH)
     	for i, row, in tbl.iterrows():
-    		name = row['City'].lower().replace(' ', '_').relace(',', ' ')
+    		name = row['City'].lower().replace(' ', '_').replace(',', ' ')
     		if name in names:
     			continue
     		city = MetaSUBCity(
