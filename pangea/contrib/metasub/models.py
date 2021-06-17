@@ -64,7 +64,7 @@ def get_or_create_city(name):
     city_names = {city.name: city for city in MetaSUBCity.objects.all()}
     name = name.lower().replace(' ', '_')
     for city_name, city in city_names.items():
-        if city_name in names:
+        if city_name in name:
             return city
     obj = MetaSUBCity(name=name)
     obj.save()
