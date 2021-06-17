@@ -370,6 +370,7 @@ def get_kobo_map_data(request):
                 metadata[(category, val)] = metadata_el
                 resData[category] = val
             resData['_geolocation'] = result.data['_geolocation']
+            resData['end'] = result.data['end']
             cityData['features'].append(resData)
         citiesData[asset.city.name] = cityData
     out = {'metadata': list(metadata.values()), 'citiesData': list(citiesData.values())}
