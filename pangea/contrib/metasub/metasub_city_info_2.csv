@@ -1,0 +1,45 @@
+name,name_full,id,lat,lon
+stockholm,"Stockholm, Sweden",186533,59.334591,18.06324
+fairbanks,"Fairbanks, Alaska, USA",186615,64.837778,-147.716389
+seoul,"Seoul, Korea",186630,37.5326,127.024612
+new_york_city,"New York City, USA",185617,40.73061,-73.935242
+bogota,"Bogotá, Colombia",186635,4.624335,-74.063644
+baltimore,"Baltimore, Washington DC, USA",186641,39.299236,-76.609383
+oslo,"Oslo, Norway",186647,59.911491,10.757933
+zurich,"Zurich, Switzerland",186657,47.376887,8.541694
+ilorin,"Ilorin, Nigeria",186659,8.500000,4.550000
+offa,"Offa, Nigeria",187942,8.139341,4.717406
+hong_kong,"Hong Kong, China",186487,22.39572,114.111111
+paris,"Paris, France",186529,48.858093,2.294694
+sacramento,"Sacramento, CA, USA",186660,38.575764,-121.478851
+denver,"Denver, CO, USA",186662,39.739236,-104.990251
+doha,"Doha, Qatar",182321,25.285447,51.53104
+sao_paulo,"São Paulo, Brazil",186917,-23.5475,-46.63611
+vienna,"Vienna, Austria",186920,48.208174,16.373819
+ribeirao_preto,"Ribeirao Preto, Brazil",186923,-21.170401,-47.810324
+santiago,"Santiago, Chile",186929,-33.44889,-70.669265
+singapore,Singapore,186509,1.29027,103.851959
+naples,"Naples, Italy",186932,40.85442,14.273373
+sofia,"Sofia, Bulgaria",186935,42.697531,23.321907
+sendai,"Sendai, Japan",186951,38.268215,140.869356
+tsuruoka,"Tsuruoka, Japan",,38.736807,139.825872
+ibaraki,"Ibaraki, Japan",,34.8166667,135.5666667
+noda,"Noda, Japan",,35.9411111,139.8580556
+urayasu,"Urayasu, Japan",,35.6705556,139.8886111
+tokyo,"Tokyo, Japan",106056,35.709026,139.731992
+owariasahi,"Owariasahi, Japan",,35.2166658,137.0333332
+matsue,"Matsue, Japan",,35.4666667,133.0666667
+yamaguchi,"Yamaguchi, Japan",186949,34.1666667,131.4833333
+kochi,"Kochi, Japan",187804,33.55,133.55
+oita,"Oita, Japan",186591,33.2372222,131.6044444
+okinawa,"Okinawa, Japan",,26.3358333,127.8013889
+taipei,"Taipei, Taiwan",186948,25.035194,121.562627
+lima,"Lima, Perú",186947,-12.046645,-77.062667
+london,"London, United Kingdom",,51.507351,-0.127758
+kuala_lumpur,"Kuala Lumpur, Malaysia",186946,3.138846,101.693682
+rio_de_janeiro,"Rio de Janeiro, Brazil",187212,-22.906847,-43.172896
+san_francisco,"San Francisco, CA, USA",186944,37.774929,-122.419416
+nuuk,"Nuuk, Greenland",,64.1833333,-51.75
+cochabamba,"Cochabamba, Bolivia",186598,-17.3833333333,-66.1666666667
+los_angeles,"Los Angeles, CA, USA",,34.0522222,-118.2427778
+berlin,"Berlin, Germany",186497,52.517452,13.407655

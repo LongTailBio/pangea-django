@@ -10,3 +10,4 @@ METASUB_LIBRARY_UUID = lambda: METASUB_LIBRARY().uuid
 
 
 CITY_INFO_PATH = join(dirname(__file__), 'metasub_city_info.csv')
+CITY_INFO_2_PATH = join(dirname(__file__), 'metasub_city_info_2.csv')
