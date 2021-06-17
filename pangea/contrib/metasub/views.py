@@ -14,8 +14,17 @@ from pangea.core.models import Sample, SampleAnalysisResultField
 from pangea.contrib.treeoflife.taxa_tree import TaxaTree
 
 from .constants import METASUB_LIBRARY_UUID, METASUB_LIBRARY
+from .models import (
+    KoboAsset,
+    MetaSUBCity,
+    KoboUser,
+    KoboResult,
+)
+
 
 logger = structlog.get_logger(__name__)
+
+
 
 
 def fuzzy_taxa_search(query):
@@ -307,3 +316,34 @@ def all_taxa(request):
     return Response({
         'taxa': list(taxa_list),
     })
+
+
+@api_view(['GET'])
+def get_kobo_map_data(request):
+    project = request.query_params.get('project', '')
+    assests = KoboAsset.objects
+    if project:
+        assets.filter(project=project)
+    citiesData = {}
+    for asset in assets:
+        try:
+            cityData = citiesData[asset.city.name]
+        except KeyError:
+            cityData = {
+                'name': asset.city.display_name,
+                'name_full': asset.city.name,
+                'id': asset.city.uuid,
+                'lat': asset.city.latitude,
+                'lon': asset.city.longitude,
+                'live': True,
+                'features': [],
+            }
+        for result in asset.kobo_results.all():
+            resData = {}
+            resData['_geolocation'] = result.data['_geolocation']
+            cityData['features'].append(resData)
+        citiesData[asset.city.name] = cityData
+    out = {'metadata': [], 'citiesData': list(cityData.values())}
+    return Response(out)
+
+
