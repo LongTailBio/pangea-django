@@ -321,7 +321,7 @@ def all_taxa(request):
 @api_view(['GET'])
 def get_kobo_map_data(request):
     project = request.query_params.get('project', '')
-    assests = KoboAsset.objects
+    assets = KoboAsset.objects
     if project:
         assets.filter(project=project)
     citiesData = {}
