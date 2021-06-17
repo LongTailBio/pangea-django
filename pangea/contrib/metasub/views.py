@@ -319,11 +319,12 @@ def all_taxa(request):
 
 
 @api_view(['GET'])
+@lru_cache(maxsize=16)
 def get_kobo_map_data(request):
     project = request.query_params.get('project', '')
     assets = KoboAsset.objects
     if project:
-        assets.filter(project=project)
+        assets = assets.filter(project=project)
     citiesData = {}
     for asset in assets.all():
         try:
