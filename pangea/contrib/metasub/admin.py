@@ -2,10 +2,10 @@ from django.contrib import admin
 
 # MetaSUB has no models to register.
 from .models import (
-	KoboAsset,
-	MetaSUBCity,
-	KoboUser,
-	KoboResult,
+    KoboAsset,
+    MetaSUBCity,
+    KoboUser,
+    KoboResult,
 )
 
 
@@ -13,7 +13,7 @@ from .models import (
 class KoboAssetAdmin(admin.ModelAdmin):
     list_display = ('name', 'city', 'result_count')
 
-	def result_count(self, obj):
+    def result_count(self, obj):
         return obj.kobo_results.count()
 
 
@@ -21,7 +21,7 @@ class KoboAssetAdmin(admin.ModelAdmin):
 class MetaSUBCityAdmin(admin.ModelAdmin):
     list_display = ('name', 'display_name', 'latitude', 'asset_count')
 
-	def asset_count(self, obj):
+    def asset_count(self, obj):
         return obj.kobo_assets.count()
 
 
