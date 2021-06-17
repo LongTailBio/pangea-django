@@ -46,8 +46,8 @@ class MetaSUBCity(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.TextField(unique=True)
     display_name = models.TextField(blank=True)
-    latitude = models.FloatField(blank=True)
-    longitude = models.FloatField(blank=True)
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return f'<MetaSUBCity name={self.name} />'
