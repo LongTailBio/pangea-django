@@ -325,7 +325,7 @@ def get_kobo_map_data(request):
     if project:
         assets.filter(project=project)
     citiesData = {}
-    for asset in assets:
+    for asset in assets.all():
         try:
             cityData = citiesData[asset.city.name]
         except KeyError:
