@@ -1,5 +1,6 @@
 
 from pangea.core.models import SampleGroup
+from os.path import join, dirname
 
 METASUB_ORG_NAME = 'MetaSUB Consortium'
 METASUB_GRP_NAME = 'MetaSUB'
