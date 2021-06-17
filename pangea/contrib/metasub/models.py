@@ -61,10 +61,11 @@ def get_project(text):
 
 
 def get_or_create_city(name):
+    city_names = {city.name: city for city in MetaSUBCity.objects.all()}
     name = name.lower().replace(' ', '_')
-    obj = MetaSUBCity.objects.filter(name=name)
-    if obj.exists():
-        return obj.get()
+    for city_name, city in city_names.items():
+        if city_name in names:
+            return city
     obj = MetaSUBCity(name=name)
     obj.save()
     return obj
