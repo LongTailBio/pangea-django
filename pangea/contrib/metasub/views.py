@@ -337,9 +337,20 @@ def to_title_case(el):
     return el
 
 
+def get_ttl_hash(seconds):
+    """Return the same value withing `seconds` time period"""
+    return round(time.time() / seconds)
+
+
 @api_view(['GET'])
 def get_kobo_map_data(request):
     project = request.query_params.get('project', '')
+    seconds = 60 * 60 if project != 'gcsd2021' else 60 * 5
+    out = cached_kobo_map_data(project, ttl_hash=get_ttl_hash(seconds))
+    return Response(out)
+
+@lru_cache()
+def cached_kobo_map_data(project, ttl_hash=None):
     assets = KoboAsset.objects
     if project:
         assets = assets.filter(project=project)
@@ -377,8 +388,7 @@ def get_kobo_map_data(request):
                 pass
         citiesData[asset.city.name] = cityData
     out = {'metadata': list(metadata.values()), 'citiesData': list(citiesData.values())}
-    return Response(out)
-
+    return out
 
 @api_view(['GET'])
 def refresh_kobo_assets(request):
