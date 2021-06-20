@@ -10,11 +10,15 @@ import structlog
 import requests
 
 from pangea.core.mixins import AutoCreatedUpdatedMixin
+from .utils import (
+    paginated_iterator,
+    get_project,
+)
 
 
 class KoboAsset(AutoCreatedUpdatedMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    kobo_id = models.TextField(editable=False)
+    kobo_id = models.TextField(editable=False, unique=True)
     name = models.TextField(blank=False)
     description = models.TextField(blank=False)
     kobo_user = models.ForeignKey(
@@ -26,14 +30,15 @@ class KoboAsset(AutoCreatedUpdatedMixin):
     )
 
     def get_results(self):
-        url = f'https://kf.kobotoolbox.org/api/v2/assets/{self.kobo_id}/data.json'
-        response = requests.get(url, headers={'Authorization': f'Token {self.kobo_user.token}'})
-        response.raise_for_status()
-        blob = response.json()
-        for result_blob in blob['results']:
+        initial_url = f'https://kf.kobotoolbox.org/api/v2/assets/{self.kobo_id}/data.json'
+        getter = lambda url: requests.get(url, headers={'Authorization': f'Token {self.kobo_user.token}'})
+        for result_blob in paginated_iterator(getter, initial_url):
+            kobo_id = result_blob['_id']
+            if KoboResult.objects.filter(kobo_id=kobo_id).exists():
+                continue
             result = KoboResult(
                 kobo_asset=self,
-                kobo_id=result_blob['_id'],
+                kobo_id=kobo_id,
                 data=result_blob,
             )
             result.save()
@@ -51,13 +56,6 @@ class MetaSUBCity(AutoCreatedUpdatedMixin):
 
     def __str__(self):
         return f'<MetaSUBCity name={self.name} />'
-
-def get_project(text):
-    text = text.lower()
-    for x in ['gcsd2016', 'gcsd2017', 'gcsd2018', 'gcsd2019', 'gcsd2020', 'gcsd2021']:
-        if x in text:
-            return x
-    return 'unknown'
 
 
 def get_or_create_city(name):
@@ -86,13 +84,14 @@ class KoboUser(AutoCreatedUpdatedMixin):
         self.save()
 
     def get_assets(self):
-        url = 'https://kf.kobotoolbox.org/api/v2/assets.json'
-        response = requests.get(url, headers={'Authorization': f'Token {self.token}'})
-        response.raise_for_status()
-        blob = response.json()
-        for asset_blob in blob['results']:
+        initial_url = 'https://kf.kobotoolbox.org/api/v2/assets.json'
+        getter = lambda url: requests.get(url, headers={'Authorization': f'Token {self.token}'})
+        for asset_blob in paginated_iterator(getter, initial_url):
+            kobo_id = asset_blob['uid']
+            if KoboAsset.objects.filter(kobo_id=kobo_id).exists():
+                continue
             asset = KoboAsset(
-                kobo_id=asset_blob['uid'],
+                kobo_id=kobo_id,
                 name=asset_blob['name'],
                 description=asset_blob.get('settings', {}).get('description', ''),
                 kobo_user=self,

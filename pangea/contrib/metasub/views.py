@@ -380,3 +380,12 @@ def get_kobo_map_data(request):
     return Response(out)
 
 
+@api_view(['GET'])
+def refresh_kobo_assets(request):
+    project = request.query_params.get('project', '')
+    assets = KoboAsset.objects
+    if project:
+        assets = assets.filter(project=project)
+    for asset in assets.all():
+        asset.get_results()
+    return Response(out)
