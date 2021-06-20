@@ -388,4 +388,5 @@ def refresh_kobo_assets(request):
         assets = assets.filter(project=project)
     for asset in assets.all():
         asset.get_results()
+    out = {'status': 'success'}
     return Response(out)
