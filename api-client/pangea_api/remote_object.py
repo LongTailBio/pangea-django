@@ -7,7 +7,7 @@ from glob import glob
 from requests.exceptions import HTTPError
 from .file_system_cache import FileSystemCache
 
-logger = logging.getLogger(__name__)  # Same name as calling module
+logger = logging.getLogger('pangea_api')  # Same name as calling module
 logger.addHandler(logging.NullHandler())  # No output unless configured by calling program
 
 
