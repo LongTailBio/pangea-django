@@ -18,3 +18,12 @@ from .project import Project
 from .versioned_metadata import VersionedMetadata
 from .pipeline import Pipeline
 from .pipeline_module import PipelineModule
+from .work_orders import (
+    JobOrder,
+    WorkOrder,
+    JobOrderProto,
+    WorkOrderProto,
+    PrivilegedUser,
+    GroupWorkOrder,
+    GroupWorkOrderProto,
+)

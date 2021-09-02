@@ -4,6 +4,7 @@ import json
 import os
 import tarfile
 import datetime
+import frictionless
 from urllib.request import urlretrieve
 
 from django.utils.translation import gettext_lazy as _
@@ -185,10 +186,7 @@ class SampleGroupSamplesView(generics.ListAPIView):
         return Response({"status": "success"}) 
 
 
-@api_view(['GET'])
-@authentication_classes([TokenParamAuthentication])
-def get_sample_metadata_in_group(request, pk):
-    """Reply with metadata for samples in group."""
+def _get_grp_check_permissions(request, pk):
     grp = SampleGroup.objects.get(pk=pk)
     if not grp.is_public:
         try:
@@ -198,10 +196,37 @@ def get_sample_metadata_in_group(request, pk):
             authorized = False
         if not authorized:
             raise PermissionDenied(_('Insufficient permissions to access group.'))
-    metadata = {}
-    for sample in grp.sample_set.all():
-        metadata[sample.name] = sample.metadata
+    return grp
 
+
+@api_view(['POST'])
+def generate_sample_metadata_schema(request, pk):
+    """Generate a JSON schema for a group based on eisting metadata"""
+    grp = _get_grp_check_permissions(request, pk)
+    overwrite = request.query_params.get('overwrite', False)
+    grp.generate_sample_metadata_schema(overwrite=overwrite)
+    return Response(
+        {'schema': grp.sample_metadata_schema},
+        status=201
+    )
+
+
+@api_view(['GET'])
+def validate_sample_metadata_schema(request, pk):
+    """Validate samples against the stored schema and return two lists of names and UUIDs"""
+    grp = _get_grp_check_permissions(request, pk)
+    schema = grp.sample_metadata_schema
+    tbl = list(grp.sample_metadata().values())
+    report = frictionless.validate(tbl, schema=schema)
+    return Response(report)
+
+
+@api_view(['GET'])
+@authentication_classes([TokenParamAuthentication])
+def get_sample_metadata_in_group(request, pk):
+    """Reply with metadata for samples in group."""
+    grp = _get_grp_check_permissions(request, pk)
+    metadata = grp.sample_metadata()
     if request.GET.get('kind', None) == 'csv':
         tbl = pd.DataFrame.from_dict(metadata, orient='index')
         metadata = tbl.to_csv()
@@ -214,18 +239,27 @@ def get_sample_metadata_in_group(request, pk):
 
 
 @api_view(['GET'])
+def get_sample_links_in_group(request, pk):
+    """Return a list of sample links which contain only the sample name and UUID."""
+    metadata = request.query_params.get('metadata', False)
+    grp = _get_grp_check_permissions(request, pk)
+    blob = {'count': 0, 'links': []}
+    for sample in grp.sample_set.all():
+        blob['count'] += 1
+        link = {
+            'uuid': sample.uuid,
+            'name': sample.name,
+        }
+        if metadata:
+            link['metadata'] = sample.metadata
+        blob['links'].append(link)
+    return Response(blob)
+
+@api_view(['GET'])
 @authentication_classes([TokenParamAuthentication])
 def get_sample_ar_counts_in_group(request, pk):
     """Reply with counts for all types of sample analysis results in the group."""
-    grp = SampleGroup.objects.get(pk=pk)
-    if not grp.is_public:
-        try:
-            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
-            authorized = membership_queryset.exists()
-        except AttributeError:  # occurs if user is not logged in
-            authorized = False
-        if not authorized:
-            raise PermissionDenied(_('Insufficient permissions to access group.'))
+    grp = _get_grp_check_permissions(request, pk)
     blob = {'n_samples': 0}
     for sample in grp.sample_set.all():
         blob['n_samples'] += 1
@@ -239,15 +273,7 @@ def get_sample_ar_counts_in_group(request, pk):
 @authentication_classes([TokenParamAuthentication])
 def get_sample_group_manifest(request, pk):
     """Reply with a sample group manifest."""
-    grp = SampleGroup.objects.get(pk=pk)
-    if not grp.is_public:
-        try:
-            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
-            authorized = membership_queryset.exists()
-        except AttributeError:  # occurs if user is not logged in
-            authorized = False
-        if not authorized:
-            raise PermissionDenied(_('Insufficient permissions to get group manifest.'))
+    grp = _get_grp_check_permissions(request, pk)
     blob = SampleGroupSerializer(grp).data
     blob['samples'] = []
     for sample in grp.sample_set.all():
@@ -283,15 +309,7 @@ def get_sample_group_manifest(request, pk):
 @authentication_classes([TokenParamAuthentication])
 def get_sample_data_in_group(request, pk, module_name):
     """Reply with metadata for samples in group."""
-    grp = SampleGroup.objects.get(pk=pk)
-    if not grp.is_public:
-        try:
-            membership_queryset = request.user.organization_set.filter(pk=grp.organization.pk)
-            authorized = membership_queryset.exists()
-        except AttributeError:  # occurs if user is not logged in
-            authorized = False
-        if not authorized:
-            raise PermissionDenied(_('Insufficient permissions to access group.'))
+    grp = _get_grp_check_permissions(request, pk)
     kind = request.GET.get('kind', 'tar')
     ars = {}
     for sample in grp.sample_set.all():

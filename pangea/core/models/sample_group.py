@@ -5,8 +5,10 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ObjectDoesNotExist
+from rest_framework.exceptions import ValidationError
 
 import uuid
+import pandas as pd
 import boto3
 from botocore.exceptions import ClientError
 import structlog
@@ -31,6 +33,7 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     description = models.TextField(blank=False, default='')
     long_description = models.TextField(blank=True, default='')
     metadata = JSONField(blank=True, default=dict)
+    sample_metadata_schema = JSONField(blank=False, default=dict)
 
     is_public = models.BooleanField(blank=False, default=True)
     is_library = models.BooleanField(blank=False, default=False)
@@ -86,6 +89,36 @@ class SampleGroup(AutoCreatedUpdatedMixin):
     def create_analysis_result(self, *args, **kwargs):
         ar = SampleGroupAnalysisResult.objects.create(sample_group=self, *args, **kwargs)
         return ar
+
+    def sample_metadata(self):
+        """Return a dict of sample metadata."""
+        metadata = {}
+        for sample in self.sample_set.all():
+            metadata[sample.name] = sample.metadata
+        return metadata
+
+    def generate_sample_metadata_schema(self, overwrite=False):
+        """Generate a Table Schema based on existing metadata."""
+        if self.sample_metadata_schema and not overwrite:
+            logger.warn(
+                'no_overwrite_existing_sample_metadata_schema',
+                group_uuid=self.uuid,
+                schema=self.sample_metadata_schema,
+            )
+            raise ValidationError('no_overwrite_existing_sample_metadata_schema')
+        logger.info(
+            'generating_sample_metadata_schema',
+            group_uuid=self.uuid,
+        )
+        metadata = self.sample_metadata()
+        tbl = pd.DataFrame.from_dict(metadata, orient='index')
+        print(tbl)
+        print(tbl['a'].dtype)
+        schema = pd.io.json.build_table_schema(tbl, version=False, index=False, primary_key=None)
+        print(schema)
+        self.sample_metadata_schema = schema
+        self.save()
+
 
     @classmethod
     def factory(cls, *args, **kwargs):

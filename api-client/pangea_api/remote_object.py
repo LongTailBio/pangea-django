@@ -29,6 +29,7 @@ class RemoteObject:
         self.blob = None
         self.uuid = None
         self.cache = FileSystemCache()
+        self.url_options = {}
 
     def __setattr__(self, key, val):
         if hasattr(self, 'deleted') and self._deleted:
@@ -38,6 +39,17 @@ class RemoteObject:
         if key in self.remote_fields or key == self.parent_field:
             logger.debug(f'Setting RemoteObject modified. key "{key}"')
             super(RemoteObject, self).__setattr__('_modified', True)
+
+    @property
+    def inherited_url_options(self):
+        opts = self.url_options.copy()
+        if self.parent_field:
+            parent = getattr(self, self.parent_field)
+            opts.update(parent.inherited_url_options)
+        return opts
+
+    def invalidate_cache(self):
+        self.cache.clear_blob(self)
 
     def get_cached_blob(self):
         return self.cache.get_cached_blob(self)

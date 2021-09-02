@@ -43,7 +43,7 @@ class Sample(RemoteObject):
             else:
                 data['library'] = self.new_lib
         url = f'samples/{self.uuid}'
-        self.knex.put(url, json=data)
+        self.knex.put(url, json=data, url_options=self.inherited_url_options)
         self.lib = self.new_lib
         self.new_lib = None
 
@@ -52,7 +52,7 @@ class Sample(RemoteObject):
         self.lib.get()
         blob = self.get_cached_blob()
         if not blob:
-            blob = self.knex.get(self.nested_url())
+            blob = self.knex.get(self.nested_url(), url_options=self.inherited_url_options)
             self.load_blob(blob)
             self.cache_blob(blob)
         else:
@@ -67,7 +67,7 @@ class Sample(RemoteObject):
         }
         data['library'] = self.lib.uuid
         url = 'samples?format=json'
-        blob = self.knex.post(url, json=data)
+        blob = self.knex.post(url, json=data, url_options=self.inherited_url_options)
         self.load_blob(blob)
 
     def analysis_result(self, module_name, replicate=None, metadata=None):

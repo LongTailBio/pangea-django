@@ -281,8 +281,8 @@ class SampleGroupMembershipTests(APITestCase):
         cls.sample_library = cls.organization.create_sample_group(name='Test Library', is_library=True)
         cls.sample_group = cls.organization.create_sample_group(name='Test Group', is_library=False)
         cls.sample_library = cls.sample_library.library
-        cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library)
-        cls.sample2 = Sample.objects.create(name='Test Sample 2', library=cls.sample_library)
+        cls.sample = Sample.objects.create(name='Test Sample', library=cls.sample_library, metadata={'a': 'b'})
+        cls.sample2 = Sample.objects.create(name='Test Sample 2', library=cls.sample_library, metadata={'a': 2})
         cls.sample3 = Sample.objects.create(name='Test Sample 3', library=cls.sample_library)
 
     def test_unauthenticated_add_sample_to_group(self):
@@ -347,6 +347,27 @@ class SampleGroupMembershipTests(APITestCase):
         samples_queryset = Sample.objects.filter(sample_groups__pk=self.sample_group.pk)
         self.assertEqual(samples_queryset.count(), 1)
 
+    def test_generate_sample_group_sample_metadata_schema(self):
+        self.client.force_authenticate(user=self.org_user)
+        self.sample_group.add_sample(self.sample)
+        self.sample_group.add_sample(self.sample2)
+        url = reverse('sample-group-generate-schema', kwargs={'pk': self.sample_group.pk})
+        response = self.client.post(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['schema'])
+
+    def test_validate_sample_group_sample_metadata_schema(self):
+        self.sample_group.add_sample(self.sample)
+        self.sample_group.add_sample(self.sample2)
+        self.sample_group.sample_metadata_schema = {'fields': [{"name": "a", "type": "number"}]}
+        self.sample_group.save()
+        url = reverse('sample-group-validate-schema', kwargs={'pk': self.sample_group.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['stats']['errors'], 1)
+
     def test_get_sample_group_samples(self):
         self.sample_group.sample_set.add(self.sample)
 
@@ -356,3 +377,14 @@ class SampleGroupMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertIn('Test Sample', [sample['name'] for sample in response.data['results']])
+
+    def test_get_sample_group_samples(self):
+        self.sample_group.sample_set.add(self.sample)
+
+        url = reverse('sample-group-sample-links', kwargs={'pk': self.sample_group.pk})
+        response = self.client.get(url, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertIn('Test Sample', [sample['name'] for sample in response.data['links']])
+

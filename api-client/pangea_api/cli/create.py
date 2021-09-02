@@ -12,7 +12,7 @@ from .. import (
     User,
     Organization,
 )
-from ..blob_constructors import sample_from_uuid
+from ..blob_constructors import sample_from_uuid, sample_ar_from_uuid
 from .utils import use_common_state
 
 
@@ -103,6 +103,7 @@ def cli_create_samples(state, module_name, org_name, library_name, sample_name, 
         r2.upload_file(data_files[1])
     click.echo('success', err=True)
 
+
 @cli_create.command('sample-ar')
 @use_common_state
 @click.option('-r', '--replicate')
@@ -125,3 +126,29 @@ def cli_create_sample_ar(state, replicate, names):
         sample = lib.sample(names[2]).get()
     ar = sample.analysis_result(module_name, replicate=replicate).create()
     click.echo(f'Created: {ar}', err=True)
+
+
+@cli_create.command('field')
+@use_common_state
+@click.argument('names', nargs=-1)
+def cli_create_field(state, names):
+    if len(names) not in [3, 6]:
+        click.echo('''
+            Names must be one of:
+            <org name> <library name> <sample name> <module name> <new field name> <filename>
+            <module uuid> <new field name> <filename>
+        ''', err=True)
+        return
+    knex = state.get_knex()
+    field_name = names[-2]
+    if len(names) == 3:
+        ar = sample_ar_from_uuid(knex, names[0])
+    else:
+        org = Organization(knex, names[0]).get()
+        lib = org.sample_group(names[1]).get()
+        sample = lib.sample(names[2]).get()
+        ar = sample.analysis_result(names[3]).get()
+    arf = ar.field(field_name).create()
+    click.echo(f'Created: {arf}', err=True)
+    click.echo(f'Uploading file: {names[-1]}', err=True)
+    arf.upload_file(names[-1], logger=lambda x: click.echo(x, err=True))
