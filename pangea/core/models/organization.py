@@ -65,6 +65,15 @@ class PangeaUser(AbstractUser):
             return org
 
 
+class SiteAdminStatus(models.TextChoices):
+    SITE = 'full site', _('full site')
+
+
+class SiteAdmin(AutoCreatedUpdatedMixin):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    status = models.TextField(choices=SiteAdminStatus.choices, default=SiteAdminStatus.SITE)
+
+
 class Organization(AutoCreatedUpdatedMixin):
     """This class represents the organization model."""
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -94,6 +103,17 @@ class Organization(AutoCreatedUpdatedMixin):
         s3bucket = S3Bucket(organization=self, *args, **kwargs)
         s3bucket.save()
         return s3bucket
+
+    def user_can_view(self, user):
+        """Return True iff `user` can perform read-only operations on this group."""
+        return True
+
+    def user_can_access(self, user):
+        """Return True iff `user` can perform any operation on this group."""
+        if not user.is_authenticated:
+            return False
+        user_is_in_org = user.organization_set.filter(pk=self.pk).exists()
+        return user_is_in_org
 
     @property
     def _core_sample_group_name(self):

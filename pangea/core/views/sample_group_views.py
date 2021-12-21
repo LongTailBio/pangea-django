@@ -120,7 +120,7 @@ class SampleGroupSamplesView(generics.ListAPIView):
         samples = super().filter_queryset(queryset).filter(sample_groups__pk=sample_grp_uuid)
         libraries = {samp.library.group for samp in samples}
         for lib in libraries:
-            has_permission &= perm.has_object_permission(self.request, self, lib)
+            has_permission &= lib.user_can_access(self.request.user)
         if not has_permission:
             return []
         return samples.order_by('created_at')
@@ -165,21 +165,25 @@ class SampleGroupSamplesView(generics.ListAPIView):
             sample_uuids.append(sample_uuid)
 
         sample_group = SampleGroup.objects.get(pk=sample_group_uuid)
-        group_org = sample_group.organization
-        group_membership_queryset = self.request.user.organization_set.filter(pk=group_org.pk)
+        if not sample_group.user_can_access(self.request.user):
+            logger.info(
+                'attempted_delete_sample_from_group_without_permission',
+                user=request.user,
+                sample_pk=sample.pk,
+                sample_group_pk=sample_group.pk,
+            )
+            raise PermissionDenied(_('Insufficient permissions to remove sample from sample group.'))
+
         for sample_uuid in sample_uuids:
             sample = Sample.objects.get(pk=sample_uuid)
-            sample_org = sample.library.group.organization
-            sample_membership_queryset = self.request.user.organization_set.filter(pk=sample_org.pk)
-
-            if not group_membership_queryset.exists() or not sample_membership_queryset.exists():
+            if not sample.user_can_access(self.request.user):
                 logger.info(
                     'attempted_delete_sample_from_group_without_permission',
                     user=request.user,
                     sample_pk=sample.pk,
                     sample_group_pk=sample_group.pk,
                 )
-                raise PermissionDenied(_('Insufficient permissions to add sample to sample group.'))
+                raise PermissionDenied(_('Insufficient permissions to remove sample from sample group.'))
 
             sample.sample_groups.remove(sample_group)
 
@@ -216,9 +220,18 @@ def validate_sample_metadata_schema(request, pk):
     """Validate samples against the stored schema and return two lists of names and UUIDs"""
     grp = _get_grp_check_permissions(request, pk)
     schema = grp.sample_metadata_schema
-    tbl = list(grp.sample_metadata().values())
+    tbl = pd.DataFrame.from_dict(grp.sample_metadata(), orient='index')
+    sample_names_to_inds = {i + 2: n for i, n in enumerate(tbl.index.to_list())}
     report = frictionless.validate(tbl, schema=schema)
-    return Response(report)
+    errors = report.flatten(["rowPosition", "fieldName", "code", "message"])
+    errors_remapped = []
+    for rowPos, fieldName, code, msg in errors:
+        errors_remapped.append([sample_names_to_inds.get(rowPos, rowPos), fieldName, code, msg])
+    blob = {
+        'errors': errors_remapped,
+        'stats': report['stats'],
+    }
+    return Response(blob)
 
 
 @api_view(['GET'])
@@ -245,6 +258,8 @@ def get_sample_links_in_group(request, pk):
     grp = _get_grp_check_permissions(request, pk)
     blob = {'count': 0, 'links': []}
     for sample in grp.sample_set.all():
+        if not sample.user_can_view(request.user):
+            continue
         blob['count'] += 1
         link = {
             'uuid': sample.uuid,

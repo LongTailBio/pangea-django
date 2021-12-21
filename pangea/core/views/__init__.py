@@ -78,3 +78,9 @@ from .work_order_views import (
     SampleGroupGroupWorkOrdersView,
     GroupWorkOrderProtoWorkOrderView,
 )
+from .wiki import (
+    handle_sample_group_wiki,
+    handle_organization_wiki,
+    handle_pipeline_wiki,
+    handle_site_wiki,
+)

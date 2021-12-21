@@ -73,6 +73,10 @@ class Sample(AutoCreatedUpdatedMixin):
         metadata_to_revert_to = self.versioned_metadata.order_by('-updated_at')[steps]
         metadata_to_revert_to.save()  # update the timestamp
 
+    def user_can_view(self, user):
+        """Return True iff `user` can perform read-only operations on this sample."""
+        return self.library.group.user_can_view(user)
+
     def user_can_access(self, user):
         """Return True iff `user` can perform any operation on this sample."""
         return self.library.group.user_can_access(user)

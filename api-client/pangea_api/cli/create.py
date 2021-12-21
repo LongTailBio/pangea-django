@@ -14,6 +14,7 @@ from .. import (
 )
 from ..blob_constructors import sample_from_uuid, sample_ar_from_uuid
 from .utils import use_common_state
+from .constants import *
 
 
 @click.group('create')
@@ -78,25 +79,29 @@ def cli_create_samples(state, sample_name_list, org_name, library_name, sample_n
 
 @cli_create.command('sample-with-data')
 @use_common_state
-@click.option('-m', '--module-name', type=click.Choice(['raw::paired_short_reads', 'raw::single_short_reads']))
+@click.option('-m', '--module-name', type=click.Choice(READ_MODULE_NAMES))
 @click.argument('org_name')
 @click.argument('library_name')
 @click.argument('sample_name')
 @click.argument('data_files', nargs=-1)
 def cli_create_samples(state, module_name, org_name, library_name, sample_name, data_files):
-    """Create samples in the specified group.
+    """Create one sample in the specified group with attached raw data.
 
-    `sample_names` is a list of samples with one line per sample
+    `module_name` is the type of data being uploaded
+    `org_name` is the name of the organization where the sample should be created
+    `library_name` is the name of the library sample group where the sample should be created
+    `sample_name` is the name for the new sample
+    `data_files` is either one or two gzipped fastq files depending on the module_name
     """
     knex = state.get_knex()
     org = Organization(knex, org_name).get()
     lib = org.sample_group(library_name, is_library=True).get()
     sample = lib.sample(sample_name).idem()
     ar = sample.analysis_result(module_name).create()
-    if module_name == 'raw::single_short_reads':
+    if module_name in [SINGLE_END, NANOPORE]:
         r1 = ar.field('reads').create()
         r1.upload_file(data_files[0])
-    elif module_name == 'raw::paired_short_reads':
+    elif module_name == PAIRED_END:
         r1 = ar.field('read_1').create()
         r1.upload_file(data_files[0])
         r2 = ar.field('read_2').create()

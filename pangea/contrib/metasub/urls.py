@@ -8,6 +8,8 @@ from .views import (
     fuzzy_taxa_search_materials,
     sample_taxonomy_sunburst,
     all_taxa,
+    get_kobo_map_data,
+    refresh_kobo_assets,
 )
 
 
@@ -17,6 +19,8 @@ urlpatterns = {
     path('search_materials', fuzzy_taxa_search_materials, name="metasub-materials-taxa-search"),
     path('all_taxa', all_taxa, name="metasub-all-taxa"),
     path('sample_sunburst/<uuid:pk>', sample_taxonomy_sunburst, name='metasub-sample-sunburst'),
+    path('kobo_map', get_kobo_map_data, name='get-kobo-map-data'),
+    path('kobo_refresh', refresh_kobo_assets, name='refresh-kobo-assets'),
 }
 
 

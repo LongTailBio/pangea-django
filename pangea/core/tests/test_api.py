@@ -19,6 +19,7 @@ from pangea.core.models import (
     SampleAnalysisResult,
     Pipeline,
     PipelineModule,
+    OrganizationWiki,
 )
 
 from .constants import (
@@ -104,6 +105,60 @@ class OrganizationMembershipTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 2)
         self.assertIn('target_user@domain.com', [user['email'] for user in response.data['results']])
+
+
+class OrganizationWikiTests(APITestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        
+        cls.creds = ('user@domain.com', 'Foobar22')
+        cls.user = PangeaUser.objects.create(email=cls.creds[0], password=cls.creds[1])
+        cls.org = Organization.objects.create(name='Test Organization')
+        cls.org.users.add(cls.user)
+
+        cls.org_with_wiki = Organization.objects.create(name='Test Organization with Wiki')
+        cls.org_with_wiki.users.add(cls.user)
+        OrganizationWiki.create_wiki(cls.org_with_wiki)
+
+    def test_get_wiki(self):
+        url = reverse('organization-wiki', kwargs={'pk': self.org_with_wiki.pk})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_new_wiki(self):
+        url = reverse('organization-wiki', kwargs={'pk': self.org.pk})
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_add_page(self):
+        url = reverse('organization-wiki', kwargs={'pk': self.org_with_wiki.pk})
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'title': 'title',
+            'text': 'body',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(self.org_with_wiki.wiki)
+        self.assertEqual(self.org_with_wiki.wiki.pages.count(), 2)
+
+    def test_modify_page(self):
+        url = reverse('organization-wiki', kwargs={'pk': self.org_with_wiki.pk})
+        self.client.force_authenticate(user=self.user)
+        data = {
+            'uuid': self.org_with_wiki.wiki.home_page.uuid,
+            'title': 'title 2',
+            'text': 'body',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.org_with_wiki.refresh_from_db()
+        self.assertTrue(self.org_with_wiki.wiki)
+        self.assertEqual(self.org_with_wiki.wiki.pages.count(), 1)
+        self.assertEqual(self.org_with_wiki.wiki.home_page.title, 'title 2')
 
 
 class PangeaUserTests(APITestCase):
