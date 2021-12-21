@@ -52,6 +52,6 @@ sqlparse==0.3.0
 structlog==20.1.0
 typing-extensions==3.7.4.3 
 uritemplate==3.0.1
-urllib3==1.25.8
+urllib3==1.26.5
 Whoosh==2.7.4
 frictionless==4.7.1
