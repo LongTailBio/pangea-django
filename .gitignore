@@ -1,5 +1,7 @@
 # Longtail Additions
 
+.pangea_api_cache
+
 ### Environment ###
 .env
 

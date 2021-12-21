@@ -10,7 +10,7 @@ from .file_system_cache import FileSystemCache
 DEFAULT_ENDPOINT = 'https://pangeabio.io'
 
 
-logger = logging.getLogger(__name__)  # Same name as calling module
+logger = logging.getLogger('pangea_api')  # Same name as calling module
 logger.addHandler(logging.NullHandler())  # No output unless configured by calling program
 
 
@@ -181,4 +181,5 @@ class Knex:
             headers=self.headers,
             auth=self.auth,
         )
-        return self._handle_response(response, **kwargs)
+        logger.debug(f'DELETE request response:\n{response}')
+        return self._handle_response(response, json_response=False, **kwargs)

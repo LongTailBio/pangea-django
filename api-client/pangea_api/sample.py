@@ -70,6 +70,12 @@ class Sample(RemoteObject):
         blob = self.knex.post(url, json=data, url_options=self.inherited_url_options)
         self.load_blob(blob)
 
+    def delete(self):
+        url = f'samples/{self.uuid}'
+        self.knex.delete(url)
+        self._already_fetched = False
+        self._deleted = True
+
     def analysis_result(self, module_name, replicate=None, metadata=None):
         return SampleAnalysisResult(self.knex, self, module_name, replicate=replicate, metadata=metadata)
 
