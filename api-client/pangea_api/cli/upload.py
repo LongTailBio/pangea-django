@@ -198,3 +198,21 @@ def cli_metadata(state, overwrite,
             sample.metadata = old_meta
             sample.idem()
         click.echo(sample)
+
+
+@cli_upload.command('group-field')
+@use_common_state
+@click.argument('org_name')
+@click.argument('grp_name')
+@click.argument('module_name')
+@click.argument('field_name')
+@click.argument('file_path', type=click.Path())
+def cli_create_field(state, org_name, grp_name, module_name, field_name, file_path):
+    knex = state.get_knex()
+    org = Organization(knex, org_name).get()
+    grp = org.sample_group(grp_name).get()
+    ar = grp.analysis_result(module_name).idem()
+    arf = ar.field(field_name).create()
+    click.echo(f'Created: {arf}', err=True)
+    click.echo(f'Uploading file: {file_path}', err=True)
+    arf.upload_file(file_path, logger=lambda x: click.echo(x, err=True))
