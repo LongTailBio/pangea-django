@@ -35,7 +35,7 @@ pandas==1.2.4
 Pillow==8.2.0
 psycopg2==2.8.6 
 pycparser==2.20
-PyJWT==2.0.1
+PyJWT==2.4.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 python3-openid==3.2.0
