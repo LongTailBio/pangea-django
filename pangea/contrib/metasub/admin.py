@@ -11,7 +11,7 @@ from .models import (
 
 @admin.register(KoboAsset)
 class KoboAssetAdmin(admin.ModelAdmin):
-    list_display = ('name', 'project', 'city', 'result_count')
+    list_display = ('name', 'project', 'city', 'result_count', 'kobo_id', 'kobo_user')
 
     def result_count(self, obj):
         return obj.kobo_results.count()
@@ -27,9 +27,9 @@ class MetaSUBCityAdmin(admin.ModelAdmin):
 
 @admin.register(KoboUser)
 class KoboUserAdmin(admin.ModelAdmin):
-    list_display = ('username',)
+    list_display = ('username', 'password')
 
 
 @admin.register(KoboResult)
 class KoboResultAdmin(admin.ModelAdmin):
-    list_display = ('kobo_id',)
+    list_display = ('kobo_id', 'kobo_asset', 'data')

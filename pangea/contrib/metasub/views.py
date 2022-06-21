@@ -346,7 +346,7 @@ def get_ttl_hash(seconds):
 @api_view(['GET'])
 def get_kobo_map_data(request):
     project = request.query_params.get('project', '')
-    seconds = 60 * 60 if project != 'gcsd2021' else 60 * 5
+    seconds = 60 * 60 if project != 'gcsd2022' else 60 * 2
     out = cached_kobo_map_data(project, ttl_hash=get_ttl_hash(seconds))
     return Response(out)
 
