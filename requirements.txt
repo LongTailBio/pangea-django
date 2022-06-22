@@ -28,7 +28,7 @@ itypes==1.2.0
 Jinja2==2.11.3
 jmespath==0.9.5
 MarkupSafe==1.1.1
-numpy==1.20.2 
+numpy==1.22.0 
 oauthlib==3.1.0
 packaging==20.9
 pandas==1.2.4
